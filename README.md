@@ -8,4 +8,4 @@ Folders should be organized by contributor name on the top level, and then by as
 
 ## Valid files
 
-For conveniencem, executable files and .pdf file are provided in this repo, in addition to the source files
+For convenience, executable files and .pdf file are provided in this repo, in addition to the source files.
