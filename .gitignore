@@ -1,4 +1,6 @@
-# Taken from https://github.com/github/gitignore
+# Taken from:
+# https://github.com/github/gitignore
+# https://gist.github.com/octocat/9257657
 
 
 ###################### GLOBAL IGNORES: Windows ######################
@@ -25,6 +27,7 @@ $RECYCLE.BIN/
 
 ###################### GLOBAL IGNORES: macOS ######################
 *.DS_Store
+*.DS_Store?
 .AppleDouble
 .LSOverride
 
@@ -104,3 +107,17 @@ tags
 
 # Visio autosave temporary files
 *.~vsdx
+
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
