@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 int mat[10000][10000];
 
 int main(){
