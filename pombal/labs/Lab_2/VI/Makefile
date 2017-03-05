@@ -12,4 +12,4 @@ all:
 
 .PHONY: clean
 clean:
-	rm -f I
+	rm -f complex
