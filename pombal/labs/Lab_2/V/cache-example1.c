@@ -20,4 +20,6 @@ int main(){
 		}
 	}
 	printf("pair values: %d\n", count);
+
+    exit(EXIT_SUCCESS);
 }
