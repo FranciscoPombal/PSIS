@@ -4,10 +4,11 @@
 
 int main(){
 	int v[100];
-	int i;
+	int i=0;
 
-	for (i=0; i<100; i+1){
+	while(i<100){
 		v[i] = random();
+		i++;
 	}
 
 	printf("vector initialized\n");
