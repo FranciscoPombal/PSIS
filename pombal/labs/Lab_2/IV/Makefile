@@ -4,11 +4,11 @@ CC=gcc
 # compiler flags
 CFLAGS=-Wall\
        -Wextra\
-	   -g
+	   -g\
 	   -O0
 
 all:
- 	$(CC) $(CFLAGS) char-conv-uninit.c -o char-conv-uninit
+	$(CC) $(CFLAGS) char-conv-uninit.c -o char-conv-uninit
 
 .PHONY: clean
 clean:

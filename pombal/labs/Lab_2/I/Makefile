@@ -4,11 +4,11 @@ CC=gcc
 # compiler flags
 CFLAGS=-Wall\
        -Wextra\
-	   -g
+	   -g\
 	   -O0
 
 all:
- 	$(CC) $(CFLAGS) infinite-loop.c -o infinite-loop
+	$(CC) $(CFLAGS) infinite-loop.c -o infinite-loop
 
 .PHONY: clean
 clean:

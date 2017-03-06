@@ -4,11 +4,11 @@ CC=gcc
 # compiler flags
 CFLAGS=-Wall\
        -Wextra\
-	   -g
+	   -g\
 	   -O0
 
 all:
- 	$(CC) $(CFLAGS) complex.c -o complex
+	$(CC) $(CFLAGS) complex.c -o complex
 
 .PHONY: clean
 clean:
