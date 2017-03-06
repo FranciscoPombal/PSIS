@@ -1,0 +1,108 @@
+==1949== Memcheck, a memory error detector
+==1949== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==1949== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==1949== Command: ./char-conv-prob
+==1949== Parent PID: 10306
+==1949== 
+--1949-- 
+--1949-- Valgrind options:
+--1949--    -v
+--1949--    --leak-check=full
+--1949--    --show-leak-kinds=all
+--1949--    --track-origins=yes
+--1949--    --log-file=valgrind_output.val
+--1949-- Contents of /proc/version:
+--1949--   Linux version 4.8.0-39-generic (buildd@lgw01-22) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ) #42~16.04.1-Ubuntu SMP Mon Feb 20 15:06:07 UTC 2017
+--1949-- 
+--1949-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
+--1949-- Page sizes: currently 4096, max supported 4096
+--1949-- Valgrind library directory: /usr/lib/valgrind
+--1949-- Reading syms from /home/francisco/MEGA/3-Ano-2-Semestre/PSIS/git/pombal/labs/Lab_2/III/char-conv-prob
+--1949-- Reading syms from /lib/x86_64-linux-gnu/ld-2.23.so
+--1949--   Considering /lib/x86_64-linux-gnu/ld-2.23.so ..
+--1949--   .. CRC mismatch (computed e101f79f wanted 8d6608d4)
+--1949--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.23.so ..
+--1949--   .. CRC is valid
+--1949-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
+--1949--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--1949--   .. CRC mismatch (computed 5529a2c7 wanted 5bd23904)
+--1949--    object doesn't have a symbol table
+--1949--    object doesn't have a dynamic symbol table
+--1949-- Scheduler: using generic scheduler lock implementation.
+--1949-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==1949== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-1949-by-francisco-on-???
+==1949== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-1949-by-francisco-on-???
+==1949== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-1949-by-francisco-on-???
+==1949== 
+==1949== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==1949== don't want to do, unless you know exactly what you're doing,
+==1949== or are doing some strange experiment):
+==1949==   /usr/lib/valgrind/../../bin/vgdb --pid=1949 ...command...
+==1949== 
+==1949== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==1949==   /path/to/gdb ./char-conv-prob
+==1949== and then give GDB the following command
+==1949==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=1949
+==1949== --pid is optional if only one valgrind process is running
+==1949== 
+--1949-- REDIR: 0x401cdc0 (ld-linux-x86-64.so.2:strlen) redirected to 0x3809e181 (???)
+--1949-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+--1949--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--1949--   .. CRC mismatch (computed a30c8eaa wanted 7ae2fed4)
+--1949--    object doesn't have a symbol table
+--1949-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
+--1949--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--1949--   .. CRC mismatch (computed 402c2ab5 wanted 745f25ae)
+--1949--    object doesn't have a symbol table
+==1949== WARNING: new redirection conflicts with existing -- ignoring it
+--1949--     old: 0x0401cdc0 (strlen              ) R-> (0000.0) 0x3809e181 ???
+--1949--     new: 0x0401cdc0 (strlen              ) R-> (2007.0) 0x04c31020 strlen
+--1949-- REDIR: 0x401b710 (ld-linux-x86-64.so.2:index) redirected to 0x4c30bc0 (index)
+--1949-- REDIR: 0x401b930 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c320d0 (strcmp)
+--1949-- REDIR: 0x401db20 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c35270 (mempcpy)
+--1949-- Reading syms from /lib/x86_64-linux-gnu/libc-2.23.so
+--1949--   Considering /lib/x86_64-linux-gnu/libc-2.23.so ..
+--1949--   .. CRC mismatch (computed 0423f85c wanted cbe1e5cd)
+--1949--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.23.so ..
+--1949--   .. CRC is valid
+--1949-- REDIR: 0x4ec8e50 (libc.so.6:strcasecmp) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ec46d0 (libc.so.6:strcspn) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ecb140 (libc.so.6:strncasecmp) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ec6b40 (libc.so.6:strpbrk) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ec6ed0 (libc.so.6:strspn) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ec859b (libc.so.6:memcpy@GLIBC_2.2.5) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--1949-- REDIR: 0x4ec6850 (libc.so.6:rindex) redirected to 0x4c308a0 (rindex)
+--1949-- REDIR: 0x4ecfbb0 (libc.so.6:strchrnul) redirected to 0x4c34da0 (strchrnul)
+--1949-- REDIR: 0x4ebd580 (libc.so.6:malloc) redirected to 0x4c2db20 (malloc)
+--1949-- REDIR: 0x4ec7cb0 (libc.so.6:memchr) redirected to 0x4c32170 (memchr)
+--1949-- REDIR: 0x4ecd8c0 (libc.so.6:__GI_memcpy) redirected to 0x4c32b00 (__GI_memcpy)
+--1949-- REDIR: 0x4ec4b70 (libc.so.6:strlen) redirected to 0x4c30f60 (strlen)
+--1949-- REDIR: 0x4ec8800 (libc.so.6:__GI_mempcpy) redirected to 0x4c34fa0 (__GI_mempcpy)
+==1949== Conditional jump or move depends on uninitialised value(s)
+==1949==    at 0x4E88CC0: vfprintf (vfprintf.c:1632)
+==1949==    by 0x4E8F898: printf (printf.c:33)
+==1949==    by 0x4007E0: main (char-conv-prob.c:20)
+==1949==  Uninitialised value was created by a heap allocation
+==1949==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1949==    by 0x40076F: main (char-conv-prob.c:15)
+==1949== 
+--1949-- REDIR: 0x4ebd940 (libc.so.6:free) redirected to 0x4c2ed80 (free)
+==1949== 
+==1949== HEAP SUMMARY:
+==1949==     in use at exit: 0 bytes in 0 blocks
+==1949==   total heap usage: 3 allocs, 3 frees, 2,053 bytes allocated
+==1949== 
+==1949== All heap blocks were freed -- no leaks are possible
+==1949== 
+==1949== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+==1949== 
+==1949== 1 errors in context 1 of 1:
+==1949== Conditional jump or move depends on uninitialised value(s)
+==1949==    at 0x4E88CC0: vfprintf (vfprintf.c:1632)
+==1949==    by 0x4E8F898: printf (printf.c:33)
+==1949==    by 0x4007E0: main (char-conv-prob.c:20)
+==1949==  Uninitialised value was created by a heap allocation
+==1949==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1949==    by 0x40076F: main (char-conv-prob.c:15)
+==1949== 
+==1949== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
