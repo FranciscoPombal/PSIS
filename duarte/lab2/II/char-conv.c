@@ -5,7 +5,7 @@
 
 int main(){
 	char v1[100];
-	char *v2;
+	char *v2;// = malloc(100*sizeof(char));
 	int i;
 	
 	printf("Write a word");
