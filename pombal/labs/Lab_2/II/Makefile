@@ -3,11 +3,11 @@ CC=gcc
 
 # compiler flags
 CFLAGS=-Wall\
-       -Wextra\
+	   -Wextra\
 	   -g\
 	   -O0
 
-all:
+all: char-conv.c
 	$(CC) $(CFLAGS) char-conv.c -o char-conv
 
 .PHONY: clean

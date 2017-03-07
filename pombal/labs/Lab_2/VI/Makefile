@@ -3,11 +3,11 @@ CC=gcc
 
 # compiler flags
 CFLAGS=-Wall\
-       -Wextra\
+	   -Wextra\
 	   -g\
 	   -O0
 
-all:
+all: complex.c
 	$(CC) $(CFLAGS) complex.c -o complex
 
 .PHONY: clean
