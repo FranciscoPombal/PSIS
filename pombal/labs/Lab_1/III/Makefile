@@ -1,4 +1,4 @@
-all:
+all: pointers.c
 	gcc -Wall -Wextra -g pointers.c -o pointers
 
 .PHONY: clean
