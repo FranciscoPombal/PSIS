@@ -16,9 +16,9 @@ int main(){
     void (*f_2)();
 
         printf("What version of the functions you whant to use?\n");
-	    printf("\t1 - Normal    (test1)\n");
-	    printf("\t2 - Optimized (test2)\n");
-	    scanf("%d", &a);
+        printf("\t1 - Normal    (test1)\n");
+        printf("\t2 - Optimized (test2)\n");
+        scanf("%d", &a);
 
         if(a == 1){
             /* load library test1 */
