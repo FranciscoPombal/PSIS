@@ -8,7 +8,7 @@ int main(){
 	char v1[100];
 	char *v2;
 	int i;
-	
+
 	printf("Write a word");
 	fgets(v1, 100, stdin);
 
@@ -19,5 +19,5 @@ int main(){
 
 	printf("Converted string: %s", v2);
 
-
+	free(v2);
 }
