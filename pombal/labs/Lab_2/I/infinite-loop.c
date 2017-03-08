@@ -3,21 +3,13 @@
 
 
 int main(){
-	int v[100];
-	int i;
+    int v[100];
+    int i = 0;
 
-    // Why does the program work with a while loop and not a for loop?
-    while(i<100){
-        v[i] = random();
-        i++;
+    for (i=0; i<100; i+=1){
+    v[i] = random();
     }
 
-    /*
-	for (i=0; i<100; i+1){
-		v[i] = random();
-    }
-    */
-
-	printf("vector initialized\n");
+    printf("vector initialized\n");
 
 }
