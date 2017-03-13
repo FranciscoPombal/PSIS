@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <time.h>
 
 #ifndef NUM_CHILD_PROCESSES
@@ -16,7 +17,6 @@ int main(void) {
     int i = 0;
     int pid = 0;
     unsigned int nsleep = 0;
-    time_t t;
 
         for(i = 0; i < NUM_CHILD_PROCESSES; i++){
             pid = fork();
@@ -24,11 +24,16 @@ int main(void) {
                 printf("Error");
                 exit(EXIT_FAILURE);
             }else if(pid == 0){
-                srand((unsigned) time(&t));
+                //child
+                srand((unsigned)time(NULL));
                 nsleep = rand() % (NUM_SECONDS_SLEEP + 1);
                 sleep(nsleep);
                 printf("Child (%d): %d | Slept for %d seconds\n", i + 1, getpid(), nsleep);
                 exit(EXIT_SUCCESS);
+            }else{
+                //parent
+                //why do we have to call wait like this?
+                wait(NULL);
             }
         }
 
