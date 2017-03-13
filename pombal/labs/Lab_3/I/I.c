@@ -12,7 +12,8 @@
 #define NUM_SECONDS_SLEEP 10
 #endif
 
-int main(void) {
+int main(void)
+{
 
     int i = 0;
     int pid = 0;
