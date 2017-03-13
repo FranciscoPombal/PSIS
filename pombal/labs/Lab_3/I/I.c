@@ -18,6 +18,8 @@ int main(void)
     int i = 0;
     int pid = 0;
     unsigned int nsleep = 0;
+    int killed_child;
+    int child_status;
 
         for(i = 0; i < NUM_CHILD_PROCESSES; i++){
             pid = fork();
@@ -33,8 +35,8 @@ int main(void)
                 exit(EXIT_SUCCESS);
             }else{
                 //parent
-                //why do we have to call wait like this?
-                wait(NULL);
+                killed_child = wait(&child_status);
+                fprintf(stdout, "Process %d just died - return status: %d\n", killed_child, child_status);
             }
         }
 
