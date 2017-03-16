@@ -1,6 +1,11 @@
-all: V.c
-	gcc -Wall -Wextra -g V.c -o V
+all: V-1 V-2
+
+V-1: V-1.c
+	gcc -Wall -Wextra -g V-1.c -o V-1
+
+V-2: V-2.c
+	gcc -Wall -Wextra -g V-2.c -o V-2
 
 .PHONY: clean
 clean:
-	rm -f V
+	rm -f V-1 V-2
