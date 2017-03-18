@@ -1,0 +1,3 @@
+pwd
+uname -a
+ls -laF
