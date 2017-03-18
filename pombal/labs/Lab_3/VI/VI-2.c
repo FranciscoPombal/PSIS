@@ -11,7 +11,7 @@
 #endif
 
 /* TODO:
-    Children get called to often
+    Children get called too often
     Time
 */
 
@@ -25,6 +25,11 @@ int main(int argc, char** argv)
     int pid = 0;
     int child_status = 0;
     int killed_child = 0;
+    double total_time = 0.0;
+    double command_time = 0.0;
+    clock_t begin = 0;
+    clock_t end = 0;
+
 
         // Check arguments
         if(argc != 2){
@@ -52,35 +57,40 @@ int main(int argc, char** argv)
             exit(EXIT_FAILURE);
         }
 
-        while(feof(file) == false){
-            fgets_ret_val = fgets(buffer, LINE_BUFFER, file);
-            if(fgets_ret_val == NULL){
-                fprintf(stderr, "fgets error\n");
-                exit(EXIT_FAILURE);
-            }
-
+        while((fgets_ret_val = fgets(buffer, LINE_BUFFER, file)) != NULL){
             // a bit of regex: [^] means "negated set" ([] means set),
-            // so we are matching a string that contains any character except \n
+            // so we are matching a string that contains any character except \n, thus reading an entire line into %s
             sscanf_ret_val = sscanf(buffer, "%[^\n]s", command);
             if(sscanf_ret_val != 1){
                 fprintf(stderr, "sscanf error\n");
                 exit(EXIT_FAILURE);
             }
 
-            fprintf(stdout, "NOW EXECUTING: %s\n", command);
+            fprintf(stdout, "\n\n>>>>>NOW EXECUTING: %s\n", command);
 
             pid = fork();
             if(pid < 0){
-                fprintf(stderr, "fork error.\n");
+                fprintf(stderr, "Fork error.\n");
             }else if(pid == 0){
                 //child
-                system(command);
+                execl("/bin/sh", "sh", "-c", command, (char *)NULL);
                 exit(EXIT_SUCCESS);
             }else{
-                killed_child = wait(&child_status);
-                fprintf(stdout, "child exited \n");
+                //parent
+                begin = clock();    // Start timer
+                killed_child = wait(&child_status); // Wait for child to terminate
+                end = clock();  // End timer
+                command_time = ((double)end - (double)begin) / (double)CLOCKS_PER_SEC;  // Calculate command time
+                fprintf(stdout, "Time taken for this command: %lf\n", command_time);
+                total_time += command_time; // Increment total time
+                // Extra information about the child
+                if(WIFEXITED(child_status) == true){
+                    fprintf(stdout, "\n*******************************\n-->child pid: %d\n-->exited with return code: %d\n*******************************\n", killed_child, child_status);
                 }
             }
+        }
+
+        fprintf(stdout, "Total time taken to execute commands: %lf\n", total_time);
 
         free(buffer);
         free(command);
