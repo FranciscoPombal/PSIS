@@ -10,11 +10,6 @@
 #define LINE_BUFFER 1024
 #endif
 
-/* TODO:
-    Children get called too often
-    Time
-*/
-
 int main(int argc, char** argv)
 {
     FILE* file = NULL;
