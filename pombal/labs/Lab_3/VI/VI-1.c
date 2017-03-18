@@ -10,11 +10,6 @@
 #define LINE_BUFFER 1024
 #endif
 
-/* TODO:
-    Children get called too often
-    Time
-*/
-
 int main(int argc, char** argv)
 {
     FILE* file = NULL;
@@ -22,14 +17,10 @@ int main(int argc, char** argv)
     char* fgets_ret_val = NULL;
     int sscanf_ret_val = 0;
     char* command = NULL;
-    int pid = 0;
-    int child_status = 0;
-    int killed_child = 0;
-    double child_ret_val = 0.0;
+    double command_time = 0.0;
     double total_time = 0.0;
     clock_t begin = 0;
     clock_t end = 0;
-    double time_spent = 0.0;
 
 
         // Check arguments
@@ -68,34 +59,13 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
 
-            fprintf(stdout, "\n\n>>>>>NOW EXECUTING: %s\n", command);
-            // This works but cant get time
-            begin = clock();
-            system(command);
-            end = clock();
-            fprintf(stdout, "t: %lf\n", (double)(end - begin) / CLOCKS_PER_SEC);
-            total_time += (double)(end - begin) / CLOCKS_PER_SEC;
-
-            /*
-            pid = fork();
-            if(pid < 0){
-                fprintf(stderr, "fork error.\n");
-            }else if(pid == 0){
-                //child
-                execl("/bin/sh", "sh", "-c", command, (char *)NULL);
-                exit(EXIT_SUCCESS);
-            }else{
-                //parent
-                begin = clock();
-                killed_child = wait(&child_status);
-                end = clock();
-                if(WIFEXITED(child_status) == true){
-                    child_ret_val = WEXITSTATUS(child_status);
-
-                    fprintf(stdout, "\n*******************************\n-->child pid: %d\n-->exited with return code: %d\n-->child sleep time: %lf\n*******************************\n", killed_child, child_status, child_ret_val);
-                    total_time += (double)(end - begin) / CLOCKS_PER_SEC;
-                }
-            }*/
+            fprintf(stdout, "\n\n>>>>>NOW EXECUTING COMMAND: %s\n", command);
+            begin = clock();    // Start timer
+            system(command);    // Execute command
+            end = clock();      // End timer
+            command_time = ((double)end - (double)begin) / (double)CLOCKS_PER_SEC;  // Calculate command time
+            fprintf(stdout, "Time taken for this command: %lf\n", command_time);
+            total_time += command_time; // Increment total time
         }
 
         fprintf(stdout, "Total time taken to execute commands: %lf\n", total_time);
