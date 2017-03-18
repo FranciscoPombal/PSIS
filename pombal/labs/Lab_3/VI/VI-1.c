@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
         while((fgets_ret_val = fgets(buffer, LINE_BUFFER, file)) != NULL){
             // a bit of regex: [^] means "negated set" ([] means set),
-            // so we are matching a string that contains any character except \n
+            // so we are matching a string that contains any character except \n, thus reading an entire line into %s
             sscanf_ret_val = sscanf(buffer, "%[^\n]s", command);
             if(sscanf_ret_val != 1){
                 fprintf(stderr, "sscanf error\n");
