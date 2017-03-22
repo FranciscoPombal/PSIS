@@ -5,7 +5,8 @@ typedef struct{
     unsigned int start, end;
 } com_struct;
 
-int main(void){
+int main(void)
+{
     unsigned int m_7, m_19, m_7_19;
     m_7 = m_19 = m_7_19 = 0;
     com_struct limits;

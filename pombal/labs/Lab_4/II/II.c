@@ -7,7 +7,6 @@
 
 int main(void)
 {
-
     unsigned int i = 0;
 
         unsigned int vals[3] = {UINT_MAX / 3, UINT_MAX / 3 * 2, UINT_MAX};
