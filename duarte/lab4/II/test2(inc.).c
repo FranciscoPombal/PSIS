@@ -46,9 +46,7 @@ while(i<3){
 }//END OF CHILD PROCESS
 
   if (pid > 0) {//PARENT
-    limits.start += UINT_MAX/3;
-  	limits.end += UINT_MAX/3;
-    i++;
+
   }
 }
 
