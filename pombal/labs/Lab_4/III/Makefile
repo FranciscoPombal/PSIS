@@ -1,13 +1,13 @@
 all: debug normal optimized
 
 debug: III.c
-	gcc -Wall -Wextra -g III.c -o III_debug -lrt -lpthread
+	gcc -Wall -Wextra -g III.c -o III_debug -lrt
 
 normal: III.c
-	gcc -Wall -Wextra III.c -o III_normal -lrt -lpthread
+	gcc -Wall -Wextra III.c -o III_normal -lrt
 
 optimized: III.c
-	gcc -Wall -Wextra -O3 III.c -o III_optimized -lrt -lpthread
+	gcc -Wall -Wextra -O3 III.c -o III_optimized -lrt
 
 time: all
 	time ./III_debug
