@@ -46,7 +46,10 @@ int main(int argc, char const *argv[])
             }
         }else{
             //create n_clid processes
-            pipe(pipefd);
+            if(pipe(pipefd) == -1){
+                fprintf(stderr, "Pipe error.\n");
+                exit(EXIT_FAILURE);
+            }
             for(i = 0; i < n_child; i++){
                 pid = fork();
                 if(pid < 0){
@@ -60,6 +63,7 @@ int main(int argc, char const *argv[])
                             fprintf(stdout, "%d is prime\n", i);
                         }
                     }
+                    close(pipefd[0]);
                     exit(EXIT_SUCCESS);
                 }
             }
@@ -71,7 +75,6 @@ int main(int argc, char const *argv[])
             close(pipefd[1]);
 
             wait(NULL);
-
         }
 
     return 0;
