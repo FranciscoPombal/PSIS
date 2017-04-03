@@ -1,31 +1,26 @@
 #include "storyserver.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
+#include <signal.h>
 
-int main(){
-
+int main(void)
+{
     message m;
-    char * story;
+    char* story;
 
 
-    story = strdup("");
+        story = strdup("");
 
-    /* create socket  */
+        /* create socket  */
 
-    while(1){
-        /* read message */
-        /* process message */
-        story = strcat(story, m.buffer);
+        while(true){
+            /* read message */
+            /* process message */
+            story = strcat(story, m.buffer);
 
-     }
-    printf("OK\n");
-    exit(0);
+        }
 
+        printf("OK\n");
+
+    exit(EXIT_SUCCESS);
 }
