@@ -10,22 +10,22 @@
 #include <string.h>
 
 int main(){
-    
+
     message m;
     char * story;
- 
-        
-	story = strdup("");
-	
-    /* create socket  */ 
-        
+
+
+    story = strdup("");
+
+    /* create socket  */
+
     while(1){
         /* read message */
         /* process message */
-		story = strcat(story, m.buffer);
-        
+        story = strcat(story, m.buffer);
+
      }
     printf("OK\n");
     exit(0);
-    
+
 }
