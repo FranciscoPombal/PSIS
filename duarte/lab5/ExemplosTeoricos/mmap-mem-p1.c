@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>      
+#include <signal.h>
 #include <sys/mman.h>
 
 int *ptr;
@@ -18,7 +18,7 @@ int main(){
     int fd;
     int shmid;
     key_t key;
- 
+
 //	signal(SIGINT, stop_handler);
 
 	fd = open(filename, O_RDWR | O_CREAT,  S_IRWXU);
