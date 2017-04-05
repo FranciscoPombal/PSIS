@@ -14,6 +14,7 @@
 int main(){
 
     struct sockaddr_un local_addr;
+    struct sockaddr_un server_addr;
     char buff[100];
     int nbytes;
     message m;
@@ -44,9 +45,14 @@ int main(){
         printf("%s\n", buff );
         /* process message */
 		story = strcat(story, m.buffer);
+    nbytes = sendto(sock_fd,
+  	                    story, strlen(story)+1, 0,
+  	                    (const struct sockaddr *) &server_addr, sizeof(server_addr));
 
      }
     printf("OK\n");
+    close(sock_fd);
+    unlink(SOCKET_NAME);
     exit(0);
 
 }
