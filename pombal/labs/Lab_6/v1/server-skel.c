@@ -30,7 +30,11 @@ int main(void)
         sigint_action.sa_flags = 0;
         sigaction(SIGINT, &sigint_action, NULL);
 
-        story = (char*)malloc(STORY_LEN * sizeof(char));
+        story = (char*)malloc(sizeof(char));
+        *story = '\0';
+        for(i = 0; i < MESSAGE_LEN; i++){
+            m.buffer[i] = '\0';
+        }
         /* socket: create a new communication endpoint */
         socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
         if(socket_fd == -1){
@@ -54,11 +58,12 @@ int main(void)
         /* listen until we catch SIGINT */
         while(keepRunning == true){
             /* receive the message */
-            recv(socket_fd, m.buffer, MESSAGE_LEN, 0);
+            recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, NULL ,NULL);
 
             if(strlen(m.buffer) != 0){
                 /* process message */
                 fprintf(stdout, "Received message: %s\n", m.buffer);    // DEBUG
+                story = realloc(story, strlen(story) + strlen(m.buffer) + 1);
                 story = strcat(story, m.buffer);
                 /* reset buffer*/
                 for(i = 0; i < MESSAGE_LEN; i++){
