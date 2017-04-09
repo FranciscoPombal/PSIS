@@ -1,0 +1,42 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "build client",
+            "isShellCommand": true,
+            "showOutput": "always",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-Wextra",
+                "-g",
+                "server-skel.c",
+                "-o",
+                "client"
+            ]
+        },
+        {
+            "taskName": "build server",
+            "isShellCommand": true,
+            "showOutput": "always",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-Wextra",
+                "-g",
+                "server-skel.c",
+                "-o",
+                "server"
+            ]
+
+        },
+        {
+            "taskName": "makefile build [all]",
+            "command": "make",
+            "args": ["all"],
+            "isShellCommand": true
+        }
+    ]
+}

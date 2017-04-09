@@ -1,5 +1,7 @@
 #include "storyserver.h"
 
+// TODO: sending everything at once in a struct requires serialization. will do it other way.
+
 int main(void)
 {
     /* helper variables for client socket name */
@@ -8,6 +10,9 @@ int main(void)
     char* client_socket_name_helper = NULL;
 
     message m;
+    bool message_big = false;
+    char* story_to_receive = NULL;
+
     int socket_fd = 0;
     struct sockaddr_un srv_socket_addr;
     struct sockaddr_un cli_socket_addr;
@@ -24,6 +29,11 @@ int main(void)
 
         free(client_socket_name_helper);
 
+        story_to_receive = (char*)malloc(MESSAGE_LEN * sizeof(char));
+        int i = 0;
+        for(i = 0; i < MESSAGE_LEN; i++){
+            story_to_receive[i] = 0;
+        }
 
         /* socket: create a new communication endpoint */
         socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
@@ -60,19 +70,27 @@ int main(void)
             exit(EXIT_FAILURE);
         }
 
-        /* receive message */
-        ret_val_recv = recv(socket_fd, &m, MESSAGE_LEN, 0);
+        /* receive story, then bool */
+        ret_val_recv = recv(socket_fd, &story_to_receive, MESSAGE_LEN, 0);
         if(ret_val_recv == -1){
-            fprintf(stderr, "Error sending data.\n");
+            fprintf(stderr, "Error receiving data.\n");
+            exit(EXIT_FAILURE);
+        }
+        ret_val_recv = recv(socket_fd, &message_big, sizeof(message_big), 0);
+        if(ret_val_recv == -1){
+            fprintf(stderr, "Error receiving data.\n");
             exit(EXIT_FAILURE);
         }
 
-        if(m.isStoryBiggerThanMessage == true){
-            fprintf(stdout, "Story is bigger than message buffer. Partial story is:\n%s\n", m.buffer);
+        fprintf(stderr, "the bool value (client) is: %d\n", message_big); //DEBUG
+
+        if(message_big == true){
+            fprintf(stdout, "Story is bigger than message buffer. Partial story is:\n%s\n", story_to_receive);
         }else{
-            fprintf(stdout, "Story is:\n%s\n", m.buffer);
+            fprintf(stdout, "Story is:\n%s\n", story_to_receive);
         }
 
+        free(story_to_receive);
         free(client_socket_name);
 
     exit(0);

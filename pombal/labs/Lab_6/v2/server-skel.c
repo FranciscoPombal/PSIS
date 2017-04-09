@@ -3,6 +3,8 @@
 #include <string.h>
 #include <signal.h>
 
+// TODO: sending everything at once in a struct requires serialization. will do it other way.
+
 static volatile int keepRunning = 1;
 
 void sigIntHandler(int);
@@ -16,6 +18,7 @@ int main(void)
 {
     int i = 0;
     message m;
+    bool message_big = false;
     char* story;
     char* story_to_send;
 
@@ -65,7 +68,7 @@ int main(void)
         /* listen until we catch SIGINT */
         while(keepRunning == true){
             /* receive the message */
-            cli_addr_len=sizeof(cli_socket_addr);
+            cli_addr_len = sizeof(cli_socket_addr);
             recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, &cli_addr_len);
 
             if(strlen(m.buffer) != 0){
@@ -82,13 +85,22 @@ int main(void)
 
             strncpy(m.buffer, story_to_send, MESSAGE_LEN);
             if(strlen(story) >= (MESSAGE_LEN - 1)){
-                m.isStoryBiggerThanMessage = 1;
+                message_big = true;
             }else{
-                m.isStoryBiggerThanMessage = 0;
+                message_big = false;
             }
-            sendto(socket_fd, &m, sizeof(m), 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
+
+            /* first we send the story and then the bool */
+            ret_val_sendto = sendto(socket_fd, &(story_to_send), MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
             if(ret_val_sendto == -1){
-                fprintf(stderr, "Error sending data.\n");
+                fprintf(stderr, "Error sending data (story/partial story).\n");
+                perror("asd");
+                exit(EXIT_FAILURE);
+            }
+            sleep(1);
+            ret_val_sendto = sendto(socket_fd, &(message_big), sizeof(message_big), 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
+            if(ret_val_sendto == -1){
+                fprintf(stderr, "Error sending data (bool).\n");
                 exit(EXIT_FAILURE);
             }
         }

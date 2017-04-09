@@ -14,5 +14,4 @@
 
 typedef struct message{
     char buffer[MESSAGE_LEN];
-    bool isStoryBiggerThanMessage;
 } message;
