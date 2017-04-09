@@ -3,8 +3,6 @@
 #include <string.h>
 #include <signal.h>
 
-// TODO: blocks on recvfrom, wont catch SIGINT until more data is sent; apparently we need to set proper flags with sigaction
-
 static volatile int keepRunning = 1;
 
 void sigIntHandler(int);
@@ -19,24 +17,31 @@ int main(void)
     int i = 0;
     message m;
     char* story;
+    char* story_to_send;
 
     int socket_fd = 0;
     int ret_val_bind = 0;
-    long int ret_val_recvfrom = 0;
+    long int ret_val_sendto = 0;
     struct sockaddr_un server_socket_address;   // address of the server socket
-    struct sockaddr_un client_socket_address;   // address of the client socket
-    socklen_t addrlen = sizeof(client_socket_address);  // length of addresses
+    struct sockaddr_un cli_socket_addr;
+    unsigned int cli_addr_len = 0;
 
     struct sigaction sigint_action;
 
-    sigint_action.sa_handler = sigIntHandler;
-    sigemptyset(&sigint_action.sa_mask);
-    sigint_action.sa_flags = 0;
+        /* setup sigIntHandler as the handler function for SIGINT */
+        sigint_action.sa_handler = sigIntHandler;
+        sigemptyset(&sigint_action.sa_mask);
+        sigint_action.sa_flags = 0;
+        sigaction(SIGINT, &sigint_action, NULL);
 
-    /* setup sigIntHandler as the handler function for SIGINT */
-    sigaction(SIGINT, &sigint_action, NULL);
+        story = (char*)malloc(sizeof(char));
+        *story = '\0';
+        for(i = 0; i < MESSAGE_LEN; i++){
+            m.buffer[i] = '\0';
+        }
 
-        story = (char*)malloc(STORY_LEN * sizeof(char));
+        story_to_send = (char*)malloc(MESSAGE_LEN * sizeof(char));
+
         /* socket: create a new communication endpoint */
         socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
         if(socket_fd == -1){
@@ -60,15 +65,31 @@ int main(void)
         /* listen until we catch SIGINT */
         while(keepRunning == true){
             /* receive the message */
-            ret_val_recvfrom = recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, NULL, NULL);
+            cli_addr_len=sizeof(cli_socket_addr);
+            recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, &cli_addr_len);
+
             if(strlen(m.buffer) != 0){
                 /* process message */
-                fprintf(stdout, "Received message: %s\n", m.buffer);
+                fprintf(stdout, "Received message: %s\n", m.buffer);    // DEBUG
+                story = realloc(story, strlen(story) + strlen(m.buffer) + 1);
                 story = strcat(story, m.buffer);
+                strncpy(story_to_send, story, MESSAGE_LEN);
                 /* reset buffer*/
                 for(i = 0; i < MESSAGE_LEN; i++){
                     m.buffer[i] = '\0';
                 }
+            }
+
+            strncpy(m.buffer, story_to_send, MESSAGE_LEN);
+            if(strlen(story) >= (MESSAGE_LEN - 1)){
+                m.isStoryBiggerThanMessage = 1;
+            }else{
+                m.isStoryBiggerThanMessage = 0;
+            }
+            sendto(socket_fd, &m, sizeof(m), 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
+            if(ret_val_sendto == -1){
+                fprintf(stderr, "Error sending data.\n");
+                exit(EXIT_FAILURE);
             }
         }
 
