@@ -3,8 +3,6 @@
 #include <string.h>
 #include <signal.h>
 
-// TODO: sending everything at once in a struct requires serialization. will do it other way.
-
 static volatile int keepRunning = 1;
 
 void sigIntHandler(int);
@@ -74,7 +72,7 @@ int main(void)
 
             if(strlen(m.buffer) != 0){
                 /* process message */
-                fprintf(stdout, "Received message: %s\n", m.buffer);    // DEBUG
+                fprintf(stdout, "Received message: %s\n", m.buffer);
                 story = realloc(story, strlen(story) + strlen(m.buffer) + 1);
                 story = strcat(story, m.buffer);
                 strncpy(story_to_send, story, MESSAGE_LEN);

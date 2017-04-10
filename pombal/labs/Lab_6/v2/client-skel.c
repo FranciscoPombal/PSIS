@@ -1,7 +1,5 @@
 #include "storyserver.h"
 
-// TODO: sending everything at once in a struct requires serialization. will do it other way.
-
 int main(void)
 {
     /* helper variables for client socket name */
