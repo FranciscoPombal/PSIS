@@ -19,12 +19,13 @@ int main(void)
     int i = 0;
     message m;
     bool message_big = false;
-    char* story;
-    char* story_to_send;
+    char* story = NULL;
+    char* story_to_send = NULL;
 
     int socket_fd = 0;
     int ret_val_bind = 0;
     long int ret_val_sendto = 0;
+    long int ret_val_recv_from = 0;
     struct sockaddr_un server_socket_address;   // address of the server socket
     struct sockaddr_un cli_socket_addr;
     unsigned int cli_addr_len = 0;
@@ -69,7 +70,7 @@ int main(void)
         while(keepRunning == true){
             /* receive the message */
             cli_addr_len = sizeof(cli_socket_addr);
-            recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, &cli_addr_len);
+            ret_val_recv_from = recvfrom(socket_fd, m.buffer, MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, &cli_addr_len);
 
             if(strlen(m.buffer) != 0){
                 /* process message */
@@ -83,25 +84,30 @@ int main(void)
                 }
             }
 
-            strncpy(m.buffer, story_to_send, MESSAGE_LEN);
+            //strncpy(m.buffer, story_to_send, MESSAGE_LEN);
             if(strlen(story) >= (MESSAGE_LEN - 1)){
                 message_big = true;
             }else{
                 message_big = false;
             }
 
-            /* first we send the story and then the bool */
-            ret_val_sendto = sendto(socket_fd, &(story_to_send), MESSAGE_LEN, 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
-            if(ret_val_sendto == -1){
-                fprintf(stderr, "Error sending data (story/partial story).\n");
-                perror("asd");
-                exit(EXIT_FAILURE);
-            }
-            sleep(1);
-            ret_val_sendto = sendto(socket_fd, &(message_big), sizeof(message_big), 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
-            if(ret_val_sendto == -1){
-                fprintf(stderr, "Error sending data (bool).\n");
-                exit(EXIT_FAILURE);
+            /*
+                we only send back data if we have previously received successfully
+                first we send the story and then the bool
+            */
+            if(ret_val_recv_from != -1){
+                ret_val_sendto = sendto(socket_fd, story_to_send, MESSAGE_LEN - 1, 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
+                if(ret_val_sendto == -1){
+                    fprintf(stderr, "Error sending data (story/partial story).\n");
+                    perror("asd");
+                    exit(EXIT_FAILURE);
+                }
+
+                ret_val_sendto = sendto(socket_fd, &(message_big), sizeof(message_big), 0, (struct sockaddr *)&cli_socket_addr, cli_addr_len);
+                if(ret_val_sendto == -1){
+                    fprintf(stderr, "Error sending data (bool).\n");
+                    exit(EXIT_FAILURE);
+                }
             }
         }
 

@@ -71,7 +71,7 @@ int main(void)
         }
 
         /* receive story, then bool */
-        ret_val_recv = recv(socket_fd, &story_to_receive, MESSAGE_LEN, 0);
+        ret_val_recv = recv(socket_fd, story_to_receive, MESSAGE_LEN - 1, 0);
         if(ret_val_recv == -1){
             fprintf(stderr, "Error receiving data.\n");
             exit(EXIT_FAILURE);
@@ -81,8 +81,6 @@ int main(void)
             fprintf(stderr, "Error receiving data.\n");
             exit(EXIT_FAILURE);
         }
-
-        fprintf(stderr, "the bool value (client) is: %d\n", message_big); //DEBUG
 
         if(message_big == true){
             fprintf(stdout, "Story is bigger than message buffer. Partial story is:\n%s\n", story_to_receive);

@@ -12,7 +12,7 @@
                 "-Wall",
                 "-Wextra",
                 "-g",
-                "server-skel.c",
+                "client-skel.c",
                 "-o",
                 "client"
             ]
