@@ -48,7 +48,7 @@ int main(void)
         /* client socket */
         memset(&cli_socket_addr, 0, sizeof(struct sockaddr_un));  // reset struct
         cli_socket_addr.sun_family = AF_UNIX;
-        strncpy(cli_socket_addr.sun_path, client_socket_name, sizeof(srv_socket_addr.sun_path) - 1);
+        strncpy(cli_socket_addr.sun_path, client_socket_name, sizeof(cli_socket_addr.sun_path) - 1);
 
         /* bind: attach a local address to a socket */
         ret_val_bind = bind(socket_fd, (struct sockaddr *)&cli_socket_addr, sizeof(struct sockaddr_un));  // call bind

@@ -11,6 +11,7 @@
 
 #define SOCKET_NAME "/tmp/lab_6_socket_v3"
 #define MESSAGE_LEN 100
+#define BACKLOG_MAX 10
 
 typedef struct message{
     char buffer[MESSAGE_LEN];
