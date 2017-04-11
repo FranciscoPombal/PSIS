@@ -53,7 +53,7 @@ int main(void)
         unlink(SOCKET_NAME);    // unlink file in case previously the server exited badly
         memset(&server_socket_address, 0, sizeof(server_socket_address));   // first we reset the struct
         server_socket_address.sin_family = AF_INET;
-        server_socket_address.sin_addr.s_addr = INADDR_ANY;
+        server_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
         server_socket_address.sin_port = htons(PORT);
 
 
