@@ -16,7 +16,9 @@ CFLAGSDBG=-Wall\
 # compiler flags for program libraries (debug)
 #CLIBFLAGSDBG=
 
-all: client gateway server
+all: client gateway server client_dbg gateway_dbg server_dbg
+
+dbg: client_dbg gateway_dbg server_dbg
 
 client: client.c
 	$(CC) $(CFLAGS) $@.c -o $@
