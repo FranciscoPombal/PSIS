@@ -1,15 +1,15 @@
 #include "storyserver.h"
 
-#include <string.h>
-#include <signal.h>
-
 static volatile int keepRunning = 1;
 
 void sigIntHandler(int);
 
 void sigIntHandler(int sig)
 {
+    fprintf(stdout, "Caught signal %d\n", sig);
     keepRunning = 0;
+
+    return;
 }
 
 int main(void)
@@ -22,7 +22,7 @@ int main(void)
     int ret_val_sscanf = 0;
 
     //gateway address
-    char char_buffer[1024];
+    char* char_buffer;
     int gateway_port = 0;
 
     // socket/ipc related variables
@@ -40,6 +40,8 @@ int main(void)
 
     // signal realated variables
     struct sigaction sigint_action;
+
+        char_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         /* setup sigIntHandler as the handler function for SIGINT */
         sigint_action.sa_handler = sigIntHandler;
@@ -167,7 +169,8 @@ int main(void)
             fprintf(stdout, "*** STORY:\n%s\n", story);
         }
 
-        free(story);
+    free(story);
+    free(char_buffer);
 
     exit(EXIT_SUCCESS);
 }

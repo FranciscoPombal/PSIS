@@ -1,4 +1,3 @@
-#include "gateway.h"
 #include "storyserver.h"
 
 #include <signal.h>
