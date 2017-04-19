@@ -17,12 +17,14 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define SOCKET_STREAM_NAME "/tmp/lab_7_socket_stream"
-#define SOCKET_DGRAM_NAME "/tmp/lab_7_socket_dgram"
+#ifndef NO_FLAGS
+#define NO_FLAGS 0
+#endif
+
 #define MESSAGE_LEN 100
 #define BACKLOG_MAX 10
 #define BASE_PORT 3000
 
-typedef struct message{
+typedef struct _message{
     char buffer[MESSAGE_LEN];
 } message;

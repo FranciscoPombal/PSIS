@@ -19,22 +19,22 @@ int main(void)
     message m;
     char* story = NULL;
     long int story_len = 0;
+    int ret_val_sscanf = 0;
 
     //gateway address
     char char_buffer[1024];
-    char gateway_ip[16]; // an ipv4 address + terminating null byte
     int gateway_port = 0;
 
     // socket/ipc related variables
     int socket_stream_fd = 0;
     int socket_dgram_fd = 0;
-    int port = 0;
+    int server_port = 0;
     int conn_sock_fd = 0;
     int ret_val_bind = 0;
     int ret_val_listen = 0;
     long int ret_val_send = 0;
-    long int ret_val_send_to = 0;
     long int ret_val_recv = 0;
+    long int ret_val_send_to = 0;
     struct sockaddr_in server_socket_address;   // address of the server socket
     struct sockaddr_in gateway_socket_address;  // address of the gateway socket
 
@@ -69,20 +69,17 @@ int main(void)
             exit(EXIT_FAILURE);
         }
 
-        // unlink file in case previously the server exited badly
-        unlink(SOCKET_STREAM_NAME);
-        unlink(SOCKET_DGRAM_NAME);
-
         /* connect socket to socket address */
         memset(&server_socket_address, 0, sizeof(server_socket_address));   // first we reset the struct
         server_socket_address.sin_family = AF_INET;
         server_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        port = BASE_PORT + getpid();
-        if(port > USHRT_MAX){
+        server_port = BASE_PORT + getpid();
+        if(server_port > USHRT_MAX){
             fprintf(stderr, "Port number too large\n");
             exit(EXIT_FAILURE);
         }
-        server_socket_address.sin_port = htons(port);
+        server_socket_address.sin_port = htons(server_port);
+        fprintf(stdout, "Server datagram socket is on port: %d\n", server_port);
 
         /* bind: attach a local address to a socket */
         // no need to bind dgram socket, since we will only send
@@ -101,32 +98,32 @@ int main(void)
             exit(EXIT_FAILURE);
         }
 
-        // get gateway address info
-        fprintf(stdout, "Insert gateway IP address:\n");
-        /*gateway_ip =*/ fgets(char_buffer, sizeof(char_buffer), stdin);
-        sscanf(char_buffer, "%s", gateway_ip);
+        /* get gateway address info */
         fprintf(stdout, "Insert gateway port:\n");
-        /*char_buffer = */fgets(char_buffer, sizeof(char_buffer), stdin);
-        sscanf(char_buffer, "%d", &gateway_port);
+        fgets(char_buffer, sizeof(char_buffer), stdin);
+        ret_val_sscanf = sscanf(char_buffer, "%d", &gateway_port);
+        if(ret_val_sscanf != 1){
+            fprintf(stderr, "sscanf: error reading port number!\n");
+            exit(EXIT_FAILURE);
+        }
 
-        fprintf(stdout, "Got IP %s and port %d\n", gateway_ip, gateway_port);
+        fprintf(stdout, "Got port %d\n",gateway_port);
 
         /* set gateway address struct */
         memset(&gateway_socket_address, 0, sizeof(gateway_socket_address));   // first we reset the struct
         gateway_socket_address.sin_family = AF_INET;
-        // TODO: on dgram, bind can be inaddr_any
-        inet_aton(gateway_ip, &gateway_socket_address.sin_addr);
+        gateway_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
         gateway_socket_address.sin_port = htons(gateway_port);
 
         // send server address to gateway
-        ret_val_send_to = sendto(socket_dgram_fd, &server_socket_address, sizeof(server_socket_address), 0, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
+        ret_val_send_to = sendto(socket_dgram_fd, &server_socket_address, sizeof(server_socket_address), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
 
         while(true == keepRunning){
 
             conn_sock_fd = accept(socket_stream_fd, NULL, NULL);
 
             // receive message from client
-            ret_val_recv = recv(conn_sock_fd, m.buffer, MESSAGE_LEN, 0);
+            ret_val_recv = recv(conn_sock_fd, m.buffer, MESSAGE_LEN, NO_FLAGS);
 
             if(strlen(m.buffer) != 0){
                 /* process message */
@@ -143,13 +140,13 @@ int main(void)
 
             // send story back to client
             if(ret_val_recv != -1){
-                ret_val_send = send(conn_sock_fd, &story_len, sizeof(long int), 0);
+                ret_val_send = send(conn_sock_fd, &story_len, sizeof(long int), NO_FLAGS);
                 if(ret_val_send == -1){  // check for error
                     fprintf(stderr, "Error sending story length.\n");
                     exit(EXIT_FAILURE);
                 }
 
-                ret_val_send = send(conn_sock_fd, story, strlen(story), 0);
+                ret_val_send = send(conn_sock_fd, story, strlen(story), NO_FLAGS);
                 if(ret_val_send == -1){  // check for error
                     fprintf(stderr, "Error sending story.\n");
                     exit(EXIT_FAILURE);
@@ -162,8 +159,7 @@ int main(void)
 
         // TODO: close all
         close(socket_stream_fd);
-        unlink(SOCKET_STREAM_NAME);
-        unlink(SOCKET_DGRAM_NAME);
+        close(socket_dgram_fd);
         fprintf(stdout, "Caught SIGINT, exiting cleanly\n");
 
         /* print the final story */
