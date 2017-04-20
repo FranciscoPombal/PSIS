@@ -25,6 +25,10 @@
 #define NO_FLAGS 0
 #endif
 
+#ifndef DEFAULT_PROTOCOL
+#define DEFAULT_PROTOCOL 0
+#endif
+
 #ifndef MESSAGE_LEN
 #define MESSAGE_LEN 100
 #endif
@@ -45,12 +49,24 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
+#ifndef SERVER_UNAVAILABLE
+#define SERVER_UNAVAILABLE -1
+#endif
+
+#ifndef SERVER_ADDRESS
+#define SERVER_ADDRESS 0
+#endif
+
+#ifndef CLIENT_ADDRESS
+#define CLIENT_ADDRESS 1
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
-} message;
+} Message;
 
 typedef struct _message_gw{
     int type;
-    char address[MESSAGE_GW_LEN];
+    unsigned int address;
     int port;
-} message_gw;
+} Message_gw;
