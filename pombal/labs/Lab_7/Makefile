@@ -30,14 +30,14 @@ server: server.c
 	$(CC) $(CFLAGS) $@.c -o $@
 
 client_dbg: client.c
-	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@ && rm $@.c
+	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@
 
 gateway_dbg: gateway.c
-	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@ && rm $@.c
+	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@
 
 server_dbg: server.c
-	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@ && rm $@.c
+	cp $^ $@.c && $(CC) $(CFLAGSDBG) $@.c -o $@
 
 .PHONY: clean
 clean:
-	rm -f client gateway server client_dbg gateway_dbg server_dbg
+	rm -f client gateway server client_dbg gateway_dbg server_dbg client_dbg.c gateway_dbg.c server_dbg.c
