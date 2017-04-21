@@ -1,0 +1,45 @@
+gcc -Wall -Wextra -g lab4-1.c -o lab4-1_debug
+gcc -Wall -Wextra lab4-1.c -o lab4-1_normal
+gcc -Wall -Wextra -O3 lab4-1.c -o lab4-1_optimized
+time ./lab4-1_debug
+m 7    613566757
+m   19 226050911
+m 7 19 32292988
+20.55user 0.00system 0:20.55elapsed 99%CPU (0avgtext+0avgdata 1340maxresident)k
+0inputs+0outputs (0major+63minor)pagefaults 0swaps
+time ./lab4-1_normal
+m 7    613566757
+m   19 226050911
+m 7 19 32292988
+20.53user 0.00system 0:20.53elapsed 99%CPU (0avgtext+0avgdata 1312maxresident)k
+0inputs+0outputs (0major+63minor)pagefaults 0swaps
+time ./lab4-1_optimized
+m 7    613566757
+m   19 226050911
+m 7 19 32292988
+5.03user 0.00system 0:05.03elapsed 100%CPU (0avgtext+0avgdata 1364maxresident)k
+0inputs+0outputs (0major+64minor)pagefaults 0swaps
+
+
+----- Explanation -----
+
+Default output format for time was used:
+
+%Uuser %Ssystem %Eelapsed %PCPU (%Xtext+%Ddata %Mmax)k
+%Iinputs+%Ooutputs (%Fmajor+%Rminor)pagefaults %Wswaps
+
+Resource specifiers description:
+
+U   Total number of CPU-seconds that the process used directly (in user mode), in seconds.
+S   Total number of CPU-seconds used by the system on behalf of the process (in kernel mode), in seconds.
+E   Elapsed real (wall clock) time used by the process, in [hours:]minutes:seconds.
+P   Percentage of the CPU that this job got. This is just user + system times divided by the total running time. It also prints a percentage sign.
+
+X   Average amount of shared text in the process, in Kilobytes.
+D   Average size of the process's unshared data area, in Kilobytes.
+M   Maximum resident set size of the process during its lifetime, in Kilobytes.
+I   Number of file system inputs by the process.
+O   Number of file system outputs by the process.
+F   Number of major, or I/O-requiring, page faults that occurred while the process was running. These are faults where the page has actually migrated out of primary memory.
+R   Number of minor, or recoverable, page faults.  These are pages that are not valid (so they fault) but which have not yet been claimed by other virtual pages. Thus the data in the page is still valid but the system tables must be updated.
+W   Number of times the process was swapped out of main memory.

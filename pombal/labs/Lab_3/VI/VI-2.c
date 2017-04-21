@@ -62,7 +62,7 @@ int main(int argc, char** argv)
             }
 
             fprintf(stdout, "\n\n>>>>>NOW EXECUTING: %s\n", command);
-
+            begin = clock();    // Start timer
             pid = fork();
             if(pid < 0){
                 fprintf(stderr, "Fork error.\n");
@@ -72,7 +72,6 @@ int main(int argc, char** argv)
                 exit(EXIT_SUCCESS);
             }else{
                 //parent
-                begin = clock();    // Start timer
                 killed_child = wait(&child_status); // Wait for child to terminate
                 end = clock();  // End timer
                 command_time = ((double)end - (double)begin) / (double)CLOCKS_PER_SEC;  // Calculate command time

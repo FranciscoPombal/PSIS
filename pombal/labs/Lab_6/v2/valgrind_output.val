@@ -1,0 +1,91 @@
+==19746== Memcheck, a memory error detector
+==19746== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==19746== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==19746== Command: ./client
+==19746== Parent PID: 13526
+==19746== 
+--19746-- 
+--19746-- Valgrind options:
+--19746--    -v
+--19746--    --leak-check=full
+--19746--    --show-leak-kinds=all
+--19746--    --track-origins=yes
+--19746--    --log-file=valgrind_output.val
+--19746-- Contents of /proc/version:
+--19746--   Linux version 4.8.0-45-generic (buildd@lcy01-30) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ) #48~16.04.1-Ubuntu SMP Fri Mar 24 12:46:56 UTC 2017
+--19746-- 
+--19746-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
+--19746-- Page sizes: currently 4096, max supported 4096
+--19746-- Valgrind library directory: /usr/lib/valgrind
+--19746-- Reading syms from /home/francisco/MEGA/3-Ano-2-Semestre/PSIS/git/pombal/labs/Lab_6/v2/client
+--19746-- Reading syms from /lib/x86_64-linux-gnu/ld-2.23.so
+--19746--   Considering /lib/x86_64-linux-gnu/ld-2.23.so ..
+--19746--   .. CRC mismatch (computed 10768843 wanted ef0d0121)
+--19746--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.23.so ..
+--19746--   .. CRC is valid
+--19746-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
+--19746--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--19746--   .. CRC mismatch (computed 5529a2c7 wanted 5bd23904)
+--19746--    object doesn't have a symbol table
+--19746--    object doesn't have a dynamic symbol table
+--19746-- Scheduler: using generic scheduler lock implementation.
+--19746-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==19746== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-19746-by-francisco-on-???
+==19746== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-19746-by-francisco-on-???
+==19746== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-19746-by-francisco-on-???
+==19746== 
+==19746== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==19746== don't want to do, unless you know exactly what you're doing,
+==19746== or are doing some strange experiment):
+==19746==   /usr/lib/valgrind/../../bin/vgdb --pid=19746 ...command...
+==19746== 
+==19746== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==19746==   /path/to/gdb ./client
+==19746== and then give GDB the following command
+==19746==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=19746
+==19746== --pid is optional if only one valgrind process is running
+==19746== 
+--19746-- REDIR: 0x401cdc0 (ld-linux-x86-64.so.2:strlen) redirected to 0x3809e181 (???)
+--19746-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+--19746--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--19746--   .. CRC mismatch (computed a30c8eaa wanted 7ae2fed4)
+--19746--    object doesn't have a symbol table
+--19746-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
+--19746--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--19746--   .. CRC mismatch (computed 402c2ab5 wanted 745f25ae)
+--19746--    object doesn't have a symbol table
+==19746== WARNING: new redirection conflicts with existing -- ignoring it
+--19746--     old: 0x0401cdc0 (strlen              ) R-> (0000.0) 0x3809e181 ???
+--19746--     new: 0x0401cdc0 (strlen              ) R-> (2007.0) 0x04c31020 strlen
+--19746-- REDIR: 0x401b710 (ld-linux-x86-64.so.2:index) redirected to 0x4c30bc0 (index)
+--19746-- REDIR: 0x401b930 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c320d0 (strcmp)
+--19746-- REDIR: 0x401db20 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c35270 (mempcpy)
+--19746-- Reading syms from /lib/x86_64-linux-gnu/libc-2.23.so
+--19746--   Considering /lib/x86_64-linux-gnu/libc-2.23.so ..
+--19746--   .. CRC mismatch (computed f3344b67 wanted 8e4ae80b)
+--19746--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.23.so ..
+--19746--   .. CRC is valid
+--19746-- REDIR: 0x4ec8e50 (libc.so.6:strcasecmp) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ec46d0 (libc.so.6:strcspn) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ecb140 (libc.so.6:strncasecmp) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ec6b40 (libc.so.6:strpbrk) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ec6ed0 (libc.so.6:strspn) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ec859b (libc.so.6:memcpy@GLIBC_2.2.5) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ec6850 (libc.so.6:rindex) redirected to 0x4c308a0 (rindex)
+--19746-- REDIR: 0x4ebd580 (libc.so.6:malloc) redirected to 0x4c2db20 (malloc)
+--19746-- REDIR: 0x4ecfbb0 (libc.so.6:strchrnul) redirected to 0x4c34da0 (strchrnul)
+--19746-- REDIR: 0x4ec4b70 (libc.so.6:strlen) redirected to 0x4c30f60 (strlen)
+--19746-- REDIR: 0x4ec6810 (libc.so.6:strncpy) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4edf450 (libc.so.6:__strncpy_sse2_unaligned) redirected to 0x4c31570 (__strncpy_sse2_unaligned)
+--19746-- REDIR: 0x4ec4f30 (libc.so.6:strncat) redirected to 0x4a286f0 (_vgnU_ifunc_wrapper)
+--19746-- REDIR: 0x4ee2530 (libc.so.6:__strncat_sse2_unaligned) redirected to 0x4c30dc0 (strncat)
+--19746-- REDIR: 0x4ebd940 (libc.so.6:free) redirected to 0x4c2ed80 (free)
+==19746== 
+==19746== HEAP SUMMARY:
+==19746==     in use at exit: 0 bytes in 0 blocks
+==19746==   total heap usage: 2 allocs, 2 frees, 134 bytes allocated
+==19746== 
+==19746== All heap blocks were freed -- no leaks are possible
+==19746== 
+==19746== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==19746== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
