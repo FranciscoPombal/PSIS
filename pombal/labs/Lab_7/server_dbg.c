@@ -164,9 +164,12 @@ int main(void)
 
             // close connection with current client
             close(conn_sock_fd);
+            //TODO  send availability status to gateway
+            // send server address to gateway (will singnal availability)
+            ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
         }
 
-        // TODO: close all
+
         close(socket_stream_fd);
         close(socket_dgram_fd);
         fprintf(stdout, "Caught SIGINT, exiting cleanly\n");

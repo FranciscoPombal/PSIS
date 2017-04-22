@@ -55,17 +55,6 @@ void SinglyLinkedList_insertNext(SinglyLinkedList* node1, SinglyLinkedList* node
     return;
 }
 
-void SinglyLinkedList_insertAtEnd(SinglyLinkedList* head, SinglyLinkedList* node)
-{
-    SinglyLinkedList* aux;
-
-        for(aux = head; aux -> next != NULL; aux = aux -> next){}
-
-        aux -> next = node;
-
-    return;
-}
-
 void SinglyLinkedList_deleteNextNode(SinglyLinkedList* node, void (*Item_Free)(Item))
 {
     SinglyLinkedList* aux;
