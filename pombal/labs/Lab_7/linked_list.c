@@ -1,32 +1,30 @@
-#include <stdlib.h>
-#include <stdio.h>
 #ifndef LINKED_LIST_H
 #include "linked_list.h"
 #endif
 
 struct SinglyLinkedList_ {
-    Item item;
-    SinglyLinkedList* next;
+    Item item;                  /**< A pointer to the payload of the node */
+    SinglyLinkedList* next;     /**< A pointer to the next node on the list */
 };
 
 struct DoublyLinkedList_ {
-    Item item;
-    DoublyLinkedList* next;
-    DoublyLinkedList* prev;
+    Item item;                  /**< A pointer to the payload of the node */
+    DoublyLinkedList* next;     /**< A pointer to the next node on the list */
+    DoublyLinkedList* prev;     /**< A pointer to the previous node on the list */
 };
 
 SinglyLinkedList* SinglyLinkedList_newNode(Item item)
 {
     SinglyLinkedList* new_node = (SinglyLinkedList*)malloc(sizeof(SinglyLinkedList));
-    new_node -> item = item;
-    new_node -> next = NULL;
+    new_node->item = item;
+    new_node->next = NULL;
 
     return new_node;
 }
 
 void SinglyLinkedList_freeNode(SinglyLinkedList* node, void (*Item_Free)(Item))
 {
-    (*Item_Free)(node -> item);
+    (*Item_Free)(node->item);
     free(node);
 }
 
@@ -35,11 +33,11 @@ void SinglyLinkedList_freeList(SinglyLinkedList* head, void (*Item_Free)(Item))
     SinglyLinkedList* aux = NULL;
     SinglyLinkedList* aux2 = NULL;
 
-        aux = head -> next;
+        aux = head->next;
         SinglyLinkedList_freeNode(head, Item_Free);
 
         while(aux != NULL){
-            aux2 = aux -> next;
+            aux2 = aux->next;
             SinglyLinkedList_freeNode(aux, Item_Free);
             aux = aux2;
         }
@@ -49,8 +47,8 @@ void SinglyLinkedList_freeList(SinglyLinkedList* head, void (*Item_Free)(Item))
 
 void SinglyLinkedList_insertNext(SinglyLinkedList* node1, SinglyLinkedList* node2)
 {
-    node1 -> next = node2 -> next;
-    node2 -> next = node1;
+    node1->next = node2->next;
+    node2->next = node1;
 
     return;
 }
@@ -59,9 +57,9 @@ void SinglyLinkedList_insertAtEnd(SinglyLinkedList* head, SinglyLinkedList* node
 {
     SinglyLinkedList* aux;
 
-        for(aux = head; aux -> next != NULL; aux = aux -> next){}
+        for(aux = head; aux->next != NULL; aux = aux->next){}
 
-        aux -> next = node;
+        aux->next = node;
 
     return;
 }
@@ -70,57 +68,109 @@ void SinglyLinkedList_deleteNextNode(SinglyLinkedList* node, void (*Item_Free)(I
 {
     SinglyLinkedList* aux;
 
-        aux = node -> next -> next;
-        SinglyLinkedList_freeNode(node -> next, Item_Free);
-        node -> next = aux;
+        aux = node->next->next;
+        SinglyLinkedList_freeNode(node->next, Item_Free);
+        node->next = aux;
 
     return;
 }
 
 SinglyLinkedList* SinglyLinkedList_getNextNode(SinglyLinkedList* node)
 {
-    return node -> next;
+    SinglyLinkedList* next_node = NULL;
+
+        next_node = node->next;
+
+    return next_node;
 }
 
 Item SinglyLinkedList_getItem(SinglyLinkedList* node)
 {
-    return node -> item;
+    Item item = NULL;
+
+        item = node->item;
+
+    return item;
 }
 
-void SinglyLinkedList_setItem(SinglyLinkedList* node, Item it)
+void SinglyLinkedList_setItem(SinglyLinkedList* node, Item item)
 {
-    node -> item = it;
+    node->item = item;
+
+    return;
 }
 
 void SinglyLinkedList_printListItems(SinglyLinkedList* head, void(*Item_Print)(Item))
 {
     SinglyLinkedList* aux = NULL;
 
-    for (aux = head; aux != NULL; aux = aux -> next){
-        (*Item_Print)(aux -> item);
+    for (aux = head; aux != NULL; aux = aux->next){
+        (*Item_Print)(aux->item);
     }
 
     return;
 }
 
-void* SinglyLinkedList_compareItems(SinglyLinkedList* node1, SinglyLinkedList* node2, void*(*Item_Compare)(Item, Item)){
-    void* result = (*Item_Compare)(node1 -> item, node2 -> item);
+bool SinglyLinkedList_compareItems(SinglyLinkedList* node1, SinglyLinkedList* node2, bool(*Item_Compare)(Item, Item))
+{
+    bool result = false;
+
+        result = (*Item_Compare)(node1->item, node2->item);
 
     return result;
 }
 
-SinglyLinkedList* SinglyLinkedList_reverseList(SinglyLinkedList* pL)
+bool SinglyLinkedList_nodeExistsWithItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item))
 {
-    SinglyLinkedList* Next = pL;
-    SinglyLinkedList* Cur = pL;
-    SinglyLinkedList* Res = NULL;
+    SinglyLinkedList* aux = NULL;
 
-        while (Cur != NULL) {
-            Next = Cur -> next;
-            Cur -> next = Res;
-            Res = Cur;
-            Cur = Next;
+        for(aux = head; aux != NULL; aux = aux->next){
+            if(true == (*Item_Compare)(item, aux->item)){
+                return true;
+            }
         }
 
-    return Res;
+    return false;
+}
+
+SinglyLinkedList* SinglyLinkedList_findAndRetrieveNodeWithItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item))
+{
+    SinglyLinkedList* aux = NULL;
+
+        for(aux = head; aux != NULL; aux = aux->next){
+            if(true == (*Item_Compare)(item, aux->item)){
+                return aux;
+            }
+        }
+
+    return NULL;
+}
+
+Item SinglyLinkedList_findAndRetrieveItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item))
+{
+    SinglyLinkedList* aux = NULL;
+
+        for(aux = head; aux != NULL; aux = aux->next){
+            if(true == (*Item_Compare)(item, aux->item)){
+                return aux->item;
+            }
+        }
+
+    return NULL;
+}
+
+SinglyLinkedList* SinglyLinkedList_reverseList(SinglyLinkedList* head)
+{
+    SinglyLinkedList* next = head;
+    SinglyLinkedList* cur = head;
+    SinglyLinkedList* res = NULL;
+
+        while(cur != NULL){
+            next = cur->next;
+            cur->next = res;
+            res = cur;
+            cur = next;
+        }
+
+    return res;
 }

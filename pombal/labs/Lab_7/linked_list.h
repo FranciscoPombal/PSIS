@@ -18,13 +18,26 @@
 #define LINKED_LIST_H
 
 /**
+ * Include stdlib.h header because of malloc and related functionality
+ */
+#ifndef STDLIB_H
+#include <stdlib.h>
+#endif
+
+/**
+ * Include stdbool.h header to have a native boolean type for clarity
+ */
+#ifndef STDBOOL_H
+#include <stdbool.h>
+#endif
+
+/**
  * Include the defs file
  * @see The documentation for the defs.h header
  */
 #ifndef DEFS_H
 #include "./defs.h"
 #endif
-
 
 /**
  * @brief Struct for the singly-linked list.
@@ -118,13 +131,76 @@ void SinglyLinkedList_insertAtEnd(SinglyLinkedList* head, SinglyLinkedList* node
  */
 void SinglyLinkedList_deleteNextNode(SinglyLinkedList* node, void(*Item_Free)(Item));
 
+/** @brief Returns a pointer to the node after the one specified
+ *
+ * This function is an acessor for the singly-linked list
+ *
+ * @param node A pointer to the node before the one we want to get the pointer to.
+ * @return next_node A pointer to the next node in the list
+ */
+SinglyLinkedList* SinglyLinkedList_getNextNode(SinglyLinkedList* node); /* acessor*/
 
-SinglyLinkedList* SinglyLinkedList_getNextNode(SinglyLinkedList*); /* acessor*/
-Item SinglyLinkedList_getItem(SinglyLinkedList*); /* acessor */
-void SinglyLinkedList_setItem(SinglyLinkedList*, Item);
-void SinglyLinkedList_printListItems(SinglyLinkedList*, void(*)(Item));
-void* SinglyLinkedList_compareItems(SinglyLinkedList*, SinglyLinkedList*, void*(*)(Item, Item));
+/** @brief Returns a pointer to the payload of the specified node
+ *
+ * This function is an acessor for the singly-linked list
+ *
+ * @param node A pointer to the node we want to get a pointer to the payload of.
+ * @return item A pointer to the payload we want
+ */
+Item SinglyLinkedList_getItem(SinglyLinkedList* node);
+
+/** @brief Makes a node point to a specified payload
+ *
+ * This function does the complementary operation of SinglyLinkedList_getItem
+ *
+ * @param node A pointer to the node we want to set the payload of.
+ * @param item A pointer to the payload
+ * @return void
+ */
+void SinglyLinkedList_setItem(SinglyLinkedList* node, Item item);
+
+/** @brief Prints the value of the payloads of every node on screen
+ *
+ * This function iterates through the whole list, calling the function pointed to by the specified function pointer
+ * to print the values of the payload of each node to stdout
+ *
+ * @param node A pointer to the (first) node of the singly-linked list
+ * @param Item_Print A pointer to function that prints the values of the payloads on screen
+ * @return void
+ */
+void SinglyLinkedList_printListItems(SinglyLinkedList*, void(*Item_Print)(Item));
+
+/** @brief Compares the payloads of two nodes of a singly-linked list
+ *
+ * This function calls an implementation-specific comparison function pointed to by the specified function pointer on the payloads of two nodes.
+ * Then, this function returns a boolean value:
+ * - True, if the contents of the payloads of the two nodes match
+ * - False otherwise
+ * The comparison function must return a boolean value
+ *
+ * @param node1 One of the nodes we wish to compare the payload of
+ * @param node2 One of the nodes we wish to compare the payload of
+ * @param Item_Compare Function pointer to the comparison function
+ * @return result The result of the comparison
+ */
+bool SinglyLinkedList_compareItems(SinglyLinkedList*, SinglyLinkedList*, bool(*Item_Compare)(Item, Item));
+
+/** @brief Reverses the order if the nodes in a singly-linked list
+ *
+ * To illustrate the behaviour of this function, suppose we have this list, with n nodes:
+ * head ---> node1 ---> node2 ---> ... ---> noden ---> NULL\
+ * After calling this function on the head of this list, the result will be:
+ * noden ---> node2 ---> node2 ---> head ---> NULL
+ * and a pointer to noden will be returned.
+ *
+ * @param node A pointer to the first node of the singly-linked list
+ * @return res A pointer to the new head of the reversed sinlgy-linked list
+ */
 SinglyLinkedList* SinglyLinkedList_reverseList(SinglyLinkedList*);
+
+bool SinglyLinkedList_nodeExistsWithItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item));
+SinglyLinkedList* SinglyLinkedList_findAndRetrieveNodeWithItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item));
+Item SinglyLinkedList_findAndRetrieveItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item));
 
 // TODO: Implement and check if more are needed
 DoublyLinkedList* DoublyLinkedList_newNode(Item);

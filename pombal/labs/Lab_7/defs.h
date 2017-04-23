@@ -30,10 +30,12 @@ typedef void* Item;
  *
  * This is useful for some systems that may not have the system stdbool.h header.
  */
+#ifndef STDBOOL_H
 typedef enum
 {
     TRUE = 1,   /**< The boolean value "true" */
     FALSE = 0   /**< The boolean value "false" */
 } Boolean;
+#endif
 
 #endif
