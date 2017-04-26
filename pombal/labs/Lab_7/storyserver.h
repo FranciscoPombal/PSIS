@@ -19,7 +19,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#include "linked_list.h"
+#include "./linked_list.h"
 
 #ifndef NO_FLAGS
 #define NO_FLAGS 0
@@ -61,6 +61,14 @@
 #define CLIENT_ADDRESS 1
 #endif
 
+#ifndef AVAILABLE
+#define AVAILABLE 1
+#endif
+
+#ifndef UNAVAILABLE
+#define UNAVAILABLE 0
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
@@ -70,3 +78,8 @@ typedef struct _message_gw{
     unsigned int address;
     int port;
 } Message_gw;
+
+typedef struct _server_properties{
+    struct sockaddr_in server_socket_address;
+    int status;
+} ServerProperties;
