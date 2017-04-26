@@ -1,4 +1,4 @@
-#include "storyserver.h"
+#include "messages.h"
 
 static volatile int keepRunning = 1;
 

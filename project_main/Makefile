@@ -4,43 +4,53 @@ CC=gcc
 # compiler flags for main program (release)
 CFLAGS=-Wall\
        -Wextra\
-
-# compiler flags for program libraries (release)
-#CLIBFLAGS=
+       -pthread\
+       -O2
 
 # compiler flags for main program (debug)
 CFLAGSDBG=-Wall\
           -Wextra\
+          -pthread\
           -g
 
-# compiler flags for program libraries (debug)
-#CLIBFLAGSDBG=
+CFILES=src/linked_list.c
 
-CFILES=linked_list.c
-CFILESDBG=linked_list_dbg.c
+IFILES=include/defs.h\
+       include/linked_list.h\
+       include/messages.h
+
+IDIR=include/
 
 all: client gateway server client_dbg gateway_dbg server_dbg
 
-dbg: client_dbg gateway_dbg server_dbg
+debug: client_dbg gateway_dbg server_dbg
 
-client: client.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+release: client gateway server
 
-gateway: gateway.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+client: src/client.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/client.c -o bin/release/client
 
-server: server.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+gateway: src/gateway.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c -o bin/release/gateway
 
-client_dbg: client.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+server: src/server.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/server.c -o bin/release/server
 
-gateway_dbg: gateway.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+client_dbg: src/client.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG) -I$(IDIR) $(CFILES) src/client.c -o bin/debug/client
 
-server_dbg: server.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+gateway_dbg: src/gateway.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway
+
+server_dbg: src/server.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG) -I$(IDIR) $(CFILES) src/server.c -o bin/debug/server
 
 .PHONY: clean
 clean:
-    rm -f client gateway server client_dbg gateway_dbg server_dbg client_dbg.c gateway_dbg.c server_dbg.c linked_list_dbg.c
+	rm -f \
+    bin/release/client \
+    bin/release/gateway \
+    bin/release/server \
+    bin/debug/client \
+    bin/debug/gateway \
+    bin/debug/server

@@ -1,4 +1,4 @@
-#include "storyserver.h"
+#include "messages.h"
 
 int main(void)
 {
