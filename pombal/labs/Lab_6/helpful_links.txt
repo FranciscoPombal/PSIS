@@ -1,0 +1,5 @@
+http://www.gnu.org/software/libc/manual/html_node/Sockets.html
+http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10
+http://beej.us/guide/bgnet
+http://tldp.org/LDP/lpg/node7.html
