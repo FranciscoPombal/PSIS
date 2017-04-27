@@ -1,0 +1,4 @@
+src/gateway.c: In function ‘main’:
+src/gateway.c:29:9: warning: variable ‘ret_val_recv’ set but not used [-Wunused-but-set-variable]
+     int ret_val_recv = 0;
+         ^

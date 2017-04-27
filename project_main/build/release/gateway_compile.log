@@ -1,0 +1,7 @@
+src/gateway.c: In function ‘main’:
+src/gateway.c:29:9: warning: variable ‘ret_val_recv’ set but not used [-Wunused-but-set-variable]
+     int ret_val_recv = 0;
+         ^
+src/gateway.c:57:9: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
+         fgets(char_buffer, sizeof(char_buffer), stdin);
+         ^
