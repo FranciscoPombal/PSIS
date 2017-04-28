@@ -2,45 +2,79 @@
 CC=gcc
 
 # compiler flags for main program (release)
-CFLAGS=-Wall\
-       -Wextra\
-
-# compiler flags for program libraries (release)
-#CLIBFLAGS=
+CFLAGS=-Wall \
+       -Wextra \
+       -pthread \
+       -O2 \
 
 # compiler flags for main program (debug)
-CFLAGSDBG=-Wall\
-          -Wextra\
-          -g
+CFLAGSDBG_1=-Wall \
+            -Wextra \
+            -pthread \
+            -g \
+		    -fno-omit-frame-pointer \
+		    -fsanitize=address \
+		    -fsanitize=leak \
+		    -fsanitize=undefined \
 
-# compiler flags for program libraries (debug)
-#CLIBFLAGSDBG=
+CFLAGSDBG_2=-Wall \
+		    -Wextra \
+		    -pthread \
+		    -g \
+            -fno-omit-frame-pointer \
+            -fsanitize=thread \
 
-CFILES=linked_list.c
-CFILESDBG=linked_list_dbg.c
+CFILES=src/linked_list.c
+
+IFILES=include/defs.h\
+       include/linked_list.h\
+       include/messages.h
+
+IDIR=include/
 
 all: client gateway server client_dbg gateway_dbg server_dbg
 
-dbg: client_dbg gateway_dbg server_dbg
+debug: client_dbg gateway_dbg server_dbg
 
-client: client.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+release: client gateway server
 
-gateway: gateway.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+client: src/client.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/client.c -o bin/release/client 2> build/release/client_compile.log
 
-server: server.c
-    $(CC) $(CFLAGS) $(CFILES) $@.c -o $@
+gateway: src/gateway.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c -o bin/release/gateway 2> build/release/gateway_compile.log
 
-client_dbg: client.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+server: src/server.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/server.c -o bin/release/server 2> build/release/server_compile.log
 
-gateway_dbg: gateway.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+client_dbg: client_dbg_1 client_dbg_2
 
-server_dbg: server.c
-    cp $(CFILES) $(CFILESDBG) && cp $^ $@.c && $(CC) $(CFLAGSDBG) $(CFILESDBG) $@.c -o $@
+client_dbg_1: src/client.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/client.c -o bin/debug/client 2> build/debug/client_compile_asan.log
+
+client_dbg_2: src/client.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/client.c -o bin/debug/client 2> build/debug/client_compile_tsan.log
+
+gateway_dbg: gateway_dbg_1 gateway_dbg_2
+
+gateway_dbg_1: src/gateway.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway 2> build/debug/gateway_compile_asan.log
+
+gateway_dbg_2: src/gateway.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway 2> build/debug/gateway_compile_tsan.log
+
+server_dbg: server_dbg_1 server_dbg_2
+
+server_dbg_1: src/server.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/server.c -o bin/debug/server 2> build/debug/server_compile_asan.log
+
+server_dbg_2: src/server.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/server.c -o bin/debug/server 2> build/debug/server_compile_tsan.log
 
 .PHONY: clean
 clean:
-    rm -f client gateway server client_dbg gateway_dbg server_dbg client_dbg.c gateway_dbg.c server_dbg.c linked_list_dbg.c
+	rm -f \
+    bin/release/* \
+    bin/debug/* \
+    build/release/* \
+    build/debug/*
