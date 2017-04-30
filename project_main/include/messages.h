@@ -49,12 +49,12 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
-#ifndef SERVER_UNAVAILABLE
-#define SERVER_UNAVAILABLE -1
+#ifndef PEER_UNAVAILABLE
+#define PEER_UNAVAILABLE -1
 #endif
 
-#ifndef SERVER_ADDRESS
-#define SERVER_ADDRESS 0
+#ifndef PEER_ADDRESS
+#define PEER_ADDRESS 0
 #endif
 
 #ifndef CLIENT_ADDRESS

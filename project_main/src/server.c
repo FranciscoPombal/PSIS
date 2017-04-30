@@ -1,4 +1,4 @@
-#include "messages.h"
+#include "../include/messages.h"
 
 static volatile int keepRunning = 1;
 
