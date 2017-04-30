@@ -48,6 +48,10 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
+#ifndef IPV4_STRING_SIZE
+#define IPV4_STRING_SIZE 16
+#endif
+
 #ifndef PEER_UNAVAILABLE
 #define PEER_UNAVAILABLE -1
 #endif
