@@ -111,7 +111,7 @@ int main(void)
         gateway_socket_address.sin_port = htons(gateway_port);
 
         message_gw.address = server_socket_address.sin_addr.s_addr;
-        message_gw.type = SERVER_ADDRESS;
+        message_gw.type = PEER_ADDRESS;
         message_gw.port = server_port;
 
         // send server address to gateway

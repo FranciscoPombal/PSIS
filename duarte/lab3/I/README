@@ -1,0 +1,6 @@
+./test2_net [Number of children to be created]
+
+The program takes 1 argument, it will create x child processes all with
+the same father.
+
+Upon birth, each child process sleeps and then dies.

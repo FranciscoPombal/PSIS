@@ -86,7 +86,7 @@ int main(void)
                 fprintf(stderr, "Error receiving server address\n");
                 exit(EXIT_FAILURE);
             }*/
-            if(message_gw.type == SERVER_ADDRESS){
+            if(message_gw.type == PEER_ADDRESS){
                 fprintf(stdout, "Received a message of type SERVER\n");
 
                 // TODO: check if server already exists in linked list; if it does, mark it as available
@@ -136,7 +136,7 @@ int main(void)
                     if(aux_server_linked_list_item->status == AVAILABLE){
                         // in this initial implementation, the server is automatically marked as unavailable if it is connected with a single client
                         aux_server_linked_list_item->status = UNAVAILABLE;
-                        message_gw.type = SERVER_ADDRESS;
+                        message_gw.type = PEER_ADDRESS;
                         message_gw.address = aux_server_linked_list_item->server_socket_address.sin_addr.s_addr;
                         message_gw.port = ntohs(aux_server_linked_list_item->server_socket_address.sin_port);
                         break; // breaks out of mearest while, for or do...while
@@ -153,7 +153,7 @@ int main(void)
                 }
                 // DEBUG
                 fprintf(stdout, "gateway ip: %s\ngateway port: %d\n-\nclient ip: %s\nclient port: %d\n", inet_ntoa(gateway_socket_address.sin_addr), ntohs(gateway_socket_address.sin_port), inet_ntoa(client_socket_address.sin_addr), ntohs(client_socket_address.sin_port));
-            }else if(message_gw.type == SERVER_UNAVAILABLE){
+            }else if(message_gw.type == PEER_UNAVAILABLE){
                 // TODO: find server in linked list
                 //if it is in list, mark it as unavailable
                 //if it isnt, tell it to 'register' first (good practice, security wise)

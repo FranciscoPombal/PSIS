@@ -1,6 +1,5 @@
-#ifndef _STORYSERVER_H_
-#define _STORYSERVER_H_
-#endif
+#ifndef _MESSAGES_H_
+#define _MESSAGES_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +48,10 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
+#ifndef IPV4_STRING_SIZE
+#define IPV4_STRING_SIZE 16
+#endif
+
 #ifndef PEER_UNAVAILABLE
 #define PEER_UNAVAILABLE -1
 #endif
@@ -83,3 +86,5 @@ typedef struct _server_properties{
     struct sockaddr_in server_socket_address;
     int status;
 } ServerProperties;
+
+#endif
