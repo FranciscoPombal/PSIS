@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #include "./linked_list.h"
 
@@ -72,6 +73,7 @@ typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
 
+// TODO: socket tambem vai na message_gw
 typedef struct _message_gw{
     int type;
     unsigned int address;
@@ -82,5 +84,10 @@ typedef struct _server_properties{
     struct sockaddr_in server_socket_address;
     int status;
 } ServerProperties;
+
+typedef struct _client_thread_args{
+    SinglyLinkedList* list_head;
+    Message_gw message_gw;
+} Client_thread_args;
 
 #endif
