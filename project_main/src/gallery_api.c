@@ -13,7 +13,16 @@ int gallery_connect(char* host, in_port_t port)
     int ret_val_recvfrom = 0;
     int ret_val_connect = 0;
     Message_gw message_gw;
-    socklen_t socklen = sizeof(gateway_socket_address);
+    socklen_t gateway_socket_address_len = 0;
+    struct timeval client_send_to_gateway_timeout;
+    struct timeval client_recv_from_gateway_timeout;
+
+        // timeout for dgram socket
+        client_send_to_gateway_timeout.tv_sec = CLIENT_SEND_TO_GATEWAY_TIMEOUT;
+        client_send_to_gateway_timeout.tv_usec = 0;
+
+        client_recv_from_gateway_timeout.tv_sec = CLIENT_RECV_FROM_GATEWAY_TIMEOUT;
+        client_recv_from_gateway_timeout.tv_usec = 0;
 
         socket_stream_fd = socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
         if(socket_stream_fd == -1){
@@ -27,6 +36,10 @@ int gallery_connect(char* host, in_port_t port)
             fprintf(stderr, "Error creating dgram socket\n");
             exit(EXIT_FAILURE);
         }
+
+        // set timeouts for dgram socket
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void *)&client_send_to_gateway_timeout, sizeof(client_send_to_gateway_timeout));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void *)&client_recv_from_gateway_timeout, sizeof(client_recv_from_gateway_timeout));
 
         setupClientAddress(&client_socket_address);
         setupGatewayAddress(&gateway_socket_address, host, port);
@@ -47,15 +60,17 @@ int gallery_connect(char* host, in_port_t port)
             return -1;
         }
 
-        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr        *)&gateway_socket_address, &socklen);
+        gateway_socket_address_len = sizeof(gateway_socket_address);
+        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr        *)&gateway_socket_address, &gateway_socket_address_len);
+        if(ret_val_recvfrom == -1){
+            return -1;
+        }
 
         if(message_gw.type == PEER_ADDRESS){
             setupPeerAddress(&peer_socket_address, message_gw.address, message_gw.port);
-        }
-        else if(message_gw.type == PEER_UNAVAILABLE){
+        }else if(message_gw.type == PEER_UNAVAILABLE){
             return 0;
-        }
-        else{
+        }else{
             fprintf(stderr, "Wrong type of message received from gateway\n");
             exit(EXIT_FAILURE);
         }

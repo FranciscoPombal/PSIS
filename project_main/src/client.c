@@ -37,7 +37,7 @@ int main(void)
 
         socket_stream_fd = gallery_connect(gateway_ipv4, gateway_port);
         if(socket_stream_fd == -1){
-            fprintf(stderr, "Unable to connect to gallery, exiting. Try again later.\n");
+            fprintf(stderr, "Unable to properly communicate with gateway, exiting. Try again later.\n");
             exit(EXIT_FAILURE);
         }else if (socket_stream_fd == 0){
             fprintf(stderr, "Gateway says no peers are available. Try again later.\n");

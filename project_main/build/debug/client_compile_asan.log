@@ -1,82 +1,78 @@
-src/gallery_api.c: In function ‘gallery_connect’:
-src/gallery_api.c:13:9: warning: variable ‘ret_val_recvfrom’ set but not used [-Wunused-but-set-variable]
-     int ret_val_recvfrom = 0;
-         ^
 src/gallery_api.c: In function ‘gallery_add_photo’:
-src/gallery_api.c:114:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:127:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  uint32_t gallery_add_photo(int peer_socket, char* file_name)
                                 ^
-src/gallery_api.c:114:51: warning: unused parameter ‘file_name’ [-Wunused-parameter]
+src/gallery_api.c:127:51: warning: unused parameter ‘file_name’ [-Wunused-parameter]
  uint32_t gallery_add_photo(int peer_socket, char* file_name)
                                                    ^
 src/gallery_api.c: In function ‘gallery_add_keyword’:
-src/gallery_api.c:119:29: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:132:29: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
                              ^
-src/gallery_api.c:119:51: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
+src/gallery_api.c:132:51: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
                                                    ^
-src/gallery_api.c:119:67: warning: unused parameter ‘keyword’ [-Wunused-parameter]
+src/gallery_api.c:132:67: warning: unused parameter ‘keyword’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
                                                                    ^
 src/gallery_api.c: In function ‘gallery_search_photo’:
-src/gallery_api.c:124:30: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:137:30: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
                               ^
-src/gallery_api.c:124:49: warning: unused parameter ‘keyword’ [-Wunused-parameter]
+src/gallery_api.c:137:49: warning: unused parameter ‘keyword’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
                                                  ^
-src/gallery_api.c:124:69: warning: unused parameter ‘id_photos’ [-Wunused-parameter]
+src/gallery_api.c:137:69: warning: unused parameter ‘id_photos’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
                                                                      ^
 src/gallery_api.c: In function ‘gallery_delete_photos’:
-src/gallery_api.c:129:31: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:142:31: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_delete_photos(int peer_socket, uint32_t id_photo)
                                ^
-src/gallery_api.c:129:53: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
+src/gallery_api.c:142:53: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_delete_photos(int peer_socket, uint32_t id_photo)
                                                      ^
 src/gallery_api.c: In function ‘gallery_get_photo_name’:
-src/gallery_api.c:134:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:147:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
                                 ^
-src/gallery_api.c:134:54: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
+src/gallery_api.c:147:54: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
                                                       ^
-src/gallery_api.c:134:71: warning: unused parameter ‘photo_name’ [-Wunused-parameter]
+src/gallery_api.c:147:71: warning: unused parameter ‘photo_name’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
                                                                        ^
 src/gallery_api.c: In function ‘gallery_get_photo’:
-src/gallery_api.c:139:27: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
+src/gallery_api.c:152:27: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                            ^
-src/gallery_api.c:139:49: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
+src/gallery_api.c:152:49: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                                                  ^
-src/gallery_api.c:139:66: warning: unused parameter ‘file_name’ [-Wunused-parameter]
+src/gallery_api.c:152:66: warning: unused parameter ‘file_name’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                                                                   ^
 src/gallery_api.c: In function ‘gallery_add_photo’:
-src/gallery_api.c:117:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:130:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^
 src/gallery_api.c: In function ‘gallery_add_keyword’:
-src/gallery_api.c:122:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:135:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^
 src/gallery_api.c: In function ‘gallery_search_photo’:
-src/gallery_api.c:127:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:140:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^
 src/gallery_api.c: In function ‘gallery_delete_photos’:
-src/gallery_api.c:132:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:145:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^
 src/gallery_api.c: In function ‘gallery_get_photo_name’:
-src/gallery_api.c:137:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:150:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^
 src/gallery_api.c: In function ‘gallery_get_photo’:
-src/gallery_api.c:142:1: warning: control reaches end of non-void function [-Wreturn-type]
+src/gallery_api.c:155:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
  ^

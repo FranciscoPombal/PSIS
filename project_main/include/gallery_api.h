@@ -4,6 +4,14 @@
 
 // TODO: check include
 
+#ifndef CLIENT_RECV_FROM_GATEWAY_TIMEOUT
+#define CLIENT_RECV_FROM_GATEWAY_TIMEOUT 30
+#endif
+
+#ifndef CLIENT_SEND_TO_GATEWAY_TIMEOUT
+#define CLIENT_SEND_TO_GATEWAY_TIMEOUT 10
+#endif
+
 int gallery_connect(char* host, in_port_t port);
 
 void setupClientAddress(struct sockaddr_in * csa);
