@@ -1,13 +1,13 @@
 #include "../include/messages.h"
 
-static volatile int keepRunning = 1;
+static volatile bool keepRunning = true;
 
 void sigIntHandler(int);
 
 void sigIntHandler(int sig)
 {
-    fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
+    fprintf(stdout, "I think I caught SIGINT: %d; exiting\n", sig);
+    keepRunning = false;
 
     return;
 }
@@ -144,6 +144,9 @@ int main(void)
                 }
 
                 // TODO: what do we send client if there are no servers available?
+                if (message_gw.type != PEER_ADDRESS){
+                    message_gw.type = PEER_UNAVAILABLE;
+                }
                 // we should do that here
 
                 ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
