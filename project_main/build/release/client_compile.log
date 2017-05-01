@@ -3,12 +3,12 @@ src/client_functions.c:16:13: warning: ignoring return value of ‘fgets’, dec
              fgets(buffer, 100, stdin);
              ^
 src/client_functions.c: In function ‘getGatewayPort’:
-src/client_functions.c:54:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
+src/client_functions.c:53:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
              fgets(char_buffer, sizeof(char_buffer), stdin);
              ^
 src/client_functions.c: In function ‘showMenu’:
-src/client_functions.c:80:9: warning: ignoring return value of ‘scanf’, declared with attribute warn_unused_result [-Wunused-result]
-         scanf("%d\n", &option);
+src/client_functions.c:84:9: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
+         fgets(char_buffer, sizeof(char_buffer), stdin);
          ^
 src/gallery_api.c: In function ‘gallery_connect’:
 src/gallery_api.c:13:9: warning: variable ‘ret_val_recvfrom’ set but not used [-Wunused-but-set-variable]

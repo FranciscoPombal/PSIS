@@ -11,15 +11,15 @@ void getGatewayIPv4(char* gateway_ipv4)
 
         buffer = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
-        while(ret_val_sscanf != 4 || false == valid_ip ){
-            printf("Insert Gateway IP address (default: XXX):\n");
+        while((ret_val_sscanf != 4) || (false == valid_ip)){
+            printf("Insert Gateway IP address (0.0.0.0 or 127.0.0.1 if running locally):\n");
             fgets(buffer, 100, stdin);
             ret_val_sscanf = sscanf(buffer, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
             if(ret_val_sscanf != 4){
                 fprintf(stderr, "Error getting gateway IP\n\n");
             }
-            for (i = 0; i < 4; i++) {
-                if(ip[i] < 0 || ip[i] > 255){
+            for (i = 0; i < 4; i++){
+                if((ip[i] < 0) || (ip[i] > 255)){
                     v += 1;
                 }
             }
@@ -36,7 +36,6 @@ void getGatewayIPv4(char* gateway_ipv4)
 
         sprintf(gateway_ipv4, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         free(buffer);
-        // TODO: Must not forget to free IP_v4 in main()
 
     return;
 }
@@ -69,15 +68,26 @@ int getGatewayPort(void)
 int showMenu(void)
 {
     int option = 0;
+    int ret_val_sscanf = 0;
+    char* char_buffer = NULL;
 
-        printf("\nChoose an option (number):\n");
-        printf("1 - \n");
-        printf("2 - \n");
-        printf("3 - \n");
-        printf("4 - \n");
-        printf("5 - \n");
+        char_buffer = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
-        scanf("%d\n", &option);
+        fprintf(stdout, "\nChoose an option (number):\n");
+        fprintf(stdout, "1 - Add a photo to the gallery\n");
+        fprintf(stdout, "2 - Add a keyword to a photo in the gallery\n");
+        fprintf(stdout, "3 - Search for a photo in the gallery\n");
+        fprintf(stdout, "4 - Delete a photo from the gallery\n");
+        fprintf(stdout, "5 - Get the name of a photo in the gallery\n");
+        fprintf(stdout, "6 - Get (download) a photo from the gallery\n");
+
+        fgets(char_buffer, sizeof(char_buffer), stdin);
+        ret_val_sscanf = sscanf(char_buffer, "%d\n", &option);
+        if(ret_val_sscanf != 1){
+            fprintf(stdout, "Error reading option, try again.\n");
+        }
+
+        free(char_buffer);
 
     return option;
 }
