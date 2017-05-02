@@ -1,9 +1,9 @@
-#include "../include/client.h"
+#include "../include/peer.h"
 
 void sigIntHandler(int sig)
 {
     fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
+    keepRunning = false;
 
     return;
 }
@@ -87,29 +87,39 @@ int getGatewayPort(void)
     return gateway_port;
 }
 
-int showMenu(void)
+void setupPeerAddress(struct sockaddr_in * psa)
 {
-    int option = 0;
-    int ret_val_sscanf = 0;
-    char* char_buffer = NULL;
+    int peer_port = 0;
 
-        char_buffer = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
-
-        fprintf(stdout, "\nChoose an option (number):\n");
-        fprintf(stdout, "1 - Add a photo to the gallery\n");
-        fprintf(stdout, "2 - Add a keyword to a photo in the gallery\n");
-        fprintf(stdout, "3 - Search for a photo in the gallery\n");
-        fprintf(stdout, "4 - Delete a photo from the gallery\n");
-        fprintf(stdout, "5 - Get the name of a photo in the gallery\n");
-        fprintf(stdout, "6 - Get (download) a photo from the gallery\n");
-
-        fgets(char_buffer, sizeof(char_buffer), stdin);
-        ret_val_sscanf = sscanf(char_buffer, "%d\n", &option);
-        if(ret_val_sscanf != 1){
-            fprintf(stdout, "Error reading option, try again.\n");
+        memset((void*)&psa, 0, sizeof(psa));   // first we reset the struct
+        psa->sin_family = AF_INET;
+        psa->sin_addr.s_addr = htonl(INADDR_ANY);
+        peer_port = BASE_PORT + getpid();
+        if(peer_port > USHRT_MAX){
+            fprintf(stderr, "Port number too large\n");
+            exit(EXIT_FAILURE);
         }
+        psa->sin_port = htons(peer_port);
+        fprintf(stdout, "Server stream socket is on port: %d\n", peer_port);
 
-        free(char_buffer);
+    return;
+}
 
-    return option;
+void setupGatewayAddress(struct sockaddr_in * gsa)
+{
+    char* gateway_ipv4;
+    int gateway_port = 0;
+
+        gateway_ipv4 = (char*)malloc(IPV4_STRING_SIZE * sizeof(char));
+        getGatewayIPv4(gateway_ipv4);
+        gateway_port = getGatewayPort();
+        fprintf(stdout, "\nGateway IP address: %s\nGateway port: %d\n", gateway_ipv4, gateway_port);
+
+        /* set gateway address struct */
+        memset((void*)&gsa, 0, sizeof(gsa));   // first we reset the struct
+        gsa->sin_family = AF_INET;
+        gsa->sin_addr.s_addr = htonl(INADDR_ANY);
+        gsa->sin_port = htons(gateway_port);
+
+    return;
 }

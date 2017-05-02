@@ -1,16 +1,4 @@
-#include "../include/messages.h"
-
-static volatile int keepRunning = 1;
-
-void sigIntHandler(int);
-
-void sigIntHandler(int sig)
-{
-    fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
-
-    return;
-}
+#include "../include/peer.h"
 
 int main(void)
 {
@@ -20,33 +8,21 @@ int main(void)
     Message_gw message_gw;
     char* story = NULL;
     long int story_len = 0;
-    int ret_val_sscanf = 0;
-
-    //gateway address
-    char* char_buffer;
-    int gateway_port = 0;
 
     // socket/ipc related variables
     int socket_stream_fd = 0;
     int socket_dgram_fd = 0;
-    int server_port = 0;
     int conn_sock_fd = 0;
     int ret_val_bind = 0;
     int ret_val_listen = 0;
     long int ret_val_send = 0;
     long int ret_val_recv = 0;
     long int ret_val_send_to = 0;
-    struct sockaddr_in server_socket_address;   // address of the server socket
+    struct sockaddr_in peer_socket_address;   // address of the server socket
     struct sockaddr_in gateway_socket_address;  // address of the gateway socket
 
-    // signal realated variables
-    struct sigaction sigint_action;
-
-        /* setup sigIntHandler as the handler function for SIGINT */
-        sigint_action.sa_handler = sigIntHandler;
-        sigemptyset(&sigint_action.sa_mask);
-        sigint_action.sa_flags = NO_FLAGS;
-        sigaction(SIGINT, &sigint_action, NULL);
+        // Setup SIGINT handler
+        setupInterrupt();
 
         /* socket: create a new communication endpoint */
         // stream socket
@@ -64,22 +40,13 @@ int main(void)
         }
 
         /* connect socket to socket address */
-        memset((void*)&server_socket_address, 0, sizeof(server_socket_address));   // first we reset the struct
-        server_socket_address.sin_family = AF_INET;
-        server_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        server_port = BASE_PORT + getpid();
-        if(server_port > USHRT_MAX){
-            fprintf(stderr, "Port number too large\n");
-            exit(EXIT_FAILURE);
-        }
-        server_socket_address.sin_port = htons(server_port);
-        fprintf(stdout, "Server stream socket is on port: %d\n", server_port);
+        setupPeerAddress(&peer_socket_address);
 
         /* bind: attach a local address to a socket */
-        // no need to bind dgram socket, since we will only send
+        // TODO: we are probably need to bind the datagram socket, depending on whether we will be receiving stuff from the gateway
 
         // stream socket
-        ret_val_bind = bind(socket_stream_fd, (struct sockaddr *)&server_socket_address, sizeof(server_socket_address));  // call bind
+        ret_val_bind = bind(socket_stream_fd, (struct sockaddr *)&peer_socket_address, sizeof(peer_socket_address));  // call bind
         if(ret_val_bind == -1){  // check for error
             fprintf(stderr, "Error binding socket stream\n");
             exit(EXIT_FAILURE);
@@ -93,36 +60,14 @@ int main(void)
         }
 
         /* get gateway address info */
-        char_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
-        fprintf(stdout, "Insert gateway port:\n");
-        fgets(char_buffer, sizeof(char_buffer), stdin);
-        ret_val_sscanf = sscanf(char_buffer, "%d", &gateway_port);
-        if(ret_val_sscanf != 1){
-            fprintf(stderr, "sscanf: error reading port number!\n");
-            exit(EXIT_FAILURE);
-        }
+        setupGatewayAddress(&gateway_socket_address);
 
-        fprintf(stdout, "Got port %d\n",gateway_port);
-
-        /* set gateway address struct */
-        memset((void*)&gateway_socket_address, 0, sizeof(gateway_socket_address));   // first we reset the struct
-        gateway_socket_address.sin_family = AF_INET;
-        gateway_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        gateway_socket_address.sin_port = htons(gateway_port);
-
-        message_gw.address = server_socket_address.sin_addr.s_addr;
+        message_gw.address = peer_socket_address.sin_addr.s_addr;
         message_gw.type = PEER_ADDRESS;
-        message_gw.port = server_port;
+        message_gw.port = ntohs(peer_socket_address.sin_port);
 
         // send server address to gateway
         ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
-
-        // initialize char arrays for story
-        story = (char*)malloc(sizeof(char));
-        *story = '\0';
-        for(i = 0; i < MESSAGE_LEN; i++){
-            message.buffer[i] = '\0';
-        }
 
 
         fprintf(stdout, "before while\n");
@@ -180,7 +125,6 @@ int main(void)
         }
 
     free(story);
-    free(char_buffer);
 
     exit(EXIT_SUCCESS);
 }

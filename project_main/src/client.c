@@ -1,36 +1,17 @@
 #include "../include/client.h"
 
-static volatile bool keepRunning = true;
-
-void sigIntHandler(int);
-
-void sigIntHandler(int sig)
-{
-    fprintf(stdout, "I think I caught SIGINT: %d; exiting\n", sig);
-    keepRunning = false;
-
-    return;
-}
-
 int main(void)
 {
-    char* gateway_ipv4;
-    int gateway_port;
     int choice = 0;
     int socket_stream_fd = 0;
+    char* gateway_ipv4 = NULL;
+    int gateway_port = 0;
 
-    // signal realated variables
-    struct sigaction sigint_action;
-
-        /* setup sigIntHandler as the handler function for SIGINT */
-        sigint_action.sa_handler = sigIntHandler;
-        sigemptyset(&sigint_action.sa_mask);
-        sigint_action.sa_flags = 0;
-        sigaction(SIGINT, &sigint_action, NULL);
-
-        gateway_ipv4 = (char*)malloc(IPV4_STRING_SIZE * sizeof(char));
+        //setup SIGINT handler
+        setupInterrupt();
 
         //Get gateway information
+        gateway_ipv4 = (char*)malloc(IPV4_STRING_SIZE * sizeof(char));
         getGatewayIPv4(gateway_ipv4);
         gateway_port = getGatewayPort();
         fprintf(stdout, "\nGateway IP address: %s\nGateway port: %d\n", gateway_ipv4, gateway_port);
