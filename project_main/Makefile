@@ -26,19 +26,20 @@ CFLAGSDBG_2=-Wall \
 
 CFILES=src/linked_list.c
 
-IFILES=include/defs.h\
-       include/linked_list.h\
-       include/messages.h\
-	   include/gallery_api.h\
-       include/client.h
+IFILES=include/defs.h \
+       include/linked_list.h \
+       include/messages.h \
+	   include/gallery_api.h \
+       include/client.h \
+	   include/peer.h
 
 IDIR=include/
 
-all: client gateway server client_dbg gateway_dbg server_dbg
+all: client gateway peer client_dbg gateway_dbg peer_dbg
 
-debug: client_dbg gateway_dbg server_dbg
+debug: client_dbg gateway_dbg peer_dbg
 
-release: client gateway server
+release: client gateway peer
 
 client: src/client.c src/client_functions.c src/linked_list.c include/client.h $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/release/client 2> build/release/client_compile.log
@@ -46,8 +47,8 @@ client: src/client.c src/client_functions.c src/linked_list.c include/client.h $
 gateway: src/gateway.c src/linked_list.c $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c -o bin/release/gateway 2> build/release/gateway_compile.log
 
-server: src/server.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/server.c -o bin/release/server 2> build/release/server_compile.log
+peer: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/release/peer 2> build/release/peer_compile.log
 
 client_dbg: client_dbg_1 client_dbg_2
 
@@ -65,13 +66,13 @@ gateway_dbg_1: src/gateway.c src/linked_list.c $(IFILES)
 gateway_dbg_2: src/gateway.c src/linked_list.c $(IFILES)
 	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway 2> build/debug/gateway_compile_tsan.log
 
-server_dbg: server_dbg_1 server_dbg_2
+peer_dbg: peer_dbg_1 peer_dbg_2
 
-server_dbg_1: src/server.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/server.c -o bin/debug/server 2> build/debug/server_compile_asan.log
+peer_dbg_1: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/debug/peer 2> build/debug/peer_compile_asan.log
 
-server_dbg_2: src/server.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/server.c -o bin/debug/server 2> build/debug/server_compile_tsan.log
+peer_dbg_2: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/debug/peer 2> build/debug/peer_compile_tsan.log
 
 .PHONY: clean
 clean:

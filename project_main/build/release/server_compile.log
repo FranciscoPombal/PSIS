@@ -1,7 +1,0 @@
-src/server.c: In function ‘main’:
-src/server.c:38:14: warning: variable ‘ret_val_send_to’ set but not used [-Wunused-but-set-variable]
-     long int ret_val_send_to = 0;
-              ^
-src/server.c:98:9: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
-         fgets(char_buffer, sizeof(char_buffer), stdin);
-         ^
