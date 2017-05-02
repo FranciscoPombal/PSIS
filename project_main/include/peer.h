@@ -6,14 +6,15 @@
 static volatile bool keepRunning = true;
 
 // Peer helper functions
-int gatewayConnect(char* ipv4, int port);
-int clientStreamSocketSetup();
+int gatewayConnect(int peerStreamSocket);
+int clientStreamSocketSetup(void);
 
 void sigIntHandler(int);
 void setupInterrupt(void);
 void getGatewayIPv4(char* gateway_ipv4);
 int getGatewayPort(void);
 void setupPeerAddress(struct sockaddr_in * psa);
+void setupPeerAddressDgram(struct sockaddr_in * psa_dgram);
 void setupGatewayAddress(struct sockaddr_in * gsa);
 
 #endif
