@@ -13,9 +13,19 @@ void sigIntHandler(int sig)
     return;
 }
 
-void* clientthread(void * args){
-    Client_thread_args* client_thread_args = args;
+// TODO: client linked list nodes must specify which peer is connected to the client, to inform upon (unexpected) peer death
+// TODO: peer linked list must include dgram socket address of server for additional communication
 
+/* THREAD: receive peer address and add it to Peers linked list */
+void* peerRecvThread(void* args)
+{
+
+}
+
+/* THREAD: receive client address and add it to Clients linked list */
+void* clientRecvThread(void * args)
+{
+    Client_thread_args* client_thread_args = args;
     SinglyLinkedList* aux_linked_list_node;
 
     int client_port = client_thread_args->message_gw.port;
@@ -50,44 +60,53 @@ void* clientthread(void * args){
 }
 
 //Thread always checking for new client or peer connections (INFINITE LOOP)
-void* recvthread(void * args){
-  int ret_val_recv = 0;
-  int ret_val_pthread_create = 0;
-  pthread_t* clients_id = malloc(100000*sizeof(pthread_t));
-  pthread_t* peers_id = malloc(100000*sizeof(pthread_t));
-  unsigned int i=0, j=0;
+void* recvthread(void * args)
+{
+    int ret_val_recv = 0;
+    int ret_val_pthread_create = 0;
+    pthread_t* clients_id = NULL;
+    pthread_t* peers_id = NULL;
+    unsigned int i=0, j=0;
+    Message_gw message_gw;
 
-  while(true){
-    memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
-    ret_val_recv = recv(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS);
-    fprintf(stderr, "recdd\n");
+    clients_id = (pthread_t*)malloc(100000 * sizeof(pthread_t));
+    peers_id = (pthread_t*)malloc(100000 * sizeof(pthread_t));
 
-    if (message_gw.type == CLIENT_ADDRESS) {
-      ret_val_pthread_create = pthread_create( &clients_id[i], NULL, &clientthread, (void *)&client_thread_args);
-      if (ret_val_pthread_create != 0) {
-        fprintf(stderr, "recv_pthread_create error!\n");
-        exit(EXIT_FAILURE);
-      }
-      i++;
-    }
-    else if(message_gw.type == PEER_ADDRESS){
-      ret_val_pthread_create = pthread_create( &peers_id[j], NULL, &clientthread, (void *)&client_thread_args);
-      if (ret_val_pthread_create != 0) {
-        fprintf(stderr, "recv_pthread_create error!\n");
-        exit(EXIT_FAILURE);
-      }
-      j++;
-    }
-  }
+        while(true){
+            memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
+            ret_val_recv = recv(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS);
+            fprintf(stderr, "recdd\n");
+
+            if(message_gw.type == CLIENT_ADDRESS){
+                ret_val_pthread_create = pthread_create( &clients_id[i], NULL, &clientthread, (void *)&client_thread_args);
+                if (ret_val_pthread_create != 0) {
+                    fprintf(stderr, "recv_pthread_create error!\n");
+                    exit(EXIT_FAILURE);
+                }
+                i++;
+            }else if(message_gw.type == PEER_ADDRESS){
+                ret_val_pthread_create = pthread_create( &peers_id[j], NULL, &clientthread, (void *)&client_thread_args);
+                if(ret_val_pthread_create != 0){
+                    fprintf(stderr, "recv_pthread_create error!\n");
+                    exit(EXIT_FAILURE);
+                }
+                j++;
+            }
+        }
+
+    free(clients_id);
+    free(peers_id);
 }
 
 //Thread that sends peer address to new client
-void* send_address_to_client(void * args){
+void* send_address_to_client(void * args)
+{
 
 }
 
 //Thread that receives address from new peer
-void* receive_address_from_peer(void * args){
+void* receive_address_from_peer(void * args)
+{
 
 }
 
