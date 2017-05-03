@@ -49,6 +49,16 @@ void* clientthread(void * args){
 
 }
 
+void* recvthread(void * args){
+  int ret_val_recv = 0;
+
+  while(true){
+    memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
+    ret_val_recv = recv(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS);
+    fprintf(stderr, "recdd\n");
+  }
+}
+
 int main(void)
 {
     int socket_dgram_clients_fd = 0;
@@ -70,8 +80,10 @@ int main(void)
     int ret_val_send_to = 0;
     int ret_val_sscanf = 0;
     pthread_t* threadid = malloc(100000*sizeof(pthread_t));
+    pthread_t thread_recv_id = 0;
     int i = 0;
     int ret_val_phtread_create = 0;
+    int ret_val_recv_phtread_create = 0;
 
     Message_gw message_gw;
     Client_thread_args client_thread_args;
@@ -104,15 +116,11 @@ int main(void)
         }
 
         /* get gateway address info and set variables accordingly */
-        fprintf(stdout, "Insert gateway port:\n");
-        fgets(char_buffer, sizeof(char_buffer), stdin);
-        ret_val_sscanf = sscanf(char_buffer, "%d", &gateway_port);
-        if(ret_val_sscanf != 1){
-            fprintf(stderr, "sscanf: error reading port number!\n");
-            exit(EXIT_FAILURE);
-        }
-        fprintf(stdout, "Gateway port (Clients): %d\n", gateway_port_clients);
-        fprintf(stdout, "Gateway port (Peers): %d\n", gateway_port_peers);
+        fprintf(stdout, "Insert gateway port for clients:\n");
+        gateway_port_clients = getGatewayPort();
+        fprintf(stdout, "Insert gateway port for peers:\n");
+        gateway_port_peers = getGatewayPort();
+
         memset((void*)&gateway_clients_dgram_socket_address, 0, sizeof(gateway_clients_dgram_socket_address));   // first we reset the struct
         gateway_clients_dgram_socket_address.sin_family = AF_INET;
         gateway_clients_dgram_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -137,6 +145,13 @@ int main(void)
         if(ret_val_bind == -1){
             fprintf(stderr, "Error binding socket dgram\n");
             exit(EXIT_FAILURE);
+        }
+
+        //Initialize infinite recv thread
+        ret_val_recv_phtread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
+        if (ret_val_recv_phtread_create != 0) {
+          fprintf(stderr, "recv_pthread_create error!\n");
+          exit(EXIT_FAILURE);
         }
 
         // TODO: while keepRunning
@@ -204,6 +219,8 @@ int main(void)
                 //if it isnt, tell it to 'register' first (good practice, security wise)
             }
         }
+
+    pthread_cancel(thread_recv_id);
 
     // close and free stuff
     close(socket_dgram_fd);
