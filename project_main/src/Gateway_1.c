@@ -49,14 +49,42 @@ void* clientthread(void * args){
 
 }
 
+//Thread always checking for new client or peer connections (INFINITE LOOP)
 void* recvthread(void * args){
   int ret_val_recv = 0;
+  int ret_val_pthread_create = 0;
 
   while(true){
     memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
     ret_val_recv = recv(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS);
     fprintf(stderr, "recdd\n");
+
+    if (message_gw.type == CLIENT_ADDRESS) {
+      ret_val_pthread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
+      if (ret_val_pthread_create != 0) {
+        fprintf(stderr, "recv_pthread_create error!\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+    else if(message_gw.type == PEER_ADDRESS){
+      ret_val_pthread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
+      if (ret_val_pthread_create != 0) {
+        fprintf(stderr, "recv_pthread_create error!\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+
   }
+}
+
+//Thread that sends peer address to new client
+void* send_address_to_client(void * args){
+
+}
+
+//Thread that receives address from new peer
+void* receive_address_from_peer(void * args){
+
 }
 
 int main(void)
@@ -153,6 +181,15 @@ int main(void)
           fprintf(stderr, "recv_pthread_create error!\n");
           exit(EXIT_FAILURE);
         }
+
+
+
+
+
+
+
+
+
 
         // TODO: while keepRunning
         while(true == keepRunning){
