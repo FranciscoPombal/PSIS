@@ -46,3 +46,75 @@ int getGatewayPort(void)
 
     return gateway_port;
 }
+
+int peersDgramSocketSetup(void)
+{
+    int socket_dgram_peers_fd = 0;
+    int ret_val_bind = 0;
+    struct sockaddr_in gateway_peers_dgram_socket_address;
+
+        //socket call peers
+        socket_dgram_peers_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_peers_fd == -1){
+            fprintf(stderr, "Error opening dgram socket.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        setupGatewayAddress(&gateway_peers_dgram_socket_address);
+
+        /* bind datagram socket, since we will be receiving PEERS*/
+        ret_val_bind = bind(socket_dgram_peers_fd, (struct sockaddr *)&gateway_peers_dgram_socket_address, sizeof(gateway_peers_dgram_socket_address));
+        if(ret_val_bind == -1){
+            fprintf(stderr, "Error binding socket dgram\n");
+            exit(EXIT_FAILURE);
+        }
+
+    return socket_dgram_peers_fd;
+}
+
+int clientDgramSocketSetup(void)
+{
+    int socket_dgram_clients_fd = 0;
+    int ret_val_bind = 0;
+    struct sockaddr_in gateway_clients_dgram_socket_address;
+    int gateway_clients_dgram_socket_port = 0;
+
+        socket_dgram_clients_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_clients_fd == -1){
+            fprintf(stderr, "Error opening dgram socket.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // gateway dgram socket port for clients is the one after the peers'
+        setupGatewayAddress(&gateway_clients_dgram_socket_address);
+        gateway_clients_dgram_socket_port = ntohs(gateway_clients_dgram_socket_address.sin_port) + 1;
+        gateway_clients_dgram_socket_address.sin_port = htons(gateway_clients_dgram_socket_port);
+        fprintf(stdout, "Gateway port for clients is on port: %d\n", gateway_clients_dgram_socket_port);
+
+        /* bind datagram socket, since we will be receiving CLIENTS*/
+        ret_val_bind = bind(socket_dgram_clients_fd, (struct sockaddr *)&gateway_clients_dgram_socket_address,  sizeof(gateway_clients_dgram_socket_address));
+        if(ret_val_bind == -1){
+            fprintf(stderr, "Error binding socket dgram\n");
+            exit(EXIT_FAILURE);
+        }
+
+    return socket_dgram_clients_fd;
+}
+
+void setupGatewayAddress(struct sockaddr_in * gsa)
+{
+    int gateway_port = 0;
+
+        memset((void*)gsa, 0, sizeof(*gsa));   // first we reset the struct
+        gsa->sin_family = AF_INET;
+        gsa->sin_addr.s_addr = htonl(INADDR_ANY);
+        gateway_port = BASE_PORT + getpid();
+        if(gateway_port > USHRT_MAX){
+            fprintf(stderr, "Port number too large\n");
+            exit(EXIT_FAILURE);
+        }
+        gsa->sin_port = htons(gateway_port);
+        fprintf(stdout, "Gateway port for peers is on port: %d\n", gateway_port);
+
+    return;
+}

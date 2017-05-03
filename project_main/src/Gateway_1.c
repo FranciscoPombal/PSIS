@@ -103,11 +103,15 @@ int main(void)
     int socket_dgram_peers_fd = 0;
     struct sockaddr_in gateway_clients_dgram_socket_address;  // address of the gateway socket
     struct sockaddr_in gateway_peers_dgram_socket_address;  // address of the gateway socket
-    // Linked list of servers
+    // Linked list of peers
     SinglyLinkedList* server_linked_list = NULL;
     SinglyLinkedList* aux_linked_list_node = NULL;
     ServerProperties* server_properties = NULL;
     ServerProperties* aux_server_linked_list_item = NULL;
+
+    // Linked list of clients
+    SinglyLinkedList* client_linked_list = NULL;
+
     bool new_server = true;
     struct sockaddr_in client_socket_address;
     int gateway_port_clients = 0;
@@ -129,53 +133,14 @@ int main(void)
         //setup SIGINT
         setupInterrupt();
 
+        // Create dgram sockets to handle clients and peers
+        socket_dgram_peers_fd = peersDgramSocketSetup();
+        socket_dgram_clients_fd = clientDgramSocketSetup();
+
+        // TODO: refactor the rest
         char_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
-
-        //socket call clients
-        socket_dgram_clients_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
-        if(socket_dgram_clients_fd == -1){
-            fprintf(stderr, "Error opening dgram socket.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        //socket call peers
-        socket_dgram_peers_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
-        if(socket_dgram_peers_fd == -1){
-            fprintf(stderr, "Error opening dgram socket.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        /* get gateway address info and set variables accordingly */
-        fprintf(stdout, "Insert gateway port for clients:\n");
-        gateway_port_clients = getGatewayPort();
-        fprintf(stdout, "Insert gateway port for peers:\n");
-        gateway_port_peers = getGatewayPort();
-
-        memset((void*)&gateway_clients_dgram_socket_address, 0, sizeof(gateway_clients_dgram_socket_address));   // first we reset the struct
-        gateway_clients_dgram_socket_address.sin_family = AF_INET;
-        gateway_clients_dgram_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        gateway_clients_dgram_socket_address.sin_port = htons(gateway_port_clients);
-
-        memset((void*)&gateway_peers_dgram_socket_address, 0, sizeof(gateway_peers_dgram_socket_address));   // first we reset the struct
-        gateway_peers_dgram_socket_address.sin_family = AF_INET;
-        gateway_peers_dgram_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        gateway_peers_dgram_socket_address.sin_port = htons(gateway_port_peers);
-
         // we assume client and server family will always be AF_INET
         client_socket_address.sin_family = AF_INET;
-
-        /* bind datagram socket, since we will be receiving CLIENTS*/
-        ret_val_bind = bind(socket_dgram_clients_fd, (struct sockaddr *)&gateway_clients_dgram_socket_address, sizeof(gateway_clients_dgram_socket_address));
-        if(ret_val_bind == -1){
-            fprintf(stderr, "Error binding socket dgram\n");
-            exit(EXIT_FAILURE);
-        }
-        /* bind datagram socket, since we will be receiving PEERS*/
-        ret_val_bind = bind(socket_dgram_peers_fd, (struct sockaddr *)&gateway_peers_dgram_socket_address, sizeof(gateway_peers_dgram_socket_address));
-        if(ret_val_bind == -1){
-            fprintf(stderr, "Error binding socket dgram\n");
-            exit(EXIT_FAILURE);
-        }
 
         //Initialize infinite recv thread
         ret_val_recv_phtread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
@@ -183,12 +148,6 @@ int main(void)
           fprintf(stderr, "recv_pthread_create error!\n");
           exit(EXIT_FAILURE);
         }
-
-
-
-
-
-
 
 
         //PREVIOUS CODE (LAB7):
