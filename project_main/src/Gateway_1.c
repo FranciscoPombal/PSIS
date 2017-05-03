@@ -1,4 +1,5 @@
-#include "../include/messages.h" 
+#include "../include/messages.h"
+#include "../include/gatewayAPI.h"
 
 static volatile int keepRunning = 1;
 
@@ -50,8 +51,10 @@ void* clientthread(void * args){
 
 int main(void)
 {
-    int socket_dgram_fd = 0;
-    struct sockaddr_in gateway_socket_address;  // address of the gateway socket
+    int socket_dgram_clients_fd = 0;
+    int socket_dgram_peers_fd = 0;
+    struct sockaddr_in gateway_clients_dgram_socket_address;  // address of the gateway socket
+    struct sockaddr_in gateway_peers_dgram_socket_address;  // address of the gateway socket
     // Linked list of servers
     SinglyLinkedList* server_linked_list = NULL;
     SinglyLinkedList* aux_linked_list_node = NULL;
@@ -59,7 +62,8 @@ int main(void)
     ServerProperties* aux_server_linked_list_item = NULL;
     bool new_server = true;
     struct sockaddr_in client_socket_address;
-    int gateway_port = 0;
+    int gateway_port_clients = 0;
+    int gateway_port_peers = 0;
     char* char_buffer = NULL;
     int ret_val_bind = 0;
     int ret_val_recv = 0;
@@ -85,9 +89,16 @@ int main(void)
         sigint_action.sa_flags = 0;
         sigaction(SIGINT, &sigint_action, NULL);
 
-        //socket call
-        socket_dgram_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
-        if(socket_dgram_fd == -1){
+        //socket call clients
+        socket_dgram_clients_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_clients_fd == -1){
+            fprintf(stderr, "Error opening dgram socket.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        //socket call peers
+        socket_dgram_peers_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_peers_fd == -1){
             fprintf(stderr, "Error opening dgram socket.\n");
             exit(EXIT_FAILURE);
         }
@@ -100,17 +111,29 @@ int main(void)
             fprintf(stderr, "sscanf: error reading port number!\n");
             exit(EXIT_FAILURE);
         }
-        fprintf(stdout, "Gateway port: %d\n", gateway_port);
-        memset((void*)&gateway_socket_address, 0, sizeof(gateway_socket_address));   // first we reset the struct
-        gateway_socket_address.sin_family = AF_INET;
-        gateway_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
-        gateway_socket_address.sin_port = htons(gateway_port);
+        fprintf(stdout, "Gateway port (Clients): %d\n", gateway_port_clients);
+        fprintf(stdout, "Gateway port (Peers): %d\n", gateway_port_peers);
+        memset((void*)&gateway_clients_dgram_socket_address, 0, sizeof(gateway_clients_dgram_socket_address));   // first we reset the struct
+        gateway_clients_dgram_socket_address.sin_family = AF_INET;
+        gateway_clients_dgram_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
+        gateway_clients_dgram_socket_address.sin_port = htons(gateway_port_clients);
+
+        memset((void*)&gateway_peers_dgram_socket_address, 0, sizeof(gateway_peers_dgram_socket_address));   // first we reset the struct
+        gateway_peers_dgram_socket_address.sin_family = AF_INET;
+        gateway_peers_dgram_socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
+        gateway_peers_dgram_socket_address.sin_port = htons(gateway_port_peers);
 
         // we assume client and server family will always be AF_INET
         client_socket_address.sin_family = AF_INET;
 
-        /* bind datagram socket, since we will be receiving */
-        ret_val_bind = bind(socket_dgram_fd, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
+        /* bind datagram socket, since we will be receiving CLIENTS*/
+        ret_val_bind = bind(socket_dgram_clients_fd, (struct sockaddr *)&gateway_clients_dgram_socket_address, sizeof(gateway_clients_dgram_socket_address));
+        if(ret_val_bind == -1){
+            fprintf(stderr, "Error binding socket dgram\n");
+            exit(EXIT_FAILURE);
+        }
+        /* bind datagram socket, since we will be receiving PEERS*/
+        ret_val_bind = bind(socket_dgram_peers_fd, (struct sockaddr *)&gateway_peers_dgram_socket_address, sizeof(gateway_peers_dgram_socket_address));
         if(ret_val_bind == -1){
             fprintf(stderr, "Error binding socket dgram\n");
             exit(EXIT_FAILURE);
