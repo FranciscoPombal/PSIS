@@ -1,7 +1,26 @@
-#include "../include/messages.h"
+#include "../include/gateway.h"
 
-int getGatewayPort(void);
+void sigIntHandler(int sig)
+{
+    fprintf(stdout, "Caught signal %d\n", sig);
+    keepRunning = 0;
 
+    return;
+}
+
+void setupInterrupt(void)
+{
+    // signal realated variables
+    struct sigaction sigint_action;
+
+        /* setup sigIntHandler as the handler function for SIGINT */
+        sigint_action.sa_handler = sigIntHandler;
+        sigemptyset(&sigint_action.sa_mask);
+        sigint_action.sa_flags = 0;
+        sigaction(SIGINT, &sigint_action, NULL);
+
+    return;
+}
 
 int getGatewayPort(void)
 {
