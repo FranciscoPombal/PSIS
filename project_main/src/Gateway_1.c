@@ -1,17 +1,4 @@
-#include "../include/messages.h"
-#include "../include/gatewayAPI.h"
-
-static volatile int keepRunning = 1;
-
-void sigIntHandler(int);
-
-void sigIntHandler(int sig)
-{
-    fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
-
-    return;
-}
+#include "../include/gateway.h"
 
 // TODO: client linked list nodes must specify which peer is connected to the client, to inform upon (unexpected) peer death
 // TODO: peer linked list must include dgram socket address of server for additional communication
@@ -139,18 +126,10 @@ int main(void)
     Message_gw message_gw;
     Client_thread_args client_thread_args;
 
-    // signal realated variables
-    struct sigaction sigint_action;
-
-
+        //setup SIGINT
+        setupInterrupt();
 
         char_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
-
-        /* setup sigIntHandler as the handler function for SIGINT */
-        sigint_action.sa_handler = sigIntHandler;
-        sigemptyset(&sigint_action.sa_mask);
-        sigint_action.sa_flags = 0;
-        sigaction(SIGINT, &sigint_action, NULL);
 
         //socket call clients
         socket_dgram_clients_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);

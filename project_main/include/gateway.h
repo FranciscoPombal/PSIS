@@ -3,5 +3,11 @@
 
 #include "messages.h"
 
+static volatile bool keepRunning = true;
+
+int getGatewayPort(void);
+void sigIntHandler(int sig);
+void setupInterrupt(void);
+
 
 #endif
