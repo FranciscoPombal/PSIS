@@ -53,6 +53,9 @@ void* clientthread(void * args){
 void* recvthread(void * args){
   int ret_val_recv = 0;
   int ret_val_pthread_create = 0;
+  pthread_t* clients_id = malloc(100000*sizeof(pthread_t));
+  pthread_t* peers_id = malloc(100000*sizeof(pthread_t));
+  unsigned int i=0, j=0;
 
   while(true){
     memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
@@ -60,20 +63,21 @@ void* recvthread(void * args){
     fprintf(stderr, "recdd\n");
 
     if (message_gw.type == CLIENT_ADDRESS) {
-      ret_val_pthread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
+      ret_val_pthread_create = pthread_create( &clients_id[i], NULL, &clientthread, (void *)&client_thread_args);
       if (ret_val_pthread_create != 0) {
         fprintf(stderr, "recv_pthread_create error!\n");
         exit(EXIT_FAILURE);
       }
+      i++;
     }
     else if(message_gw.type == PEER_ADDRESS){
-      ret_val_pthread_create = pthread_create( &thread_recv_id, NULL, &clientthread, (void *)&client_thread_args);
+      ret_val_pthread_create = pthread_create( &peers_id[j], NULL, &clientthread, (void *)&client_thread_args);
       if (ret_val_pthread_create != 0) {
         fprintf(stderr, "recv_pthread_create error!\n");
         exit(EXIT_FAILURE);
       }
+      j++;
     }
-
   }
 }
 
@@ -189,7 +193,7 @@ int main(void)
 
 
 
-
+        //PREVIOUS CODE (LAB7):
 
         // TODO: while keepRunning
         while(true == keepRunning){
