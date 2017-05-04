@@ -5,6 +5,11 @@
 
 static volatile bool keepRunning = true;
 
+typedef struct _recvThreadArgs {
+    int socket_fd;
+    SinglyLinkedList* list_head;
+} RecvThreadArgs;
+
 // Functions
 int peersDgramSocketSetup(void);
 void setupGatewayAddress(struct sockaddr_in *);
@@ -14,9 +19,10 @@ void sigIntHandler(int sig);
 void setupInterrupt(void);
 
 // Threads
-void* recvThread(void* args);
-void* peerRecvThread(void* args);
-void* clientRecvThread(void* args);
+void* masterPeerRecvThread(void* args);
+void* masterClientRecvThread(void* args);
+void* slavePeerRecvThread(void* args);
+void* slaveClientRecvThread(void* args);
 
 // TODO
 void* send_address_to_client(void * args);

@@ -49,6 +49,10 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
+#ifndef HUGE_NUMBER
+#define HUGE_NUMBER 100000
+#endif
+
 #ifndef PEER_UNAVAILABLE
 #define PEER_UNAVAILABLE -1
 #endif
