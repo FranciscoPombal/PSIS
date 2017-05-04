@@ -10,6 +10,11 @@ typedef struct _recvThreadArgs {
     SinglyLinkedList* list_head;
 } RecvThreadArgs;
 
+typedef struct _clientRecvThreadArgs {
+    SinglyLinkedList* list_head;
+    struct sockaddr_in client_address;
+} ClientRecvThreadArgs;
+
 // Functions
 int peersDgramSocketSetup(void);
 void setupGatewayAddress(struct sockaddr_in *);

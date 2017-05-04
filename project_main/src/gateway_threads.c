@@ -1,5 +1,7 @@
 #include "../include/gateway.h"
 
+pthread_mutex_t client_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 //Thread always checking for new peer connections (INFINITE LOOP)
 void* masterPeerRecvThread(void* args)
 {
@@ -62,7 +64,6 @@ void* masterClientRecvThread(void* args)
                 clientRecvThreadArgs = malloc(sizeof(ClientRecvThreadArgs));
                 clientRecvThreadArgs->list_head = recvThreadArgs->list_head;
                 clientRecvThreadArgs->client_address = client_socket_address;
-
                 ret_val_pthread_create = pthread_create(&thread_client_recv_id[i], NULL, &slaveClientRecvThread, (void *)clientRecvThreadArgs);
                 if (ret_val_pthread_create != 0) {
                     fprintf(stderr, "recv_pthread_create (client - slave) error!\n");
@@ -89,42 +90,43 @@ void* peerRecvThread(void* args)
 /* THREAD: receive client address and add it to Clients linked list */
 void* clientRecvThread(void* args)
 {
-    Client_thread_args* client_thread_args = args;
-    SinglyLinkedList* aux_linked_list_node;
+    ClientRecvThreadArgs* client_recv_thread_args = NULL;
+    SinglyLinkedList* client_list_head = NULL;
+    SinglyLinkedList* aux_linked_list_node = NULL;
+    SinglyLinkedList* new_linked_list_node = NULL;
+    struct sockaddr_in client_socket_address;
+    ClientProperties* clientProperties = NULL;
 
-    int client_port = client_thread_args->message_gw.port;
-    unsigned int client_ip = client_thread_args->message_gw.address;
-    SinglyLinkedList* server_linked_list = client_thread_args->list_head;
-    ServerProperties* aux_server_linked_list_item = NULL;
+        client_recv_thread_args = (ClientRecvThreadArgs*)args;
+        client_list_head = client_recv_thread_args->list_head;
+        client_socket_address = client_recv_thread_args->client_address;
 
-    Message_gw message_gw;
-
-    int ret_val_send_to = 0;
-
-    // choose from linked_list
-
-    for(aux_linked_list_node = server_linked_list; aux_linked_list_node != NULL; aux_linked_list_node = SinglyLinkedList_getNextNode(aux_linked_list_node)){
-        aux_server_linked_list_item = (ServerProperties*)SinglyLinkedList_getItem(aux_linked_list_node);
-        if(aux_server_linked_list_item->status == AVAILABLE){
-            // in this initial implementation, the server is automatically marked as unavailable if it is connected with a single client
-            aux_server_linked_list_item->status = UNAVAILABLE;
-            message_gw.type = PEER_ADDRESS;
-            message_gw.address = aux_server_linked_list_item->server_socket_address.sin_addr.s_addr;
-            message_gw.port = ntohs(aux_server_linked_list_item->server_socket_address.sin_port);
-            break; // breaks out of mearest while, for or do...while
+        // TODO: put client in list
+        // create client list item payload
+        clientProperties = malloc(sizeof(ClientProperties));
+        memset(&(clientProperties->client_socket_address), 0, sizeof(struct sockaddr_in));
+        memset(&(clientProperties->connected_peer_socket_address), 0, sizeof(struct sockaddr_in));
+        clientProperties -> client_socket_address = client_socket_address;
+        // CRITICAL SECTION START
+        pthread_mutex_lock(&client_list_mutex);
+        for(aux_linked_list_node = client_list_head; SinglyLinkedList_getNextNode(aux_linked_list_node) != NULL; aux_linked_list_node = SinglyLinkedList_getNextNode(aux_linked_list_node)){} // traverse list to last node
+        // If we are at the head, the node will already exist but item is null
+        if(SinglyLinkedList_getItem(aux_linked_list_node) == NULL){
+            SinglyLinkedList_setItem(aux_linked_list_node, clientProperties);
+        }else{
+        // otherwise, alloc new node, set item and insert it at the end of the list
+            new_linked_list_node = SinglyLinkedList_newNode(NULL);
+            SinglyLinkedList_setItem(new_linked_list_node, clientProperties);
+            SinglyLinkedList_insertAtEnd(aux_linked_list_node, new_linked_list_node);
         }
-    }
+        pthread_mutex_unlock(&client_list_mutex);
+        // CRITICAL SECTION END
 
-    ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
-    if(ret_val_send_to == -1){
-        fprintf(stderr, "Failed to send server address to client\n");
-        exit(EXIT_FAILURE);
-    }
-
+        // TODO: search peer list for available peer to send to client
 }
 
 //Thread that sends peer address to new client
-void* send_address_to_client(void * args)
+void* send_address_to_client(void* args)
 {
 
 }

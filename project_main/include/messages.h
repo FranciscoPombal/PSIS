@@ -84,14 +84,15 @@ typedef struct _message_gw{
     int port;
 } Message_gw;
 
-typedef struct _server_properties{
+typedef struct _peer_properties{
     struct sockaddr_in server_socket_address;
     int status;
-} ServerProperties;
+} PeerProperties;
 
-typedef struct _client_thread_args{
-    SinglyLinkedList* list_head;
-    Message_gw message_gw;
-} Client_thread_args;
+
+typedef struct _client_properties{
+    struct sockaddr_in client_socket_address;
+    struct sockaddr_in connected_peer_socket_address;
+} ClientProperties;
 
 #endif
