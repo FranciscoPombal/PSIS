@@ -5,14 +5,27 @@
 
 static volatile bool keepRunning = true;
 
-typedef struct _recvThreadArgs {
+typedef struct _masterPeerRecvThreadArgs {
     int socket_fd;
-    SinglyLinkedList* list_head;
-} RecvThreadArgs;
+    SinglyLinkedList* peer_list_head;
+} MasterPeerRecvThreadArgs;
+
+typedef struct _peerRecvThreadArgs {
+    SinglyLinkedList* peer_list_head;
+    struct sockaddr_in peer_address;
+} PeerRecvThreadArgs;
+
+typedef struct _masterClientRecvThreadArgs {
+    int socket_fd;
+    SinglyLinkedList* client_list_head;
+    SinglyLinkedList* peer_list_head;
+} MasterClientRecvThreadArgs;
 
 typedef struct _clientRecvThreadArgs {
-    SinglyLinkedList* list_head;
+    int socket_fd;
     struct sockaddr_in client_address;
+    SinglyLinkedList* client_list_head;
+    SinglyLinkedList* peer_list_head;
 } ClientRecvThreadArgs;
 
 // Functions

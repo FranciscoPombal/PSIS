@@ -13,8 +13,8 @@ int main(void)
     // Linked list of peers
     SinglyLinkedList* peer_linked_list = NULL;
     SinglyLinkedList* aux_linked_list_node = NULL;
-    ServerProperties* peer_properties = NULL;
-    ServerProperties* aux_peer_linked_list_item = NULL;
+    PeerProperties* peer_properties = NULL;
+    PeerProperties* aux_peer_linked_list_item = NULL;
 
     // Linked list of clients
     SinglyLinkedList* client_linked_list = NULL;
@@ -23,14 +23,13 @@ int main(void)
     // recv threads
     pthread_t thread_master_peer_recv_id = 0;
     pthread_t thread_master_client_recv_id = 0;
-    RecvThreadArgs* masterPeerRecvThreadArgs = NULL;
-    RecvThreadArgs* masterClientRecvThreadArgs = NULL;
+    MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
+    MasterClientRecvThreadArgs* masterClientRecvThreadArgs = NULL;
 
     pthread_t* threadid = malloc(HUGE_NUMBER * sizeof(pthread_t));
     int i = 0;
     int ret_val_phtread_create = 0;
     int ret_val_recv_phtread_create = 0;
-    Client_thread_args client_thread_args;
 
     // other
     char* char_buffer = NULL;
@@ -51,17 +50,19 @@ int main(void)
         socket_dgram_peers_fd = peersDgramSocketSetup();
         socket_dgram_clients_fd = clientDgramSocketSetup();
 
-        //Initialize infinite master recv threads
-        masterClientRecvThreadArgs = malloc(sizeof(RecvThreadArgs));
-        masterClientRecvThreadArgs->socket_fd = socket_dgram_clients_fd;
-        peer_linked_list = SinglyLinkedList_newNode(NULL);
-        masterClientRecvThreadArgs->list_head = peer_linked_list;
-
-        masterPeerRecvThreadArgs = malloc(sizeof(RecvThreadArgs));
+        // prepare arguments for infinite master recv threads
+        masterPeerRecvThreadArgs = malloc(sizeof(MasterPeerRecvThreadArgs));
         masterPeerRecvThreadArgs->socket_fd = socket_dgram_peers_fd;
-        client_linked_list = SinglyLinkedList_newNode(NULL);
-        masterPeerRecvThreadArgs->list_head = client_linked_list;
+        peer_linked_list = SinglyLinkedList_newNode(NULL);
+        masterPeerRecvThreadArgs->peer_list_head = peer_linked_list;
 
+        masterClientRecvThreadArgs = malloc(sizeof(MasterClientRecvThreadArgs));
+        masterClientRecvThreadArgs->socket_fd = socket_dgram_clients_fd;
+        masterClientRecvThreadArgs->peer_list_head = peer_linked_list;
+        client_linked_list = SinglyLinkedList_newNode(NULL);
+        masterClientRecvThreadArgs->client_list_head = client_linked_list;
+
+        //Initialize infinite master recv threads
         ret_val_recv_phtread_create = pthread_create(&thread_master_peer_recv_id, NULL, &masterPeerRecvThread, &masterPeerRecvThreadArgs);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (peer) error!\n");
@@ -96,9 +97,9 @@ int main(void)
 
                 // TODO: check if peer already exists in linked list; if it does, mark it as available
                 for(aux_linked_list_node = peer_linked_list; aux_linked_list_node != NULL; aux_linked_list_node = SinglyLinkedList_getNextNode(aux_linked_list_node)){
-                    aux_peer_linked_list_item = (ServerProperties*)SinglyLinkedList_getItem(aux_linked_list_node);
+                    aux_peer_linked_list_item = (PeerProperties*)SinglyLinkedList_getItem(aux_linked_list_node);
 
-                    if((message_gw.port == ntohs(aux_peer_linked_list_item->server_socket_address.sin_port)) && (message_gw.address == aux_peer_linked_list_item->server_socket_address.sin_addr.s_addr)){
+                    if((message_gw.port == ntohs(aux_peer_linked_list_item->peer_socket_address.sin_port)) && (message_gw.address == aux_peer_linked_list_item->peer_socket_address.sin_addr.s_addr)){
                         new_peer = false;
                         if (aux_peer_linked_list_item->status == UNAVAILABLE) {
                             aux_peer_linked_list_item->status = AVAILABLE;
@@ -110,10 +111,10 @@ int main(void)
                 }
 
                 if(true == new_peer){
-                    peer_properties = malloc(sizeof(ServerProperties));
-                    peer_properties->server_socket_address.sin_family = AF_INET;
-                    peer_properties->server_socket_address.sin_addr.s_addr = htonl(message_gw.address);
-                    peer_properties->server_socket_address.sin_port = htons(message_gw.port);
+                    peer_properties = malloc(sizeof(PeerProperties));
+                    peer_properties->peer_socket_address.sin_family = AF_INET;
+                    peer_properties->peer_socket_address.sin_addr.s_addr = htonl(message_gw.address);
+                    peer_properties->peer_socket_address.sin_port = htons(message_gw.port);
                     peer_properties->status = AVAILABLE;
 
                     if(peer_linked_list == NULL){
@@ -147,10 +148,13 @@ int main(void)
             }
         }
 
-    pthread_cancel(thread_recv_id);
+    // TODO: probably not needed
+    pthread_cancel(thread_master_peer_recv_id);
+    pthread_cancel(thread_master_client_recv_id);
 
     // close and free stuff
-    close(socket_dgram_fd);
+    close(socket_dgram_peers_fd);
+    close(socket_dgram_clients_fd);
     free(char_buffer);
     free(threadid);
 

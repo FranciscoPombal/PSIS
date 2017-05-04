@@ -65,12 +65,12 @@
 #define CLIENT_ADDRESS 1
 #endif
 
-#ifndef AVAILABLE
-#define AVAILABLE 1
+#ifndef PEER_AVAILABLE
+#define PEER_AVAILABLE 1
 #endif
 
-#ifndef UNAVAILABLE
-#define UNAVAILABLE 0
+#ifndef PEER_UNAVAILABLE
+#define PEER_UNAVAILABLE 0
 #endif
 
 typedef struct _message{
@@ -85,7 +85,7 @@ typedef struct _message_gw{
 } Message_gw;
 
 typedef struct _peer_properties{
-    struct sockaddr_in server_socket_address;
+    struct sockaddr_in peer_socket_address;
     int status;
 } PeerProperties;
 
