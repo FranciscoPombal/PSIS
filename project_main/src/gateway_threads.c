@@ -7,46 +7,83 @@ pthread_mutex_t peer_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* THREAD: receive peer address and add it to Peers linked list */
 void* peerRecvThread(void* args)
 {
+    bool new_peer = true;
+    SinglyLinkedList* peer_list_head = NULL;
+    SinglyLinkedList* aux_peer_list_node = NULL;
+    SinglyLinkedList* new_peer_list_node = NULL;
+    PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
+    struct sockaddr_in peer_socket_address;
+    PeerProperties* aux_peer_list_item = NULL;
 
+        peerRecvThreadArgs = (PeerRecvThreadArgs*)args;
+        peer_list_head = peerRecvThreadArgs->peer_list_head;
+        peer_socket_address = peerRecvThreadArgs->peer_address;
+
+        // CRITICAL SECTION BEGIN
+        pthread_mutex_lock(&peer_list_mutex);
+        for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
+            aux_peer_list_item = (PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node);
+            if((aux_peer_list_item->peer_socket_address.sin_port == peer_socket_address.sin_port) && (aux_peer_list_item->peer_socket_address.sin_addr.s_addr == peer_socket_address.sin_addr.s_addr)){
+                new_peer = false;
+                break;
+            }
+        }
+        if(true == new_peer){
+            aux_peer_list_item = (PeerProperties*)malloc(sizeof(PeerProperties));
+            aux_peer_list_item->status = PEER_AVAILABLE;
+            aux_peer_list_item->peer_socket_address = peer_socket_address;
+            new_peer_list_node = SinglyLinkedList_newNode(aux_peer_list_item);
+            SinglyLinkedList_insertAtEnd(aux_peer_list_node, new_peer_list_node);
+        }
+        pthread_mutex_unlock(&peer_list_mutex);
+        // CRITICAL SECTION END
+
+    pthread_exit(NULL);
 }
 
 //Thread always checking for new peer connections (INFINITE LOOP)
 void* masterPeerRecvThread(void* args)
 {
-    int ret_val_recv = 0;
+    long int i = 0;
+    int socket_fd = 0;
+    int ret_val_recvfrom = 0;
     int ret_val_pthread_create = 0;
-    pthread_t* clients_id = NULL;
-    pthread_t* peers_id = NULL;
-    unsigned int i=0, j=0;
+    pthread_t* thread_peer_recv_id = NULL;
+    struct sockaddr_in peer_socket_address;
+    socklen_t peer_socket_address_len = sizeof(peer_socket_address);
+    SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
+    MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
+    PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
 
-        clients_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
-        peers_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+        // TODO: big enough? when to increase? how to increase?
+        thread_peer_recv_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+        masterPeerRecvThreadArgs = (MasterPeerRecvThreadArgs*)args;
+        socket_fd = masterPeerRecvThreadArgs->socket_fd;
+        peer_list_head = masterPeerRecvThreadArgs->peer_list_head;
 
         while(true){
-            //memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
+            memset((void*)&peer_socket_address, 0, sizeof(peer_socket_address));
+            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_address, &peer_socket_address_len);
 
-            fprintf(stderr, "recdd\n");
+            if(message_gw.type == PEER_ADDRESS){
+                peerRecvThreadArgs = (PeerRecvThreadArgs*)malloc(sizeof(PeerRecvThreadArgs));
+                peerRecvThreadArgs->peer_list_head = peer_list_head;
+                peerRecvThreadArgs->peer_address = peer_socket_address;
 
-            if(message_gw.type == CLIENT_ADDRESS){
-                ret_val_pthread_create = pthread_create( &clients_id[i], NULL, &clientthread, (void *)&client_thread_args);
-                if (ret_val_pthread_create != 0) {
-                    fprintf(stderr, "recv_pthread_create error!\n");
-                    exit(EXIT_FAILURE);
-                }
-                i++;
-            }else if(message_gw.type == PEER_ADDRESS){
-                ret_val_pthread_create = pthread_create( &peers_id[j], NULL, &clientthread, (void *)&client_thread_args);
+
+                ret_val_pthread_create = pthread_create(&thread_peer_recv_id[i], NULL, &peerRecvThread, (void *)peerRecvThreadArgs);
                 if(ret_val_pthread_create != 0){
-                    fprintf(stderr, "recv_pthread_create error!\n");
+                    fprintf(stderr, "recv_pthread_create (peer - slave) error!\n");
                     exit(EXIT_FAILURE);
                 }
-                j++;
+                i += 1;
+            }else{
+                fprintf(stdout, "Peer receive thread error: bad message type\n");
             }
         }
 
-    free(clients_id);
-    free(peers_id);
+    free(thread_peer_recv_id);
 }
 
 // TODO
@@ -118,8 +155,8 @@ void* clientRecvThread(void* args)
                 pthread_mutex_lock(&client_list_mutex);
                 ((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->connected_peer_socket_address = peer_socket_address;
                 pthread_mutex_lock(&client_list_mutex);
-                message_gw.address = peer_socket_address.sin_addr.s_addr;
-                message_gw.port = peer_socket_address.sin_port;
+                message_gw.address = ntohl(peer_socket_address.sin_addr.s_addr);
+                message_gw.port = ntohs(peer_socket_address.sin_port);
                 ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->status = PEER_UNAVAILABLE;
                 break;
             }
@@ -133,7 +170,7 @@ void* clientRecvThread(void* args)
         // We free the args which were allocated in the calling thread; must free list of clients in main
         free(client_recv_thread_args);
 
-    pthread_exit(0);
+    pthread_exit(NULL);
 }
 
 //Thread always checking for new client connections (INFINITE LOOP)
@@ -146,6 +183,8 @@ void* masterClientRecvThread(void* args)
     pthread_t* thread_client_recv_id = NULL;
     struct sockaddr_in client_socket_address;
     socklen_t client_socket_address_len = sizeof(client_socket_address);
+    SinglyLinkedList* client_list_head = NULL;
+    SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
     MasterClientRecvThreadArgs* masterClientRecvThreadArgs = NULL;
     ClientRecvThreadArgs* clientRecvThreadArgs = NULL;
@@ -154,6 +193,8 @@ void* masterClientRecvThread(void* args)
         thread_client_recv_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
         masterClientRecvThreadArgs = (MasterClientRecvThreadArgs*)args;
         socket_fd = masterClientRecvThreadArgs->socket_fd;
+        client_list_head = masterClientRecvThreadArgs->client_list_head;
+        peer_list_head = masterClientRecvThreadArgs->peer_list_head;
 
         while(true){
             memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
@@ -162,8 +203,8 @@ void* masterClientRecvThread(void* args)
             if(message_gw.type == CLIENT_ADDRESS){
                 clientRecvThreadArgs = (ClientRecvThreadArgs*)malloc(sizeof(ClientRecvThreadArgs));
                 clientRecvThreadArgs->socket_fd = socket_fd;
-                clientRecvThreadArgs->peer_list_head = masterClientRecvThreadArgs->peer_list_head;
-                clientRecvThreadArgs->client_list_head = masterClientRecvThreadArgs->client_list_head;
+                clientRecvThreadArgs->peer_list_head = peer_list_head;
+                clientRecvThreadArgs->client_list_head = client_list_head;
                 clientRecvThreadArgs->client_address = client_socket_address;
                 ret_val_pthread_create = pthread_create(&thread_client_recv_id[i], NULL, &clientRecvThread, (void *)clientRecvThreadArgs);
                 if(ret_val_pthread_create != 0){
@@ -177,16 +218,4 @@ void* masterClientRecvThread(void* args)
         }
 
     free(thread_client_recv_id);
-}
-
-//Thread that sends peer address to new client
-void* send_address_to_client(void* args)
-{
-
-}
-
-//Thread that receives address from new peer
-void* receive_address_from_peer(void * args)
-{
-
 }
