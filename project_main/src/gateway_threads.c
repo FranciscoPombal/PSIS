@@ -65,6 +65,7 @@ void* clientRecvThread(void* args)
     struct sockaddr_in peer_socket_address;
     ClientProperties* clientProperties = NULL;
     Message_gw message_gw;
+    bool knownClient = false;
 
         message_gw.type = PEER_UNAVAILABLE;
         client_recv_thread_args = (ClientRecvThreadArgs*)args;
@@ -73,32 +74,37 @@ void* clientRecvThread(void* args)
         client_list_head = client_recv_thread_args->client_list_head;
         client_socket_address = client_recv_thread_args->client_address;
 
-        // create client list item payload
-        clientProperties = (ClientProperties*)malloc(sizeof(ClientProperties));
-        memset(&(clientProperties->client_socket_address), 0, sizeof(struct sockaddr_in));
-        memset(&(clientProperties->connected_peer_socket_address), 0, sizeof(struct sockaddr_in));
-        clientProperties -> client_socket_address = client_socket_address;
-
         // CRITICAL SECTION START
         pthread_mutex_lock(&client_list_mutex);
 
-
-        // TODO: before search for the client in the list, search the list to see if it is already there
         for(aux_client_list_node = client_list_head; SinglyLinkedList_getNextNode(aux_client_list_node) != NULL; aux_client_list_node = SinglyLinkedList_getNextNode(aux_client_list_node)){
-            
+            if(SinglyLinkedList_getItem(aux_client_list_node) != NULL){
+                if((((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->client_socket_address.sin_addr.s_addr == client_socket_address.sin_addr.s_addr) && (((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->client_socket_address.sin_port == client_socket_address.sin_port)){
+                    knownClient = true;
+                    break;
+                    // at this point, aux_client_list_node points to the node with the new client
+                }
+            }
         }
 
-
-        for(aux_client_list_node = client_list_head; SinglyLinkedList_getNextNode(aux_client_list_node) != NULL; aux_client_list_node = SinglyLinkedList_getNextNode(aux_client_list_node)){} // traverse list to last node
-        if(SinglyLinkedList_getItem(aux_client_list_node) == NULL){ // If we are at the head, the node will already exist but item is null
-            SinglyLinkedList_setItem(aux_client_list_node, clientProperties);
-        }else{ // otherwise, alloc new node, set item and insert it at the end of the list
-            new_client_list_node = SinglyLinkedList_newNode(NULL);
-            SinglyLinkedList_setItem(new_client_list_node, clientProperties);
-            SinglyLinkedList_insertAtEnd(aux_client_list_node, new_client_list_node);
-            aux_client_list_node = new_client_list_node;
+        if(false == knownClient){
+            // create client list item payload
+            clientProperties = (ClientProperties*)malloc(sizeof(ClientProperties));
+            memset(&(clientProperties->client_socket_address), 0, sizeof(struct sockaddr_in));
+            memset(&(clientProperties->connected_peer_socket_address), 0, sizeof(struct sockaddr_in));
+            clientProperties -> client_socket_address = client_socket_address;
+            // traverse list to last node
+            for(aux_client_list_node = client_list_head; SinglyLinkedList_getNextNode(aux_client_list_node) != NULL; aux_client_list_node = SinglyLinkedList_getNextNode(aux_client_list_node)){}
+            if(SinglyLinkedList_getItem(aux_client_list_node) == NULL){ // If we are at the head, the node will already exist but item is null
+                SinglyLinkedList_setItem(aux_client_list_node, clientProperties);
+            }else{ // otherwise, alloc new node, set item and insert it at the end of the list
+                new_client_list_node = SinglyLinkedList_newNode(NULL);
+                SinglyLinkedList_setItem(new_client_list_node, clientProperties);
+                SinglyLinkedList_insertAtEnd(aux_client_list_node, new_client_list_node);
+                aux_client_list_node = new_client_list_node;
+            }
+            // at this point, aux_client_list_node points to the node with the new client
         }
-        // at this aux_client_list_node points to the node with the new client
         pthread_mutex_unlock(&client_list_mutex);
         // CRITICAL SECTION END
 
