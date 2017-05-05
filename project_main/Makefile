@@ -31,7 +31,8 @@ IFILES=include/defs.h \
        include/messages.h \
 	   include/gallery_api.h \
        include/client.h \
-	   include/peer.h
+	   include/peer.h \
+	   include/gateway.h
 
 IDIR=include/
 
@@ -44,8 +45,8 @@ release: client gateway peer
 client: src/client.c src/client_functions.c src/linked_list.c include/client.h $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/release/client 2> build/release/client_compile.log
 
-gateway: src/gateway.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c -o bin/release/gateway 2> build/release/gateway_compile.log
+gateway: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/release/gateway 2> build/release/gateway_compile.log
 
 peer: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/release/peer 2> build/release/peer_compile.log
@@ -60,11 +61,11 @@ client_dbg_2: src/client.c src/client_functions.c src/linked_list.c include/clie
 
 gateway_dbg: gateway_dbg_1 gateway_dbg_2
 
-gateway_dbg_1: src/gateway.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway 2> build/debug/gateway_compile_asan.log
+gateway_dbg_1: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway 2> build/debug/gateway_compile_asan.log
 
-gateway_dbg_2: src/gateway.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c -o bin/debug/gateway 2> build/debug/gateway_compile_tsan.log
+gateway_dbg_2: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway 2> build/debug/gateway_compile_tsan.log
 
 peer_dbg: peer_dbg_1 peer_dbg_2
 
