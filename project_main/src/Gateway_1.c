@@ -1,7 +1,5 @@
 #include "../include/gateway.h"
 
-// TODO: peer linked list must include dgram socket address of peer for additional communication
-
 int main(void)
 {
     // socket stuff

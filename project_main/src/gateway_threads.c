@@ -12,18 +12,20 @@ void* peerRecvThread(void* args)
     SinglyLinkedList* aux_peer_list_node = NULL;
     SinglyLinkedList* new_peer_list_node = NULL;
     PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
-    struct sockaddr_in peer_socket_address;
+    struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_stream_address;
     PeerProperties* aux_peer_list_item = NULL;
 
         peerRecvThreadArgs = (PeerRecvThreadArgs*)args;
         peer_list_head = peerRecvThreadArgs->peer_list_head;
-        peer_socket_address = peerRecvThreadArgs->peer_address;
+        peer_socket_dgram_address = peerRecvThreadArgs->peer_socket_dgram_address;
+        peer_socket_stream_address = peerRecvThreadArgs->peer_socket_stream_address;
 
         // CRITICAL SECTION BEGIN
         pthread_mutex_lock(&peer_list_mutex);
         for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
             aux_peer_list_item = (PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node);
-            if((aux_peer_list_item->peer_socket_address.sin_port == peer_socket_address.sin_port) && (aux_peer_list_item->peer_socket_address.sin_addr.s_addr == peer_socket_address.sin_addr.s_addr)){
+            if((aux_peer_list_item->peer_socket_stream_address.sin_port == peer_socket_stream_address.sin_port) && (aux_peer_list_item->peer_socket_stream_address.sin_addr.s_addr == peer_socket_stream_address.sin_addr.s_addr)){
                 new_peer = false;
                 break;
             }
@@ -31,7 +33,8 @@ void* peerRecvThread(void* args)
         if(true == new_peer){
             aux_peer_list_item = (PeerProperties*)malloc(sizeof(PeerProperties));
             aux_peer_list_item->status = PEER_AVAILABLE;
-            aux_peer_list_item->peer_socket_address = peer_socket_address;
+            aux_peer_list_item->peer_socket_dgram_address = peer_socket_dgram_address;
+            aux_peer_list_item->peer_socket_stream_address = peer_socket_stream_address;
             new_peer_list_node = SinglyLinkedList_newNode(aux_peer_list_item);
             SinglyLinkedList_insertAtEnd(aux_peer_list_node, new_peer_list_node);
         }
@@ -49,8 +52,9 @@ void* masterPeerRecvThread(void* args)
     int ret_val_recvfrom = 0;
     int ret_val_pthread_create = 0;
     pthread_t* thread_peer_recv_id = NULL;
-    struct sockaddr_in peer_socket_address;
-    socklen_t peer_socket_address_len = sizeof(peer_socket_address);
+    struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_stream_address;
+    socklen_t peer_socket_dgram_address_len = sizeof(peer_socket_dgram_address);
     SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
@@ -63,14 +67,19 @@ void* masterPeerRecvThread(void* args)
         peer_list_head = masterPeerRecvThreadArgs->peer_list_head;
 
         while(true){
-            memset((void*)&peer_socket_address, 0, sizeof(peer_socket_address));
-            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_address, &peer_socket_address_len);
+            memset((void*)&peer_socket_dgram_address, 0, sizeof(peer_socket_dgram_address));
+            memset((void*)&peer_socket_stream_address, 0, sizeof(peer_socket_stream_address));
+            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
 
             if(message_gw.type == PEER_ADDRESS){
+                peer_socket_stream_address.sin_family = AF_INET;
+                peer_socket_stream_address.sin_addr.s_addr = htonl(message_gw.address);
+                peer_socket_stream_address.sin_port = htons(message_gw.port);
+
                 peerRecvThreadArgs = (PeerRecvThreadArgs*)malloc(sizeof(PeerRecvThreadArgs));
                 peerRecvThreadArgs->peer_list_head = peer_list_head;
-                peerRecvThreadArgs->peer_address = peer_socket_address;
-
+                peerRecvThreadArgs->peer_socket_dgram_address = peer_socket_dgram_address;
+                peerRecvThreadArgs->peer_socket_stream_address = peer_socket_stream_address;
 
                 ret_val_pthread_create = pthread_create(&thread_peer_recv_id[i], NULL, &peerRecvThread, (void *)peerRecvThreadArgs);
                 if(ret_val_pthread_create != 0){

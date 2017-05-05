@@ -12,7 +12,8 @@ typedef struct _masterPeerRecvThreadArgs {
 
 typedef struct _peerRecvThreadArgs {
     SinglyLinkedList* peer_list_head;
-    struct sockaddr_in peer_address;
+    struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_stream_address;
 } PeerRecvThreadArgs;
 
 typedef struct _masterClientRecvThreadArgs {
