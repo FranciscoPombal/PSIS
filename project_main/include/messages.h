@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #include "./linked_list.h"
 
@@ -48,6 +49,10 @@
 #define CHAR_BUFFER_SIZE 1024
 #endif
 
+#ifndef HUGE_NUMBER
+#define HUGE_NUMBER 100000
+#endif
+
 #ifndef IPV4_STRING_SIZE
 #define IPV4_STRING_SIZE 16
 #endif
@@ -64,27 +69,35 @@
 #define CLIENT_ADDRESS 1
 #endif
 
-#ifndef AVAILABLE
-#define AVAILABLE 1
+#ifndef PEER_AVAILABLE
+#define PEER_AVAILABLE 1
 #endif
 
-#ifndef UNAVAILABLE
-#define UNAVAILABLE 0
+#ifndef PEER_UNAVAILABLE
+#define PEER_UNAVAILABLE 0
 #endif
 
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
 
+// TODO: socket tambem vai na message_gw
 typedef struct _message_gw{
     int type;
     unsigned int address;
     int port;
 } Message_gw;
 
-typedef struct _server_properties{
-    struct sockaddr_in server_socket_address;
+typedef struct _peer_properties{
+    struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_stream_address;
     int status;
-} ServerProperties;
+} PeerProperties;
+
+
+typedef struct _client_properties{
+    struct sockaddr_in client_socket_address;
+    struct sockaddr_in connected_peer_socket_address;
+} ClientProperties;
 
 #endif
