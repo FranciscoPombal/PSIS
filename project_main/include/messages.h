@@ -85,7 +85,8 @@ typedef struct _message_gw{
 } Message_gw;
 
 typedef struct _peer_properties{
-    struct sockaddr_in peer_socket_address;
+    struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_stream_address;
     int status;
 } PeerProperties;
 

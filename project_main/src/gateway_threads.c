@@ -3,7 +3,7 @@
 pthread_mutex_t client_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t peer_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// TODO
+// TODO: forgot peer has 2 different sockets
 /* THREAD: receive peer address and add it to Peers linked list */
 void* peerRecvThread(void* args)
 {
@@ -86,7 +86,6 @@ void* masterPeerRecvThread(void* args)
     free(thread_peer_recv_id);
 }
 
-// TODO
 /* THREAD: receive client address and add it to Clients linked list */
 void* clientRecvThread(void* args)
 {
@@ -151,7 +150,7 @@ void* clientRecvThread(void* args)
         for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
             if(((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->status == PEER_AVAILABLE){
                 message_gw.type = PEER_ADDRESS;
-                peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_address;
+                peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_stream_address;
                 pthread_mutex_lock(&client_list_mutex);
                 ((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->connected_peer_socket_address = peer_socket_address;
                 pthread_mutex_lock(&client_list_mutex);
