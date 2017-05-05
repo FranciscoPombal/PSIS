@@ -31,7 +31,8 @@ typedef struct _clientRecvThreadArgs {
 
 // Functions
 int peersDgramSocketSetup(void);
-void setupGatewayAddress(struct sockaddr_in *);
+void setupGatewayAddressClients(struct sockaddr_in *);
+void setupGatewayAddressPeers(struct sockaddr_in *);
 int clientDgramSocketSetup(void);
 int getGatewayPort(void);
 void sigIntHandler(int sig);

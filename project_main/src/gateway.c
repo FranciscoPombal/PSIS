@@ -44,7 +44,7 @@ int main(void)
         masterClientRecvThreadArgs->client_list_head = client_linked_list;
 
         //Initialize infinite master recv threads
-        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_recv_id, NULL, &masterPeerRecvThread, &masterPeerRecvThreadArgs);
+        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_recv_id, NULL, &masterPeerRecvThread, masterPeerRecvThreadArgs);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (peer) error!\n");
             exit(EXIT_FAILURE);

@@ -86,7 +86,7 @@ int gatewayConnect(int peerStreamSocket)
         setupGatewayAddress(&gateway_socket_address);
         getsockname(peerStreamSocket, (struct sockaddr *)&peer_socket_address_stream, &peer_socket_address_len);
 
-        message_gw.address = peer_socket_address_stream.sin_addr.s_addr;
+        message_gw.address = ntohl(peer_socket_address_stream.sin_addr.s_addr);
         message_gw.type = PEER_ADDRESS;
         message_gw.port = ntohs(peer_socket_address_stream.sin_port);
 
