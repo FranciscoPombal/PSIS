@@ -133,7 +133,7 @@ void* clientRecvThread(void* args)
         }
 
         if(false == knownClient){
-            fprintf(stderr, "Client is new, adding him to list\n");
+            fprintf(stdout, "Client is new, adding him to list\n");
             // create client list item payload
             clientProperties = (ClientProperties*)malloc(sizeof(ClientProperties));
             memset(&(clientProperties->client_socket_address), 0, sizeof(struct sockaddr_in));
@@ -172,7 +172,7 @@ void* clientRecvThread(void* args)
         }
         pthread_mutex_unlock(&peer_list_mutex);
         // CRITTICAL SECTION END
-        fprintf(stderr, "Message sent to client is of type: %d\n", message_gw.type);
+        fprintf(stdout, "Message sent to client is of type: %d\n", message_gw.type);
 
         // send message_gw to client
         ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
@@ -211,7 +211,7 @@ void* masterClientRecvThread(void* args)
             ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);
 
             if(message_gw.type == CLIENT_ADDRESS){
-                fprintf(stderr, "Received client\n");
+                fprintf(stdout, "Received client\n");
                 clientRecvThreadArgs = (ClientRecvThreadArgs*)malloc(sizeof(ClientRecvThreadArgs));
                 clientRecvThreadArgs->socket_fd = socket_fd;
                 clientRecvThreadArgs->peer_list_head = peer_list_head;

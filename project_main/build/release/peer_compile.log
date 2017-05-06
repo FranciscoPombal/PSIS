@@ -1,12 +1,12 @@
 src/peer_functions.c: In function ‘gatewayConnect’:
 src/peer_functions.c:65:9: warning: variable ‘ret_val_send_to’ set but not used [-Wunused-but-set-variable]
      int ret_val_send_to = 0;
-         ^~~~~~~~~~~~~~~
+         ^
 src/peer_functions.c: In function ‘getGatewayIPv4’:
 src/peer_functions.c:112:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
              fgets(buffer, 100, stdin);
-             ^~~~~~~~~~~~~~~~~~~~~~~~~
+             ^
 src/peer_functions.c: In function ‘getGatewayPort’:
 src/peer_functions.c:149:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
              fgets(char_buffer, sizeof(char_buffer), stdin);
-             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             ^
