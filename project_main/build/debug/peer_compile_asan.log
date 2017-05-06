@@ -1,4 +1,4 @@
 src/peer_functions.c: In function ‘gatewayConnect’:
 src/peer_functions.c:65:9: warning: variable ‘ret_val_send_to’ set but not used [-Wunused-but-set-variable]
      int ret_val_send_to = 0;
-         ^
+         ^~~~~~~~~~~~~~~

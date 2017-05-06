@@ -1,12 +1,12 @@
 src/gateway_threads.c: In function ‘masterPeerRecvThread’:
 src/gateway_threads.c:52:9: warning: variable ‘ret_val_recvfrom’ set but not used [-Wunused-but-set-variable]
      int ret_val_recvfrom = 0;
-         ^
+         ^~~~~~~~~~~~~~~~
 src/gateway_threads.c: In function ‘clientRecvThread’:
 src/gateway_threads.c:102:9: warning: variable ‘ret_val_send_to’ set but not used [-Wunused-but-set-variable]
      int ret_val_send_to = 0;
-         ^
+         ^~~~~~~~~~~~~~~
 src/gateway_threads.c: In function ‘masterClientRecvThread’:
-src/gateway_threads.c:189:9: warning: variable ‘ret_val_recvfrom’ set but not used [-Wunused-but-set-variable]
+src/gateway_threads.c:191:9: warning: variable ‘ret_val_recvfrom’ set but not used [-Wunused-but-set-variable]
      int ret_val_recvfrom = 0;
-         ^
+         ^~~~~~~~~~~~~~~~

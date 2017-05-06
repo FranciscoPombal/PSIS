@@ -1,69 +1,69 @@
 src/client_functions.c: In function ‘getGatewayIPv4’:
 src/client_functions.c:38:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
              fgets(buffer, 100, stdin);
-             ^
+             ^~~~~~~~~~~~~~~~~~~~~~~~~
 src/client_functions.c: In function ‘getGatewayPort’:
 src/client_functions.c:75:13: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
              fgets(char_buffer, sizeof(char_buffer), stdin);
-             ^
+             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/client_functions.c: In function ‘showMenu’:
 src/client_functions.c:106:9: warning: ignoring return value of ‘fgets’, declared with attribute warn_unused_result [-Wunused-result]
          fgets(char_buffer, sizeof(char_buffer), stdin);
-         ^
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/gallery_api.c: In function ‘gallery_add_photo’:
 src/gallery_api.c:129:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  uint32_t gallery_add_photo(int peer_socket, char* file_name)
-                                ^
+                                ^~~~~~~~~~~
 src/gallery_api.c:129:51: warning: unused parameter ‘file_name’ [-Wunused-parameter]
  uint32_t gallery_add_photo(int peer_socket, char* file_name)
-                                                   ^
+                                                   ^~~~~~~~~
 src/gallery_api.c: In function ‘gallery_add_keyword’:
 src/gallery_api.c:134:29: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
-                             ^
+                             ^~~~~~~~~~~
 src/gallery_api.c:134:51: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
-                                                   ^
+                                                   ^~~~~~~~
 src/gallery_api.c:134:67: warning: unused parameter ‘keyword’ [-Wunused-parameter]
  int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
-                                                                   ^
+                                                                   ^~~~~~~
 src/gallery_api.c: In function ‘gallery_search_photo’:
 src/gallery_api.c:139:30: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
-                              ^
+                              ^~~~~~~~~~~
 src/gallery_api.c:139:49: warning: unused parameter ‘keyword’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
-                                                 ^
+                                                 ^~~~~~~
 src/gallery_api.c:139:69: warning: unused parameter ‘id_photos’ [-Wunused-parameter]
  int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
-                                                                     ^
+                                                                     ^~~~~~~~~
 src/gallery_api.c: In function ‘gallery_delete_photos’:
 src/gallery_api.c:144:31: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_delete_photos(int peer_socket, uint32_t id_photo)
-                               ^
+                               ^~~~~~~~~~~
 src/gallery_api.c:144:53: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_delete_photos(int peer_socket, uint32_t id_photo)
-                                                     ^
+                                                     ^~~~~~~~
 src/gallery_api.c: In function ‘gallery_get_photo_name’:
 src/gallery_api.c:149:32: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
-                                ^
+                                ^~~~~~~~~~~
 src/gallery_api.c:149:54: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
-                                                      ^
+                                                      ^~~~~~~~
 src/gallery_api.c:149:71: warning: unused parameter ‘photo_name’ [-Wunused-parameter]
  int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
-                                                                       ^
+                                                                       ^~~~~~~~~~
 src/gallery_api.c: In function ‘gallery_get_photo’:
 src/gallery_api.c:154:27: warning: unused parameter ‘peer_socket’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
-                           ^
+                           ^~~~~~~~~~~
 src/gallery_api.c:154:49: warning: unused parameter ‘id_photo’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
-                                                 ^
+                                                 ^~~~~~~~
 src/gallery_api.c:154:66: warning: unused parameter ‘file_name’ [-Wunused-parameter]
  int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
-                                                                  ^
+                                                                  ^~~~~~~~~
 src/gallery_api.c: In function ‘gallery_add_photo’:
 src/gallery_api.c:132:1: warning: control reaches end of non-void function [-Wreturn-type]
  }
