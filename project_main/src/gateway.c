@@ -16,6 +16,7 @@ int main(void)
     // recv threads
     pthread_t thread_master_peer_recv_id = 0;
     pthread_t thread_master_client_recv_id = 0;
+    pthread_t thread_master_peer_pinger_id = 0;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
     MasterClientRecvThreadArgs* masterClientRecvThreadArgs = NULL;
 
@@ -53,6 +54,12 @@ int main(void)
         ret_val_recv_phtread_create = pthread_create(&thread_master_client_recv_id, NULL, &masterClientRecvThread, masterClientRecvThreadArgs);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (client) error!\n");
+            exit(EXIT_FAILURE);
+        }
+
+        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_pinger_id, NULL, &masterPeerPinger, peer_linked_list);
+        if(ret_val_recv_phtread_create != 0){
+            fprintf(stderr, "recv_pthread_create (peer pinger) error!\n");
             exit(EXIT_FAILURE);
         }
 

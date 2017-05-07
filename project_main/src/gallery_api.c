@@ -61,7 +61,7 @@ int gallery_connect(char* host, in_port_t port)
         }
 
         gateway_socket_address_len = sizeof(gateway_socket_address);
-        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr        *)&gateway_socket_address, &gateway_socket_address_len);
+        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
         if(ret_val_recvfrom == -1){
             return -1;
         }

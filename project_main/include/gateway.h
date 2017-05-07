@@ -43,10 +43,7 @@ void* masterPeerRecvThread(void* args);
 void* masterClientRecvThread(void* args);
 void* slavePeerRecvThread(void* args);
 void* slaveClientRecvThread(void* args);
-
-// TODO
-void* send_address_to_client(void * args);
-void* receive_address_from_peer(void * args);
+void* masterPeerPinger(void* args);
 
 
 #endif

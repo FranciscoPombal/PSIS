@@ -24,19 +24,26 @@ void* peerRecvThread(void* args)
         // CRITICAL SECTION BEGIN
         pthread_mutex_lock(&peer_list_mutex);
         for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
-            aux_peer_list_item = (PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node);
-            if((aux_peer_list_item->peer_socket_stream_address.sin_port == peer_socket_stream_address.sin_port) && (aux_peer_list_item->peer_socket_stream_address.sin_addr.s_addr == peer_socket_stream_address.sin_addr.s_addr)){
-                new_peer = false;
-                break;
+            if(SinglyLinkedList_getItem(aux_peer_list_node) != NULL){
+                aux_peer_list_item = (PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node);
+                if((aux_peer_list_item->peer_socket_stream_address.sin_port ==  peer_socket_stream_address.sin_port) && (aux_peer_list_item->peer_socket_stream_address.sin_addr.s_addr ==  peer_socket_stream_address.sin_addr.s_addr)){
+                    new_peer = false;
+                    break;
+                }
             }
         }
         if(true == new_peer){
+            fprintf(stdout, "Peer is new, adding it to the list.\n");
             aux_peer_list_item = (PeerProperties*)malloc(sizeof(PeerProperties));
             aux_peer_list_item->status = PEER_AVAILABLE;
             aux_peer_list_item->peer_socket_dgram_address = peer_socket_dgram_address;
             aux_peer_list_item->peer_socket_stream_address = peer_socket_stream_address;
-            new_peer_list_node = SinglyLinkedList_newNode(aux_peer_list_item);
-            SinglyLinkedList_insertAtEnd(aux_peer_list_node, new_peer_list_node);
+            if(SinglyLinkedList_getItem(aux_peer_list_node) == NULL){
+                SinglyLinkedList_setItem(aux_peer_list_node, aux_peer_list_item);
+            }else{
+                new_peer_list_node = SinglyLinkedList_newNode(aux_peer_list_item);
+                SinglyLinkedList_insertAtEnd(aux_peer_list_node, new_peer_list_node);
+            }
         }
         pthread_mutex_unlock(&peer_list_mutex);
         // CRITICAL SECTION END
@@ -50,6 +57,7 @@ void* masterPeerRecvThread(void* args)
     long int i = 0;
     int socket_fd = 0;
     int ret_val_recvfrom = 0;
+    int ret_val_send_to = 0;
     int ret_val_pthread_create = 0;
     pthread_t* thread_peer_recv_id = NULL;
     struct sockaddr_in peer_socket_dgram_address;
@@ -72,6 +80,7 @@ void* masterPeerRecvThread(void* args)
             ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
 
             if(message_gw.type == PEER_ADDRESS){
+                fprintf(stdout, "Received peer\n");
                 peer_socket_stream_address.sin_family = AF_INET;
                 peer_socket_stream_address.sin_addr.s_addr = htonl(message_gw.address);
                 peer_socket_stream_address.sin_port = htons(message_gw.port);
@@ -89,6 +98,8 @@ void* masterPeerRecvThread(void* args)
                 i += 1;
             }else{
                 fprintf(stdout, "Peer receive thread error: bad message type\n");
+                message_gw.type = BAD_PEER;
+                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
             }
         }
 
@@ -133,7 +144,7 @@ void* clientRecvThread(void* args)
         }
 
         if(false == knownClient){
-            fprintf(stdout, "Client is new, adding him to list\n");
+            fprintf(stdout, "Client is new, adding it to the list\n"); // DEBUG
             // create client list item payload
             clientProperties = (ClientProperties*)malloc(sizeof(ClientProperties));
             memset(&(clientProperties->client_socket_address), 0, sizeof(struct sockaddr_in));
@@ -172,10 +183,10 @@ void* clientRecvThread(void* args)
         }
         pthread_mutex_unlock(&peer_list_mutex);
         // CRITTICAL SECTION END
-        fprintf(stdout, "Message sent to client is of type: %d\n", message_gw.type);
 
         // send message_gw to client
         ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
+        fprintf(stdout, "Message sent to client is of type: %d\n", message_gw.type); // DEBUG
 
         // We free the args which were allocated in the calling thread; must free list of clients in main
         free(client_recv_thread_args);
@@ -189,6 +200,7 @@ void* masterClientRecvThread(void* args)
     long int i = 0;
     int socket_fd = 0;
     int ret_val_recvfrom = 0;
+    int ret_val_send_to = 0;
     int ret_val_pthread_create = 0;
     pthread_t* thread_client_recv_id = NULL;
     struct sockaddr_in client_socket_address;
@@ -225,8 +237,81 @@ void* masterClientRecvThread(void* args)
                 i += 1;
             }else{
                 fprintf(stdout, "Client receive thread error: bad message type\n");
+                message_gw.type = BAD_CLIENT;
+                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, client_socket_address_len);
             }
         }
 
     free(thread_client_recv_id);
+}
+
+void* slavePeerPinger(void* args)
+{
+    SinglyLinkedList* peer_list_node = NULL;
+    int ret_val_send_to = 0;
+    int ret_val_recvfrom = 0;
+    int socket_dgram_fd = 0;
+    struct sockaddr_in peer_socket_dgram_address;
+    socklen_t peer_socket_dgram_address_len = sizeof(peer_socket_dgram_address);
+    struct timeval ping_send_timeout;
+    struct timeval ping_recv_timeout;
+    Message_ping message_ping;
+
+        peer_list_node = (SinglyLinkedList*)args;
+
+        // timeouts for dgram socket
+        ping_send_timeout.tv_sec = PEER_ALIVE_INTERVAL;
+        ping_send_timeout.tv_usec = 0;
+        ping_recv_timeout.tv_sec = PEER_ALIVE_INTERVAL;
+        ping_recv_timeout.tv_usec = 0;
+
+        // TODO: error handling
+        socket_dgram_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&ping_send_timeout, sizeof(ping_send_timeout));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&ping_recv_timeout, sizeof(ping_recv_timeout));
+
+        ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
+        if(ret_val_send_to == -1){
+            // TODO: set peer as unavailable - probably delete from list?
+        }
+
+        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+        if(ret_val_recvfrom == -1){
+            // TODO: set peer as unavailable - probably delete from list?
+        }
+
+    pthread_exit(NULL);
+}
+
+// Thread that is always checking if peers are alive
+// TODO
+void* masterPeerPinger(void* args)
+{
+    long int i = 0;
+    long int j = 0;
+    long int k = 0;
+    SinglyLinkedList* peer_list_head = NULL;
+    SinglyLinkedList* aux_peer_list_node = NULL;
+    pthread_t* thread_peer_pinger_id;
+
+        peer_list_head = (SinglyLinkedList*)args;
+        thread_peer_pinger_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+
+        while(true){
+            j = 0;
+            for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
+                pthread_create(&thread_peer_pinger_id[i], NULL, &slavePeerPinger, aux_peer_list_node);
+                i += 1;
+                j += 1;
+            }
+            for(k = 0; k < j; k++){ // join the threads in this iteration
+                pthread_join(thread_peer_pinger_id[i-k-1], NULL);
+            }
+
+            sleep(PEER_ALIVE_INTERVAL);
+        }
+
+        free(thread_peer_pinger_id);
+
+    pthread_exit(NULL);
 }
