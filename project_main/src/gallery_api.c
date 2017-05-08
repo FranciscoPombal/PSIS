@@ -127,7 +127,7 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 
 
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
-{
+{ 
 
 }
 
