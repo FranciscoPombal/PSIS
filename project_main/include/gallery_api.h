@@ -12,6 +12,10 @@
 #define CLIENT_SEND_TO_GATEWAY_TIMEOUT 10
 #endif
 
+#ifndef ADD_PHOTO
+#define ADD_PHOTO 10
+#endif
+
 int gallery_connect(char* host, in_port_t port);
 
 void setupClientAddress(struct sockaddr_in * csa);
@@ -24,5 +28,13 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos);
 int gallery_delete_photos(int peer_socket, uint32_t id_photo);
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name);
 int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name);
+
+struct client_message{
+    int type;
+    int id;
+    char filename[256];
+    char** keywords;
+    FILE* fp;
+};
 
 #endif

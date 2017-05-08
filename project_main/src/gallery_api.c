@@ -127,8 +127,61 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 
 
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
-{ 
+{
+    struct client_message message;
+    message.type = ADD_PHOTO;
+    message.id = -1; //Must define id in gateway
+    int lastbar = -1;
+    char* lastdot;
+    char* ret_val_strcpy;
+    int ret_val_send = -2;
+    int i = 0;
 
+    //MESSAGE.FILENAME
+    if(file_name == NULL){
+        fprintf(stderr, "File name is NULL\n");
+        exit(EXIT_FAILURE);
+    }
+
+    lastdot = strrchr(file_name, '.');
+
+    if(strrchr(file_name, '/') == NULL){
+        ret_val_strcpy = strcpy(message.filename, file_name);
+        if(ret_val_strcpy == NULL){
+            fprintf(stderr, "strcpy error in gallery_add_photo function\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if(strrchr(file_name, '/') != NULL){
+        for ( i = 0; file_name[i] != '\0'; i++) {
+            if (file_name[i] == '/') {
+                lastbar = i;
+            }
+        }
+        for ( i = 0; file_name[lastbar + i + 1] != '\0'; i++){
+            message.filename[i] = file_name[lastbar + i + 1];
+        }
+        message.filename[i + 1] = '\0';
+    }
+
+    if(lastdot != NULL){
+        *lastdot = '\0';
+    }
+
+    //FOPEN
+    FILE* fp = fopen(file_name, "r");
+
+    //SEND MESSAGE TO PEER
+    ret_val_send = send(peer_socket, fp, sizeof(*fp), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(fp);
+
+    return 1; //TODO:Should return id of the photo!
 }
 
 int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
