@@ -145,6 +145,9 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     strcat(command, file_name);
     fp_id = popen(command, "r");
     fgets(id_buffer, sizeof(id_buffer), fp_id);
+
+    message.id = (int) strtol(id_buffer, NULL, 16);
+
     fclose(fp_id);
     free(command);
 
@@ -197,7 +200,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
 
     fclose(fp);
 
-    return 1; //TODO:Should return id of the photo!
+    return message.id; 
 }
 
 int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
