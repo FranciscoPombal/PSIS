@@ -31,6 +31,48 @@ void* pingerThread(void* args)
 
 void* clientHandlerThread(void* args)
 {
+    int socket_fd = 0;
+    bool closeConnection = false;
+    int ret_val_recv_from = 0;
+    struct sockaddr_in client_socket_address;
+    socklen_t client_socket_address_len = sizeof(client_socket_address);
+    Message_api_op_type message_api_op_type;
+
+        socket_fd = *((int*)args);
+
+        while(false == closeConnection){
+            ret_val_recv_from = recvfrom(socket_fd, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);
+
+            switch (message_api_op_type.type){
+                case GALLERY_API_ADD_PHOTO:
+                    //call function for this
+                    fprintf(stdout, "Client wants to add a photo\n"); // DEBUG
+                case GALLERY_API_SEARCH_PHOTO:
+                    //call function for this
+                    fprintf(stdout, "Client wants to search for a photo\n"); // DEBUG
+                case GALLERY_API_DELETE_PHOTO:
+                    //call function for this
+                    fprintf(stdout, "Client wants to delete a photo\n"); // DEBUG
+                case GALLERY_API_GET_PHOTO_NAME:
+                    //call function for this
+                    fprintf(stdout, "Client wants to get the name of a photo\n"); // DEBUG
+                case GALLERY_API_GET_PHOTO:
+                    //call function for this
+                    fprintf(stdout, "Client wants to get a photo\n"); // DEBUG
+                case GALLERY_API_ADD_KEYWORD:
+                    //call function for this
+                    fprintf(stdout, "Client wants to add a keyword to a photo\n"); // DEBUG
+                case GALLERY_API_CLOSE_CONNECTION:
+                    fprintf(stdout, "Client wants to close the connection\n"); // DEBUG
+                    closeConnection = true;
+                default:
+                    fprintf(stderr, "Error in client<->peer communication. The request operation is unknown.\n");
+                }
+        }
+
+        // close connection with current client
+        close(socket_fd);
+        fprintf(stdout, "Peer has closed the connection with the client and this thread is exiting\n");
 
     pthread_exit(NULL);
 }

@@ -93,6 +93,34 @@
 #define MESSAGE_TYPE_PEER_PING 101
 #endif
 
+#ifndef GALLERY_API_ADD_PHOTO
+#define GALLERY_API_ADD_PHOTO 501
+#endif
+
+#ifndef GALLERY_API_SEARCH_PHOTO
+#define GALLERY_API_SEARCH_PHOTO 502
+#endif
+
+#ifndef GALLERY_API_DELETE_PHOTO
+#define GALLERY_API_DELETE_PHOTO 503
+#endif
+
+#ifndef GALLERY_API_GET_PHOTO_NAME
+#define GALLERY_API_GET_PHOTO_NAME 504
+#endif
+
+#ifndef GALLERY_API_GET_PHOTO
+#define GALLERY_API_GET_PHOTO 505
+#endif
+
+#ifndef GALLERY_API_ADD_KEYWORD
+#define GALLERY_API_ADD_KEYWORD 506
+#endif
+
+#ifndef GALLERY_API_CLOSE_CONNECTION
+#define GALLERY_API_CLOSE_CONNECTION 507
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
@@ -106,6 +134,10 @@ typedef struct _message_gw{
 typedef struct _message_ping {
     int type;
 } Message_ping;
+
+typedef struct _message_api_op_type {
+    int type;
+} Message_api_op_type;
 
 typedef struct _peer_properties{
     struct sockaddr_in peer_socket_dgram_address;
