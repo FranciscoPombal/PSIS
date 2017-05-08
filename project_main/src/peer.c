@@ -3,15 +3,11 @@
 int main(void)
 {
     // generic/program-specific variables
-    int i = 0;
-    Message message;
 
     // socket/ipc related variables
     int socket_stream_fd = 0;
     int socket_dgram_fd = 0;
     int conn_sock_fd = 0;
-    long int ret_val_send = 0;
-    long int ret_val_recv = 0;
 
     //thread stuff
     pthread_t thread_master_client_accept_id = 0;
@@ -30,17 +26,16 @@ int main(void)
 
         fprintf(stdout, "Peer socket stream address sent to gateway via the dgram socket.\n");
 
-        // TODO: setup the Pinger thread
-        ret_val_phtread_create = pthread_create(&thread_pinger_id, NULL, &threadPinger, &socket_dgram_fd)
-
-        // TODO: setup the accept thread
+        // start the pinger thread
+        ret_val_phtread_create = pthread_create(&thread_pinger_id, NULL, &pingerThread, &socket_dgram_fd);
 
         // TODO: the rest of the peer
         while(true == keepRunning){
 
             conn_sock_fd = accept(socket_stream_fd, NULL, NULL);
 
-            // TODO: call thread to handle each client. is thread detached
+            // TODO: check atributes and arguments
+            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, NULL);
 
             // close connection with current client
             close(conn_sock_fd);

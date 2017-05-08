@@ -89,6 +89,10 @@
 #define BAD_CLIENT -201
 #endif
 
+#ifndef MESSAGE_TYPE_PEER_PING
+#define MESSAGE_TYPE_PEER_PING 101
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
