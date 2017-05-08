@@ -30,7 +30,6 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
 int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name);
 
 struct client_message{
-    int type;
     int id;
     char filename[256];
     char** keywords;

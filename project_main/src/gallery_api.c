@@ -129,7 +129,7 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
 {
     struct client_message message;
-    message.type = ADD_PHOTO;
+    int* message_type = (int*) ADD_PHOTO;
     message.id = -1; //Must define id in gateway
     int lastbar = -1;
     char* lastdot;
@@ -146,6 +146,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     fp_id = popen(command, "r");
     fgets(id_buffer, sizeof(id_buffer), fp_id);
     fclose(fp_id);
+    free(command);
 
     //MESSAGE.FILENAME (eliminate the path and the extension)
     if(file_name == NULL){
@@ -183,6 +184,11 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     FILE* fp = fopen(file_name, "r");
 
     //SEND MESSAGE TO PEER
+    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+        exit(EXIT_FAILURE);
+    }
     ret_val_send = send(peer_socket, fp, sizeof(*fp), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_add_photo function\n");
