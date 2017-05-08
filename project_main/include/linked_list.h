@@ -121,15 +121,30 @@ void SinglyLinkedList_insertAtEnd(SinglyLinkedList* head, SinglyLinkedList* node
  *
  * To explain the behaviour of this function, suppose we have pointers to three nodes, head, node1 and node2, where head is a pointer to the first node of the singly-linked list.
  * Suppose these nodes are arranged in the following way:
- * head ---> node1 ---> node2
+ * head ---> node1 ---> node2 ---> NULL
  * After calling this function on node1, we will have:
- * head ---> node1
+ * head ---> node1 ---> NULL
  *
  * @param node A pointer to the node before the one we want to free.
  * @param Item_Free Function pointer to a function that frees the payload of the node.
  * @return void
  */
 void SinglyLinkedList_deleteNextNode(SinglyLinkedList* node, void(*Item_Free)(Item));
+
+
+/** @brief Deletes the specified node from the list
+ *
+ * To explain the behaviour of this function, suppose we have pointers to three nodes, head, node1 and node2, where head is a pointer to the first node of the singly-linked list.
+ * Suppose these nodes are arranged in the following way:
+ * head ---> node1 ---> node2 ---> NULL
+ * After calling this function on node1, we will have:
+ * head ---> node2 ---> NULL
+ *
+ * @param node A pointer to the node we want to free.
+ * @param Item_Free Function pointer to a function that frees the payload of the node.
+ * @return void
+ */
+void SinglyLinkedList_deleteNode(SinglyLinkedList* node, void(*Item_Free)(Item));
 
 /** @brief Returns a pointer to the node after the one specified
  *

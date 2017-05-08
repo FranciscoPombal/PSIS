@@ -1,5 +1,5 @@
 #ifndef LINKED_LIST_H
-#include "linked_list.h"
+#include "../include/linked_list.h"
 #endif
 
 struct SinglyLinkedList_ {
@@ -71,6 +71,23 @@ void SinglyLinkedList_deleteNextNode(SinglyLinkedList* node, void (*Item_Free)(I
         aux = node->next->next;
         SinglyLinkedList_freeNode(node->next, Item_Free);
         node->next = aux;
+
+    return;
+}
+
+void SinglyLinkedList_deleteNode(SinglyLinkedList* node, void(*Item_Free)(Item))
+{
+    SinglyLinkedList* aux = NULL;
+    Item itemToDelete = NULL;
+
+        aux = node->next;
+        itemToDelete = node->item;
+
+        node->item = node->next->item;
+        node->next = node->next->next;
+
+        (*Item_Free)(itemToDelete);
+        free(aux);
 
     return;
 }
