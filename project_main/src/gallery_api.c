@@ -136,12 +136,16 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     char* ret_val_strcpy;
     int ret_val_send = -2;
     int i = 0;
-    char command[1000]; 
+    char command[1000];
 
     //GET ID
+    char id_buffer[50];
+    FILE* fp_id;
     strcpy(command, "crc32 ");
     strcat(command, file_name);
-    message.id = system(command);
+    fp_id = popen(command, "r");
+    fgets(id_buffer, sizeof(id_buffer), fp_id);
+    fclose(fp_id);
 
     //MESSAGE.FILENAME (eliminate the path and the extension)
     if(file_name == NULL){
