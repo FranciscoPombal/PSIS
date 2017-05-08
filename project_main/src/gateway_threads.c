@@ -289,7 +289,6 @@ void* masterPeerPinger(void* args)
 {
     long int i = 0;
     long int j = 0;
-    long int k = 0;
     SinglyLinkedList* peer_list_head = NULL;
     SinglyLinkedList* aux_peer_list_node = NULL;
     pthread_t* thread_peer_pinger_id;
@@ -298,14 +297,12 @@ void* masterPeerPinger(void* args)
         thread_peer_pinger_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
 
         while(true){
-            j = 0;
+            i = 0;
             for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
                 pthread_create(&thread_peer_pinger_id[i], NULL, &slavePeerPinger, aux_peer_list_node);
-                i += 1;
-                j += 1;
             }
-            for(k = 0; k < j; k++){ // join the threads in this iteration
-                pthread_join(thread_peer_pinger_id[i-k-1], NULL);
+            for(j = 0; j < i; j++){ // join the threads in this iteration
+                pthread_join(thread_peer_pinger_id[j], NULL);
             }
 
             sleep(PEER_ALIVE_INTERVAL);
