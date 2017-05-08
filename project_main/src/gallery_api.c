@@ -136,6 +136,12 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     char* ret_val_strcpy;
     int ret_val_send = -2;
     int i = 0;
+    char command[1000];
+
+    //GET ID
+    strcpy(command, "crc32 ");
+    strcat(command, file_name);
+    message.id = system(command);
 
     //MESSAGE.FILENAME (eliminate the path and the extension)
     if(file_name == NULL){
