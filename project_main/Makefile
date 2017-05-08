@@ -48,8 +48,8 @@ client: src/client.c src/client_functions.c src/linked_list.c include/client.h $
 gateway: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/release/gateway 2> build/release/gateway_compile.log
 
-peer: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/release/peer 2> build/release/peer_compile.log
+peer: src/peer.c src/peer_functions.c src/peer_threads.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/release/peer 2> build/release/peer_compile.log
 
 client_dbg: client_dbg_1 client_dbg_2
 
@@ -70,10 +70,10 @@ gateway_dbg_2: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/l
 peer_dbg: peer_dbg_1 peer_dbg_2
 
 peer_dbg_1: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/debug/peer 2> build/debug/peer_compile_asan.log
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer 2> build/debug/peer_compile_asan.log
 
 peer_dbg_2: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c -o bin/debug/peer 2> build/debug/peer_compile_tsan.log
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer 2> build/debug/peer_compile_tsan.log
 
 .PHONY: clean
 clean:
