@@ -141,7 +141,7 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 
 }
 
-int gallery_delete_photos(int peer_socket, uint32_t id_photo)
+int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 {
 
 }
