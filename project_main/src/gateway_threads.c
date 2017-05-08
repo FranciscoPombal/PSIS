@@ -34,7 +34,7 @@ void* peerRecvThread(void* args)
         if(true == new_peer){
             fprintf(stdout, "Peer is new, adding it to the list.\n");
             aux_peer_list_item = (PeerProperties*)malloc(sizeof(PeerProperties));
-            aux_peer_list_item->status = PEER_AVAILABLE;
+            aux_peer_list_item->num_connected_clients = 0;
             aux_peer_list_item->peer_socket_dgram_address = peer_socket_dgram_address;
             aux_peer_list_item->peer_socket_stream_address = peer_socket_stream_address;
             if(SinglyLinkedList_getItem(aux_peer_list_node) == NULL){
@@ -121,6 +121,9 @@ void* clientRecvThread(void* args)
     ClientProperties* clientProperties = NULL;
     Message_gw message_gw;
     bool knownClient = false;
+    int low = INT_MAX;
+    SinglyLinkedList* low_list_node = NULL;
+    bool peerAvailable = false;
 
         message_gw.type = PEER_UNAVAILABLE;
         client_recv_thread_args = (ClientRecvThreadArgs*)args;
@@ -164,22 +167,34 @@ void* clientRecvThread(void* args)
         pthread_mutex_unlock(&client_list_mutex);
         // CRITICAL SECTION END
 
-        // search peer list for available peer to send to client
+        // search peer list for available peer to send to client (round robin policy)
         // CRITICAL SECTION START
         pthread_mutex_lock(&peer_list_mutex);
+        low_list_node = peer_list_head;
+        if(SinglyLinkedList_getItem(peer_list_head) != NULL){
+            low = ((PeerProperties*)SinglyLinkedList_getItem(peer_list_head))->num_connected_clients;
+            peerAvailable = true;
+        }
         for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
-            if(((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->status == PEER_AVAILABLE){
-                message_gw.type = PEER_ADDRESS;
-                peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_stream_address;
-                pthread_mutex_lock(&client_list_mutex);
-                ((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->connected_peer_socket_address = peer_socket_address;
-                pthread_mutex_lock(&client_list_mutex);
-                message_gw.address = ntohl(peer_socket_address.sin_addr.s_addr);
-                message_gw.port = ntohs(peer_socket_address.sin_port);
-                ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->status = PEER_UNAVAILABLE;
-                break;
+            if(((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node)) != NULL){
+                if((((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->num_connected_clients) <= low){
+                    low = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->num_connected_clients;
+                    low_list_node = aux_peer_list_node;
+                    peerAvailable = true;
+                }
             }
         }
+        if(true == peerAvailable){
+            message_gw.type = PEER_ADDRESS;
+            peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_stream_address;
+            pthread_mutex_lock(&client_list_mutex);
+            ((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->connected_peer_socket_address = peer_socket_address;
+            pthread_mutex_lock(&client_list_mutex);
+            message_gw.address = ntohl(peer_socket_address.sin_addr.s_addr);
+            message_gw.port = ntohs(peer_socket_address.sin_port);
+            ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->num_connected_clients += 1;
+        }
+
         pthread_mutex_unlock(&peer_list_mutex);
         // CRITTICAL SECTION END
 

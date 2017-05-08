@@ -73,10 +73,6 @@
 #define PEER_AVAILABLE 1
 #endif
 
-#ifndef PEER_UNAVAILABLE
-#define PEER_UNAVAILABLE 0
-#endif
-
 #ifndef BAD_PEER
 #define BAD_PEER -101
 #endif
@@ -142,7 +138,6 @@ typedef struct _message_api_op_type {
 typedef struct _peer_properties{
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
-    int status;
     int num_connected_clients;
 } PeerProperties;
 
