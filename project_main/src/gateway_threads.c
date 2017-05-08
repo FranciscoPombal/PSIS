@@ -3,7 +3,6 @@
 pthread_mutex_t client_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t peer_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// TODO: forgot peer has 2 different sockets
 /* THREAD: receive peer address and add it to Peers linked list */
 void* peerRecvThread(void* args)
 {
@@ -272,12 +271,16 @@ void* slavePeerPinger(void* args)
 
         ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
         if(ret_val_send_to == -1){
-            // TODO: set peer as unavailable - probably delete from list?
+            pthread_mutex_lock(&peer_list_mutex);
+            SinglyLinkedList_deleteNode(peer_list_node, NULL);
+            pthread_mutex_unlock(&peer_list_mutex);
         }
 
         ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
         if(ret_val_recvfrom == -1){
-            // TODO: set peer as unavailable - probably delete from list?
+            pthread_mutex_lock(&peer_list_mutex);
+            SinglyLinkedList_deleteNode(peer_list_node, NULL);
+            pthread_mutex_unlock(&peer_list_mutex);
         }
 
     pthread_exit(NULL);
