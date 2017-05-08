@@ -137,13 +137,11 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     int ret_val_send = -2;
     int i = 0;
 
-    //MESSAGE.FILENAME
+    //MESSAGE.FILENAME (eliminate the path and the extension)
     if(file_name == NULL){
         fprintf(stderr, "File name is NULL\n");
         exit(EXIT_FAILURE);
     }
-
-    lastdot = strrchr(file_name, '.');
 
     if(strrchr(file_name, '/') == NULL){
         ret_val_strcpy = strcpy(message.filename, file_name);
@@ -164,6 +162,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         }
         message.filename[i + 1] = '\0';
     }
+
+    lastdot = strrchr(message.filename, '.');
 
     if(lastdot != NULL){
         *lastdot = '\0';
