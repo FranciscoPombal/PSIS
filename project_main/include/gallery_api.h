@@ -32,6 +32,10 @@
 #define GET_PHOTO 14
 #endif
 
+#ifndef ADD_KEYWORD
+#define ADD_KEYWORD 15
+#endif
+
 int gallery_connect(char* host, in_port_t port);
 
 void setupClientAddress(struct sockaddr_in * csa);
