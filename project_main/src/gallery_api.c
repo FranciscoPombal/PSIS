@@ -244,9 +244,31 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
     return num_photos;
 }
 
-int gallery_delete_photos(int peer_socket, uint32_t id_photo)
+int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 {
+    int* message_type = (int*) DELETE_PHOTO;
+    int ret_val_send = 0;
+    int ret_val_recv = 0;
+    int deleted = 0;
 
+    //SEND MESSAGES TO PEER
+    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+    ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //RECEIVE CONFIRMATION MESSAGE
+    ret_val_recv = recv(peer_socket, &deleted, sizeof(&deleted), NO_FLAGS);
+    if(ret_val_recv < 0){
+        fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
