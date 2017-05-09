@@ -249,7 +249,7 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
     int* message_type = (int*) DELETE_PHOTO;
     int ret_val_send = 0;
     int ret_val_recv = 0;
-    int deleted = 0;
+    int deleted = -1;
 
     //SEND MESSAGES TO PEER
     ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
@@ -269,11 +269,36 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
         fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
         exit(EXIT_FAILURE);
     }
+
+    return deleted;
 }
 
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
 {
+    int* message_type = (int*) GET_PHOTO_NAME;
+    int ret_val_send = 0;
+    int ret_val_recv = 0;
 
+    //SEND MESSAGES TO PEER
+    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
+        exit(EXIT_FAILURE);
+    }
+    ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //RECEIVE MESSAGE FROM PEER
+    ret_val_recv = recv(peer_socket, *photo_name, sizeof(*photo_name), NO_FLAGS);
+    if(ret_val_recv < 0){
+        fprintf(stderr, "Error receiving confirmation message in gallery_get_photo_name function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(stdout, "Photo name: %s\n", *photo_name);
 }
 
 int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
