@@ -83,11 +83,25 @@ void SinglyLinkedList_deleteNode(SinglyLinkedList* node, void(*Item_Free)(Item))
         aux = node->next;
         itemToDelete = node->item;
 
-        node->item = node->next->item;
-        node->next = node->next->next;
-
-        (*Item_Free)(itemToDelete);
-        free(aux);
+        if(aux != NULL){
+            node->item = node->next->item;
+            node->next = node->next->next;
+            if(Item_Free != NULL){
+                (*Item_Free)(itemToDelete);
+            }else{
+                free(itemToDelete);
+                node->item = NULL;
+            }
+            free(aux);
+        }else{
+            if(Item_Free != NULL){
+                (*Item_Free)(itemToDelete);
+                node->item = NULL;
+            }else{
+                free(itemToDelete);
+                node->item = NULL;
+            }
+        }
 
     return;
 }

@@ -164,6 +164,7 @@ void* clientRecvThread(void* args)
             }
             // at this point, aux_client_list_node points to the node with the new client
         }
+
         pthread_mutex_unlock(&client_list_mutex);
         // CRITICAL SECTION END
 
@@ -189,7 +190,7 @@ void* clientRecvThread(void* args)
             peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_stream_address;
             pthread_mutex_lock(&client_list_mutex);
             ((ClientProperties*)SinglyLinkedList_getItem(aux_client_list_node))->connected_peer_socket_address = peer_socket_address;
-            pthread_mutex_lock(&client_list_mutex);
+            pthread_mutex_unlock(&client_list_mutex);
             message_gw.address = ntohl(peer_socket_address.sin_addr.s_addr);
             message_gw.port = ntohs(peer_socket_address.sin_port);
             ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->num_connected_clients += 1;
@@ -272,6 +273,9 @@ void* slavePeerPinger(void* args)
     Message_ping message_ping;
 
         peer_list_node = (SinglyLinkedList*)args;
+        pthread_mutex_lock(&peer_list_mutex);
+        peer_socket_dgram_address = ((PeerProperties*)SinglyLinkedList_getItem(peer_list_node))->peer_socket_dgram_address;
+        pthread_mutex_unlock(&peer_list_mutex);
 
         // timeouts for dgram socket
         ping_send_timeout.tv_sec = PEER_ALIVE_INTERVAL;
@@ -284,16 +288,21 @@ void* slavePeerPinger(void* args)
         setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&ping_send_timeout, sizeof(ping_send_timeout));
         setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&ping_recv_timeout, sizeof(ping_recv_timeout));
 
+        fprintf(stdout, "Sending ping to peer on port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
+        message_ping.type = MESSAGE_TYPE_PEER_PING;
         ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
         if(ret_val_send_to == -1){
             pthread_mutex_lock(&peer_list_mutex);
+            fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             SinglyLinkedList_deleteNode(peer_list_node, NULL);
             pthread_mutex_unlock(&peer_list_mutex);
         }
 
+        fprintf(stdout, "Receiving ping from peer on port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
         ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
         if(ret_val_recvfrom == -1){
             pthread_mutex_lock(&peer_list_mutex);
+            fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             SinglyLinkedList_deleteNode(peer_list_node, NULL);
             pthread_mutex_unlock(&peer_list_mutex);
         }
@@ -316,9 +325,16 @@ void* masterPeerPinger(void* args)
 
         while(true){
             i = 0;
-            for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
-                pthread_create(&thread_peer_pinger_id[i], NULL, &slavePeerPinger, aux_peer_list_node);
+            fprintf(stdout, "Checking if peers are still alive\n");
+            pthread_mutex_lock(&peer_list_mutex);
+            for(aux_peer_list_node = peer_list_head; aux_peer_list_node != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
+                if(SinglyLinkedList_getItem(aux_peer_list_node) != NULL){
+                    pthread_create(&thread_peer_pinger_id[i], NULL, &slavePeerPinger, aux_peer_list_node);
+                    i += 1;
+                }
             }
+            pthread_mutex_unlock(&peer_list_mutex);
+            fprintf(stdout, "Created %lu pingers\n", i); // DEBUG
             for(j = 0; j < i; j++){ // join the threads in this iteration
                 pthread_join(thread_peer_pinger_id[j], NULL);
             }

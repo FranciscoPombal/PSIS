@@ -22,6 +22,7 @@ void* pingerThread(void* args)
                 fprintf(stdout, "Pinged back the gateway\n"); // DEBUG
             }else{
                 fprintf(stdout, "Pinger thread: bad message type received\n");
+                exit(EXIT_FAILURE);
             }
         }
 

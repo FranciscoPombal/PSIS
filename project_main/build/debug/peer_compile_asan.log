@@ -14,6 +14,6 @@ src/peer_threads.c:6:9: warning: variable ‘ret_val_send_to’ set but not used
      int ret_val_send_to = 0;
          ^
 src/peer_threads.c: In function ‘clientHandlerThread’:
-src/peer_threads.c:36:9: warning: variable ‘ret_val_recv_from’ set but not used [-Wunused-but-set-variable]
+src/peer_threads.c:37:9: warning: variable ‘ret_val_recv_from’ set but not used [-Wunused-but-set-variable]
      int ret_val_recv_from = 0;
          ^
