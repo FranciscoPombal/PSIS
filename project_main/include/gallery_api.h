@@ -28,6 +28,10 @@
 #define GET_PHOTO_NAME 13
 #endif
 
+#ifndef GET_PHOTO
+#define GET_PHOTO 14
+#endif
+
 int gallery_connect(char* host, in_port_t port);
 
 void setupClientAddress(struct sockaddr_in * csa);
