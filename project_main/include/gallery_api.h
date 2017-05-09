@@ -16,6 +16,10 @@
 #define ADD_PHOTO 10
 #endif
 
+#ifndef SEARCH_PHOTO
+#define SEARCH_PHOTO 11
+#endif
+
 int gallery_connect(char* host, in_port_t port);
 
 void setupClientAddress(struct sockaddr_in * csa);

@@ -200,7 +200,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
 
     fclose(fp);
 
-    return message.id; 
+    return message.id;
 }
 
 int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
@@ -210,6 +210,39 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
 
 int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 {
+    char* buffer;
+    char photo_name[100];
+    int ret_val_send = 0;
+    int ret_val_recv = 0;
+    int* message_type = (int*) SEARCH_PHOTO;
+    int* num_photos = (int*) 0;
+
+
+    /*fprintf(stdout, "Insert name of photo:");
+    fgets(buffer, 100, stdin);
+    sscanf(buffer, "%s", photo_name);*/
+
+    //SEND MESSAGE TO PEER
+    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_search_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+    ret_val_send = send(peer_socket, keyword, sizeof(keyword), NO_FLAGS);
+    if (ret_val_send < 0) {
+        fprintf(stderr, "Error sending message in gallery_search_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //RECEIVE MESSAGE FROM PEER
+    ret_val_recv = recv(peer_socket, num_photos, sizeof(num_photos), NO_FLAGS);
+    if (ret_val_recv < 0) {
+        fprintf(stderr, "Error receiving message in gallery_search_photo function\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return *num_photos;
+
 
 }
 
