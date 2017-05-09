@@ -1,5 +1,5 @@
 #include "../include/messages.h"
-#include "../include/gallery_api.h" 
+#include "../include/gallery_api.h"
 
 int gallery_connect(char* host, in_port_t port)
 {
