@@ -129,7 +129,7 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
 {
     struct client_message message;
-    int* message_type = (int*) ADD_PHOTO;
+    int message_type = ADD_PHOTO;
     message.id = -1; //Must define id in gateway
     int lastbar = -1;
     char* lastdot;
@@ -187,7 +187,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     FILE* fp = fopen(file_name, "r");
 
     //SEND MESSAGE TO PEER
-    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_add_photo function\n");
         exit(EXIT_FAILURE);
@@ -212,14 +212,14 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 {
     int ret_val_send = 0;
     int ret_val_recv = 0;
-    int* message_type = (int*) SEARCH_PHOTO;
+    int message_type = SEARCH_PHOTO;
     int num_photos = 0;
     int i = 0;
 
     //id_photos** = (int*)calloc(100, 100*sizeof(uint32_t*));
 
     //SEND MESSAGE TO PEER (One with the message_type and another with a string of keywords)
-    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_search_photo function\n");
         exit(EXIT_FAILURE);
@@ -246,13 +246,13 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 
 int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 {
-    int* message_type = (int*) DELETE_PHOTO;
+    int message_type = DELETE_PHOTO;
     int ret_val_send = 0;
     int ret_val_recv = 0;
     int deleted = -1;
 
     //SEND MESSAGES TO PEER
-    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
         exit(EXIT_FAILURE);
@@ -275,12 +275,12 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
 {
-    int* message_type = (int*) GET_PHOTO_NAME;
+    int message_type = GET_PHOTO_NAME;
     int ret_val_send = 0;
     int ret_val_recv = 0;
 
     //SEND MESSAGES TO PEER
-    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
         exit(EXIT_FAILURE);
@@ -309,13 +309,13 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
 
 int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
 {
-    int* message_type = (int*) GET_PHOTO;
+    int message_type = GET_PHOTO;
     int ret_val_send = 0;
     int ret_val_recv = 0;
     FILE* fp = fopen(*file_name, "w");
 
     //SEND MESSAGES TO PEER
-    ret_val_send = send(peer_socket, message_type, sizeof(message_type), NO_FLAGS);
+    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_get_photo function\n");
         fclose(fp);
