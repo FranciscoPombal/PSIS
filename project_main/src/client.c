@@ -35,15 +35,35 @@ int main(void)
 
             //Execute option
             switch(choice){
-                case 1:
+                case 1:{ //ADD PHOTO TO GALLERY
+                    char photo_name[100];
+                    char buffer[100];
                     fprintf(stdout, "You chose to add a photo to the gallery\n");
-                    break;
+                    fprintf(stdout, "Please insert path to photo you want to add:\n");
+                    fgets(buffer, 100, stdin);
+                    sscanf(buffer, "%s\n", photo_name);
+
+                    gallery_add_photo(socket_stream_fd,photo_name);
+
+                    free(photo_name);
+                    free(buffer);
+                    break;}
                 case 2:
                     fprintf(stdout, "You chose to add a keyword to a photo in the gallery\n");
                     break;
-                case 3:
+                case 3:{
+                    char keyword[100];
+                    char buffer[100];
                     fprintf(stdout, "You chose to search for a photo in the gallery\n");
-                    break;
+                    fprintf(stdout, "Insert a keyword:\n");
+                    fgets(buffer, 100, stdin);
+                    sscanf(buffer, "%s\n", keyword);
+
+                    gallery_search_photo(socket_stream_fd, keyword, NULL);
+
+                    free(keyword);
+                    free(buffer);
+                    break;}
                 case 4:
                     fprintf(stdout, "You chose to delete a photo from the gallery\n");
                     break;
