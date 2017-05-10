@@ -51,7 +51,7 @@ int main(void)
                 case 2:
                     fprintf(stdout, "You chose to add a keyword to a photo in the gallery\n");
                     break;
-                case 3:{
+                case 3:{ //SEARCH FOR PHOTO
                     char keyword[100];
                     char buffer[100];
                     fprintf(stdout, "You chose to search for a photo in the gallery\n");
