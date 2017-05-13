@@ -34,6 +34,7 @@ void* peerRecvThread(void* args)
         if(true == new_peer){
             fprintf(stdout, "Peer is new, adding it to the list.\n");
             aux_peer_list_item = (PeerProperties*)malloc(sizeof(PeerProperties));
+            aux_peer_list_item->toDelete = false;
             aux_peer_list_item->num_connected_clients = 0;
             aux_peer_list_item->peer_socket_dgram_address = peer_socket_dgram_address;
             aux_peer_list_item->peer_socket_stream_address = peer_socket_stream_address;
@@ -294,7 +295,7 @@ void* slavePeerPinger(void* args)
         if(ret_val_send_to == -1){
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             pthread_mutex_lock(&peer_list_mutex);
-            SinglyLinkedList_deleteNode(peer_list_node, NULL);
+            ((PeerProperties*)SinglyLinkedList_getItem(peer_list_node))->toDelete = true;
             pthread_mutex_unlock(&peer_list_mutex);
         }
 
@@ -303,7 +304,7 @@ void* slavePeerPinger(void* args)
         if(ret_val_recvfrom == -1){
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             pthread_mutex_lock(&peer_list_mutex);
-            SinglyLinkedList_deleteNode(peer_list_node, NULL);
+            ((PeerProperties*)SinglyLinkedList_getItem(peer_list_node))->toDelete = true;
             pthread_mutex_unlock(&peer_list_mutex);
         }
 
@@ -339,8 +340,16 @@ void* masterPeerPinger(void* args)
                 pthread_join(thread_peer_pinger_id[j], NULL);
             }
 
-            // TODO: apagar os peers ques estao mortos
-            // TODO: linked list tem de ter campo marked for deletion
+            // TODO: review deletion from linked list
+            pthread_mutex_lock(&peer_list_mutex);
+            for(aux_peer_list_node = peer_list_head; aux_peer_list_node != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
+                if(SinglyLinkedList_getItem(aux_peer_list_node) != NULL){
+                    if(true == ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->toDelete){
+                        SinglyLinkedList_deleteNode(aux_peer_list_node,NULL);
+                    }
+                }
+            }
+            pthread_mutex_unlock(&peer_list_mutex);
             sleep(PEER_ALIVE_INTERVAL);
         }
 

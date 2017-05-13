@@ -139,6 +139,7 @@ typedef struct _peer_properties{
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
     int num_connected_clients;
+    bool toDelete;
 } PeerProperties;
 
 
