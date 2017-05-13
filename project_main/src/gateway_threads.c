@@ -292,8 +292,8 @@ void* slavePeerPinger(void* args)
         message_ping.type = MESSAGE_TYPE_PEER_PING;
         ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
         if(ret_val_send_to == -1){
-            pthread_mutex_lock(&peer_list_mutex);
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
+            pthread_mutex_lock(&peer_list_mutex);
             SinglyLinkedList_deleteNode(peer_list_node, NULL);
             pthread_mutex_unlock(&peer_list_mutex);
         }
@@ -301,8 +301,8 @@ void* slavePeerPinger(void* args)
         fprintf(stdout, "Receiving ping from peer on port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
         ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
         if(ret_val_recvfrom == -1){
-            pthread_mutex_lock(&peer_list_mutex);
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
+            pthread_mutex_lock(&peer_list_mutex);
             SinglyLinkedList_deleteNode(peer_list_node, NULL);
             pthread_mutex_unlock(&peer_list_mutex);
         }
@@ -339,6 +339,8 @@ void* masterPeerPinger(void* args)
                 pthread_join(thread_peer_pinger_id[j], NULL);
             }
 
+            // TODO: apagar os peers ques estao mortos
+            // TODO: linked list tem de ter campo marked for deletion
             sleep(PEER_ALIVE_INTERVAL);
         }
 
