@@ -3,20 +3,22 @@
 int main(void)
 {
     // generic/program-specific variables
-    int i = 0;
-    Message message;
-    char* story = NULL;
-    long int story_len = 0;
+    long int i = 0;
 
     // socket/ipc related variables
     int socket_stream_fd = 0;
     int socket_dgram_fd = 0;
-    int conn_sock_fd = 0;
-    long int ret_val_send = 0;
-    long int ret_val_recv = 0;
+    int* conn_sock_fd = NULL;
+
+    //thread stuff
+    pthread_t thread_master_client_accept_id = 0;
+    pthread_t thread_pinger_id = 0;
+    int ret_val_phtread_create = 0;
 
         // Setup SIGINT handler
         setupInterrupt();
+
+        conn_sock_fd = (int*)malloc(HUGE_NUMBER * sizeof(int));
 
         // TODO: we probably need to change these functions so that the y also give us the addresses
         /* socket: create a new communication endpoint */
@@ -25,59 +27,27 @@ int main(void)
         // dgram socket (for sending and receiving)
         socket_dgram_fd = gatewayConnect(socket_stream_fd);
 
-        fprintf(stdout, "Peer address sent to gateway\n");
+        fprintf(stdout, "Peer socket stream address sent to gateway via the dgram socket.\n");
+
+        // start the pinger thread
+        ret_val_phtread_create = pthread_create(&thread_pinger_id, NULL, &pingerThread, &socket_dgram_fd);
 
         // TODO: the rest of the peer
         while(true == keepRunning){
 
-            conn_sock_fd = accept(socket_stream_fd, NULL, NULL);
+            conn_sock_fd[i] = accept(socket_stream_fd, NULL, NULL);
 
-            // receive message from client
-            ret_val_recv = recv(conn_sock_fd, message.buffer, MESSAGE_LEN, NO_FLAGS);
+            // TODO: check atributes and arguments
+            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, &conn_sock_fd[i]);
 
-            if(strlen(message.buffer) != 0){
-                /* process message */
-                fprintf(stdout, "Received message: %s\n", message.buffer);
-                story = realloc(story, strlen(story) + strlen(message.buffer) + 1);
-                story = strcat(story, message.buffer);
-                /* reset buffer receive buffer */
-                for(i = 0; i < MESSAGE_LEN; i++){
-                    message.buffer[i] = '\0';
-                }
-            }
-
-            story_len = strlen(story);
-
-            // send story back to client
-            if(ret_val_recv != -1){
-                ret_val_send = send(conn_sock_fd, &story_len, sizeof(long int), NO_FLAGS);
-                if(ret_val_send == -1){  // check for error
-                    fprintf(stderr, "Error sending story length.\n");
-                    exit(EXIT_FAILURE);
-                }
-
-                ret_val_send = send(conn_sock_fd, story, strlen(story), NO_FLAGS);
-                if(ret_val_send == -1){  // check for error
-                    fprintf(stderr, "Error sending story.\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-
-            // close connection with current client
-            close(conn_sock_fd);
+            i += 1;
         }
 
 
         close(socket_stream_fd);
         close(socket_dgram_fd);
+        free(conn_sock_fd);
         fprintf(stdout, "Caught SIGINT, exiting cleanly\n");
-
-        /* print the final story */
-        if(strlen(story) != 0){
-            fprintf(stdout, "*** STORY:\n%s\n", story);
-        }
-
-    free(story);
 
     exit(EXIT_SUCCESS);
 }

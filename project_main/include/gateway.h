@@ -3,7 +3,7 @@
 
 #include "messages.h"
 
-static volatile bool keepRunning = true;
+extern bool keepRunning;
 
 typedef struct _masterPeerRecvThreadArgs {
     int socket_fd;
@@ -36,17 +36,13 @@ void setupGatewayAddressPeers(struct sockaddr_in *);
 int clientDgramSocketSetup(void);
 int getGatewayPort(void);
 void sigIntHandler(int sig);
-void setupInterrupt(void);
 
 // Threads
 void* masterPeerRecvThread(void* args);
 void* masterClientRecvThread(void* args);
 void* slavePeerRecvThread(void* args);
 void* slaveClientRecvThread(void* args);
-
-// TODO
-void* send_address_to_client(void * args);
-void* receive_address_from_peer(void * args);
+void* masterPeerPinger(void* args);
 
 
 #endif

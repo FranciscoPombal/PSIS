@@ -53,6 +53,10 @@
 #define HUGE_NUMBER 100000
 #endif
 
+#ifndef PEER_ALIVE_INTERVAL
+#define PEER_ALIVE_INTERVAL 10
+#endif
+
 #ifndef IPV4_STRING_SIZE
 #define IPV4_STRING_SIZE 16
 #endif
@@ -65,33 +69,77 @@
 #define PEER_ADDRESS 0
 #endif
 
-#ifndef CLIENT_ADDRESS
-#define CLIENT_ADDRESS 1
-#endif
-
 #ifndef PEER_AVAILABLE
 #define PEER_AVAILABLE 1
 #endif
 
-#ifndef PEER_UNAVAILABLE
-#define PEER_UNAVAILABLE 0
+#ifndef BAD_PEER
+#define BAD_PEER -101
+#endif
+
+#ifndef CLIENT_ADDRESS
+#define CLIENT_ADDRESS 1
+#endif
+
+#ifndef BAD_CLIENT
+#define BAD_CLIENT -201
+#endif
+
+#ifndef MESSAGE_TYPE_PEER_PING
+#define MESSAGE_TYPE_PEER_PING 101
+#endif
+
+#ifndef GALLERY_API_ADD_PHOTO
+#define GALLERY_API_ADD_PHOTO 501
+#endif
+
+#ifndef GALLERY_API_SEARCH_PHOTO
+#define GALLERY_API_SEARCH_PHOTO 502
+#endif
+
+#ifndef GALLERY_API_DELETE_PHOTO
+#define GALLERY_API_DELETE_PHOTO 503
+#endif
+
+#ifndef GALLERY_API_GET_PHOTO_NAME
+#define GALLERY_API_GET_PHOTO_NAME 504
+#endif
+
+#ifndef GALLERY_API_GET_PHOTO
+#define GALLERY_API_GET_PHOTO 505
+#endif
+
+#ifndef GALLERY_API_ADD_KEYWORD
+#define GALLERY_API_ADD_KEYWORD 506
+#endif
+
+#ifndef GALLERY_API_CLOSE_CONNECTION
+#define GALLERY_API_CLOSE_CONNECTION 507
 #endif
 
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
 
-// TODO: socket tambem vai na message_gw
 typedef struct _message_gw{
     int type;
     unsigned int address;
     int port;
 } Message_gw;
 
+typedef struct _message_ping {
+    int type;
+} Message_ping;
+
+typedef struct _message_api_op_type {
+    int type;
+} Message_api_op_type;
+
 typedef struct _peer_properties{
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
-    int status;
+    int num_connected_clients;
+    bool toDelete;
 } PeerProperties;
 
 

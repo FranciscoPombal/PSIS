@@ -17,4 +17,8 @@ void setupPeerAddress(struct sockaddr_in * psa);
 void setupPeerAddressDgram(struct sockaddr_in * psa_dgram);
 void setupGatewayAddress(struct sockaddr_in * gsa);
 
+// Threads
+void* pingerThread(void*);
+void* clientHandlerThread(void* args);
+
 #endif

@@ -1,5 +1,7 @@
 #include "../include/gateway.h"
 
+bool keepRunning = true;
+
 int main(void)
 {
     // socket stuff
@@ -12,20 +14,34 @@ int main(void)
     // Linked list of clients
     SinglyLinkedList* client_linked_list = NULL;
 
+    //signal handling
+    struct sigaction sig_action;
+    sigset_t sigset;
+    sigset_t oldset;
+
     // thread stuff
+    int ret_val_recv_phtread_create = 0;
+
     // recv threads
     pthread_t thread_master_peer_recv_id = 0;
     pthread_t thread_master_client_recv_id = 0;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
     MasterClientRecvThreadArgs* masterClientRecvThreadArgs = NULL;
 
-    pthread_t* threadid = NULL;
-    int ret_val_recv_phtread_create = 0;
+    // pinger thread
+    pthread_t thread_master_peer_pinger_id = 0;
 
-        threadid = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+    // other threads TODO: is this needed?
+    pthread_t* thread_ids = NULL;
 
-        //setup SIGINT
-        setupInterrupt();
+
+        thread_ids = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+
+        // Block the SIGINT signal. The threads will inherit the signal mask.
+        // This will avoid them catching SIGINT instead of this thread.
+        sigemptyset(&sigset);
+        sigaddset(&sigset, SIGINT);
+        pthread_sigmask(SIG_BLOCK, &sigset, &oldset);
 
         // Create dgram sockets to handle clients and peers
         socket_dgram_peers_fd = peersDgramSocketSetup();
@@ -56,18 +72,36 @@ int main(void)
             exit(EXIT_FAILURE);
         }
 
-        while(true == keepRunning){
-            // TODO: rest of gateway
+        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_pinger_id, NULL, &masterPeerPinger, peer_linked_list);
+        if(ret_val_recv_phtread_create != 0){
+            fprintf(stderr, "recv_pthread_create (peer pinger) error!\n");
+            exit(EXIT_FAILURE);
         }
 
-    // TODO: probably not needed
+        // Install the signal handler for SIGINT.
+        sig_action.sa_handler = sigIntHandler;
+        sigemptyset(&sig_action.sa_mask);
+        sig_action.sa_flags = 0;
+        sigaction(SIGINT, &sig_action, NULL);
+
+        // Restore the old signal mask only for this thread.
+        pthread_sigmask(SIG_SETMASK, &oldset, NULL);
+
+        while(true == keepRunning){
+            // TODO: rest of gateway
+            sleep(1);
+        }
+
+    // TODO: cleanup
+    fprintf(stdout, "Cleaning up...\n");
     pthread_cancel(thread_master_peer_recv_id);
     pthread_cancel(thread_master_client_recv_id);
+    pthread_cancel(thread_master_peer_pinger_id);
 
     // close and free stuff
     close(socket_dgram_peers_fd);
     close(socket_dgram_clients_fd);
-    free(threadid);
+    free(thread_ids);
 
     return 0;
 }
