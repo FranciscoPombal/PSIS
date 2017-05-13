@@ -3,7 +3,7 @@
 void sigIntHandler(int sig)
 {
     fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
+    keepRunning = false;
 
     return;
 }
