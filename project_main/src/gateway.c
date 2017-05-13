@@ -65,6 +65,7 @@ int main(void)
 
         while(true == keepRunning){
             // TODO: rest of gateway
+            sleep(1);
         }
 
     // TODO: probably not needed
