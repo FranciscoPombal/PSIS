@@ -49,7 +49,7 @@ int main(void)
                     free(buffer);
                     break;}
                 case 2:
-                    fprintf(stdout, "You chose to add a keyword to a photo in the gallery\n");
+                    fprintf(stdout, "Not implemented, choose another option\n");
                     break;
                 case 3:{ //SEARCH FOR PHOTO
                     char keyword[100];
@@ -64,15 +64,37 @@ int main(void)
                     free(keyword);
                     free(buffer);
                     break;}
-                case 4:
+                case 4:{ //DELETE A PHOTO FROM THE GALLERY
                     fprintf(stdout, "You chose to delete a photo from the gallery\n");
-                    break;
-                case 5:
+                    int photo_id = 0;
+                    fprintf(stdout, "Insert the id of the photo\n");
+                    scanf("%d\n", &photo_id);
+
+                    gallery_delete_photo(socket_stream_fd, photo_id);
+
+                    free(&photo_id);
+                    break;}
+                case 5:{ //GET PHOTO NAME
+                    int photo_id = 0;
                     fprintf(stdout, "You chose to get the name of a photo in the gallery\n");
-                    break;
-                case 6:
+                    fprintf(stdout, "Insert the id of the photo\n");
+                    scanf("%d\n", &photo_id);
+
+                    gallery_get_photo_name(socket_stream_fd, photo_id, NULL);
+
+                    free(&photo_id);
+
+                    break;}
+                case 6:{  //GET PHOTO
                     fprintf(stdout, "You chose to  get (download) a photo from the gallery\n");
-                    break;
+                    int photo_id = 0;
+                    fprintf(stdout, "Insert the id of the photo\n");
+                    scanf("%d\n", &photo_id);
+
+                    gallery_get_photo(socket_stream_fd, photo_id, NULL);
+
+                    free(&photo_id);
+                    break;}
                 default:
                     fprintf(stdout, "Invalid option number. Try again\n");
                     break;
