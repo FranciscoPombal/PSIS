@@ -1,23 +1,16 @@
 #include "../include/gateway.h"
 
-void sigIntHandler(int sig)
+void sigIntHandler(int signal)
 {
-    fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = false;
-
-    return;
-}
-
-void setupInterrupt(void)
-{
-    // signal realated variables
-    struct sigaction sigint_action;
-
-        /* setup sigIntHandler as the handler function for SIGINT */
-        sigint_action.sa_handler = sigIntHandler;
-        sigemptyset(&sigint_action.sa_mask);
-        sigint_action.sa_flags = 0;
-        sigaction(SIGINT, &sigint_action, NULL);
+    switch(signal){
+        case 2:
+            fprintf(stdout, "\nCaught SIGINT\n");
+            keepRunning = false;
+            break;
+        default:
+            fprintf(stdout, "\nCaught other signal (should not happen!)\n");
+            break;
+    }
 
     return;
 }

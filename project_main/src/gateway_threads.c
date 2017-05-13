@@ -340,7 +340,7 @@ void* masterPeerPinger(void* args)
                 pthread_join(thread_peer_pinger_id[j], NULL);
             }
 
-            // TODO: review deletion from linked list
+            // Delete the nodes that are marked for deletion
             pthread_mutex_lock(&peer_list_mutex);
             for(aux_peer_list_node = peer_list_head; aux_peer_list_node != NULL; aux_peer_list_node = SinglyLinkedList_getNextNode(aux_peer_list_node)){
                 if(SinglyLinkedList_getItem(aux_peer_list_node) != NULL){
