@@ -126,79 +126,110 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 }
 
 
+// TODO: merge these defines in the .h files
+#ifndef IMAGE_SIZE_LIMIT
+#define IMAGE_SIZE_LIMIT 20971520
+#endif
+
+#ifndef BUFFER_SIZE_TEMP
+#define BUFFER_SIZE_TEMP 1024
+#endif
+
+// crc32 is 8 chars + NULL
+#ifndef BUFFER_SIZE_ID_TEMP
+#define BUFFER_SIZE_ID_TEMP 9
+#endif
+
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
 {
+    // communication  variables
     struct client_message message;
     int message_type = ADD_PHOTO;
-    message.id = -1; //Must define id in gateway
-    int lastbar = -1;
-    char* lastdot;
-    char* ret_val_strcpy;
-    int ret_val_send = -2;
-    int i = 0;
-    char command[1000];
+    int ret_val_send = 0;
 
-    //GET ID
-    char id_buffer[50];
-    FILE* fp_id;
-    strcpy(command, "crc32 ");
-    strcat(command, file_name);
-    fp_id = popen(command, "r");
-    fgets(id_buffer, sizeof(id_buffer), fp_id);
+    // for calculation of the id
+    char* command = NULL;
+    char* id_buffer = NULL;
+    FILE* fp_id = NULL;
 
-    message.id = (int) strtol(id_buffer, NULL, 16);
+    // file to send
+    FILE* fp = NULL;
+    long int file_size = 0;
+    void* file_buffer = NULL;
 
-    fclose(fp_id);
-    free(command);
-
-    //MESSAGE.FILENAME (eliminate the path and the extension)
-    if(file_name == NULL){
-        fprintf(stderr, "File name is NULL\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if(strrchr(file_name, '/') == NULL){
-        ret_val_strcpy = strcpy(message.filename, file_name);
-        if(ret_val_strcpy == NULL){
-            fprintf(stderr, "strcpy error in gallery_add_photo function\n");
-            exit(EXIT_FAILURE);
+        if(file_name == NULL){
+            fprintf(stderr, "ERROR: file name is null\n");
+            return 0;
         }
-    }
 
-    if(strrchr(file_name, '/') != NULL){
-        for ( i = 0; file_name[i] != '\0'; i++) {
-            if (file_name[i] == '/') {
-                lastbar = i;
-            }
+        command = malloc(BUFFER_SIZE_TEMP * sizeof(char));
+        id_buffer = malloc(BUFFER_SIZE_ID_TEMP * sizeof(char));
+
+        //GET ID
+        strncpy(command, "crc32 \0", 7);
+        strncat(command, file_name, BUFFER_SIZE_TEMP - 7);
+        fp_id = popen(command, "r");
+        fgets(id_buffer, sizeof(id_buffer), fp_id);
+        message.id = (uint32_t)strtol(id_buffer, NULL, 16);
+
+        free(command);
+        free(id_buffer);
+        fclose(fp_id);
+
+        // file is assumed to be in the same directory as the program
+        fp = fopen(file_name, "r");
+        if(fp == NULL){
+            fprintf(stderr, "No such file\n");
+            return 0;
         }
-        for ( i = 0; file_name[lastbar + i + 1] != '\0'; i++){
-            message.filename[i] = file_name[lastbar + i + 1];
+
+        // find file size
+        // could use fstat instead, but we would need to create 2 variables and call fileno()
+        fseek(fp, 0L, SEEK_END);
+        file_size = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
+
+        // 20 megabytes - same limit as imgur
+        if(file_size > IMAGE_SIZE_LIMIT){
+            fprintf(stderr, "File is too big.\n");
+            fclose(fp);
+            return 0;
         }
-        message.filename[i + 1] = '\0';
-    }
 
-    lastdot = strrchr(message.filename, '.');
+        // read from file to buffer in memory
+        file_buffer = malloc(file_size);
+        fread(file_buffer, 1, file_size, fp);
 
-    if(lastdot != NULL){
-        *lastdot = '\0';
-    }
+        //SEND MESSAGE TO PEER: 3-phase send
+        // message type
+        ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
+        if(ret_val_send != 0){
+            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+            free(file_buffer);
+            fclose(fp);
+            return 0;
+        }
 
-    //FOPEN
-    FILE* fp = fopen(file_name, "r");
+        // size of the image
+        ret_val_send = send(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
+        if(ret_val_send != 0){
+            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+            free(file_buffer);
+            fclose(fp);
+            return 0;
+        }
 
-    //SEND MESSAGE TO PEER
-    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_add_photo function\n");
-        exit(EXIT_FAILURE);
-    }
-    ret_val_send = send(peer_socket, fp, sizeof(*fp), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_add_photo function\n");
-        exit(EXIT_FAILURE);
-    }
+        // the image itself
+        ret_val_send = send(peer_socket, file_buffer, file_size, NO_FLAGS);
+        if(ret_val_send != 0){
+            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+            free(file_buffer);
+            fclose(fp);
+            return 0;
+        }
 
-    fclose(fp);
+        free(file_buffer);
+        fclose(fp);
 
     return message.id;
 }
