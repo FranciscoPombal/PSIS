@@ -90,7 +90,7 @@ void SinglyLinkedList_deleteNode(SinglyLinkedList* node, void(*Item_Free)(Item))
                 (*Item_Free)(itemToDelete);
             }else{
                 free(itemToDelete);
-                node->item = NULL;
+                aux->item = NULL;
             }
             free(aux);
         }else{
