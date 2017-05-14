@@ -20,6 +20,8 @@ void setupGatewayAddress(struct sockaddr_in * gsa);
 void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_SIZE]);
 void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata);
 
+int deletePhotoFromList(uint32_t id, SinglyLinkedList* photo_list_head);
+
 // Threads
 void* pingerThread(void*);
 void* clientHandlerThread(void* args);

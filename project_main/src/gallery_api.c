@@ -223,7 +223,6 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
             fclose(fp);
             return 0;
         }
-        fprintf(stdout, "Sent %d bytes.\n", ret_val_send);
 
         // image metadata
         ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
@@ -283,68 +282,78 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 
 int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 {
-    int message_type = GALLERY_API_DELETE_PHOTO;
+    // communication  variables
+    Message_api_op_type message_api_op_type = {.type = GALLERY_API_DELETE_PHOTO};
     int ret_val_send = 0;
     int ret_val_recv = 0;
-    int deleted = -1;
+    uint32_t deleted = -1;
 
-    //SEND MESSAGES TO PEER
-    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
-        exit(EXIT_FAILURE);
-    }
-    ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send message type
+        ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
+            return -1;
+        }
 
-    //RECEIVE CONFIRMATION MESSAGE
-    ret_val_recv = recv(peer_socket, &deleted, sizeof(deleted), NO_FLAGS);
-    if(ret_val_recv < 0){
-        fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send id to delete
+        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
+            return -1;
+        }
+
+        // receive confirmation message
+        ret_val_recv = recv(peer_socket, &deleted, sizeof(deleted), NO_FLAGS);
+        if(ret_val_recv == -1){
+            fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
+            return -1;
+        }
+        if((int)deleted == -1){
+            fprintf(stderr, "Peer reports error on photo deletion\n");
+        }else if(deleted == 0){
+            fprintf(stderr, "Peer says photo does not exist\n");
+        }
 
     return deleted;
 }
 
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
 {
-    int message_type = GALLERY_API_GET_PHOTO_NAME;
+    Message_api_op_type message_api_op_type = {.type = GALLERY_API_GET_PHOTO_NAME};
     int ret_val_send = 0;
     int ret_val_recv = 0;
 
-    //SEND MESSAGES TO PEER
-    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
-        exit(EXIT_FAILURE);
-    }
-    ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
-    if (ret_val_send < 0) {
-        fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send message type to peer
+        ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+        if (ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
+            return -1;
+        }
 
-    //RECEIVE MESSAGE FROM PEER
-    ret_val_recv = recv(peer_socket, *photo_name, sizeof(*photo_name), NO_FLAGS);
-    if(ret_val_recv < 0){
-        fprintf(stderr, "Error receiving confirmation message in gallery_get_photo_name function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send id of photo
+        ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
+        if (ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
+            return -1;
+        }
 
-    if(photo_name == NULL){
-        return 0;
-    }
+        // receive photo names
+        ret_val_recv = recv(peer_socket, *photo_name, sizeof(*photo_name), NO_FLAGS);
+        if(ret_val_recv == -1){
+            fprintf(stderr, "Error receiving confirmation message in gallery_get_photo_name function\n");
+            return -1;
+        }
 
-    fprintf(stdout, "Photo name: %s\n", *photo_name);
+        if(photo_name == NULL){
+            return 0;
+        }
 
-    return 1;
+        fprintf(stdout, "Photo name: %s\n", *photo_name);
+
+        return 1;
 }
 
-int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
+int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
 {
     int message_type = GALLERY_API_GET_PHOTO;
     int ret_val_send = 0;

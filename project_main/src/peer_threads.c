@@ -37,6 +37,7 @@ void* clientHandlerThread(void* args)
     bool closeConnection = false;
     int ret_val_recv_from = 0;
     int ret_val_recv = 0;
+    int ret_val_send = 0;
     struct sockaddr_in client_socket_address;
     socklen_t client_socket_address_len = sizeof(client_socket_address);
     Message_api_op_type message_api_op_type;
@@ -47,6 +48,8 @@ void* clientHandlerThread(void* args)
     PhotoProperties* photoProperties = NULL;
     long int file_size = 0;
     void* file_buffer = NULL;
+    uint32_t id = 0;
+    int delete_response = 0;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -66,7 +69,6 @@ void* clientHandlerThread(void* args)
                         break;
                     }
                     // image
-                    fprintf(stderr, "File size %ld\n", file_size);
                     file_buffer = malloc(file_size);
                     ret_val_recv = recv(socket_fd, file_buffer, file_size, NO_FLAGS);
                     if(ret_val_recv == -1){
@@ -78,7 +80,6 @@ void* clientHandlerThread(void* args)
                         free(file_buffer);
                         break;
                     }
-                    fprintf(stdout, "Received %d bytes\n", ret_val_recv);
 
                     // image metadata
                     photoProperties = malloc(sizeof(PhotoProperties));
@@ -104,8 +105,23 @@ void* clientHandlerThread(void* args)
                 }
                 case GALLERY_API_DELETE_PHOTO:
                 {
-                    //call function for this
                     fprintf(stdout, "Client wants to delete a photo\n"); // DEBUG
+                    ret_val_recv = recv(socket_fd, &id, sizeof(id), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Delete photo: Error receiving id of image\n");
+                        break;
+                    }
+
+                    pthread_mutex_lock(&photo_list_mutex);
+                    delete_response = deletePhotoFromList(id, photo_list_head); //TODO
+                    pthread_mutex_unlock(&photo_list_mutex);
+
+                    ret_val_send = send(socket_fd, &delete_response, sizeof(delete_response), NO_FLAGS);
+                    if(ret_val_send == -1){
+                        fprintf(stderr, "Delete photo: error sending response to client\n");
+                        break;
+                    }
+
                     break;
                 }
                 case GALLERY_API_GET_PHOTO_NAME:
