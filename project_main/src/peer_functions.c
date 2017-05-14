@@ -219,7 +219,17 @@ void setupGatewayAddress(struct sockaddr_in * gsa)
 // TODO
 void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata)
 {
+    SinglyLinkedList* aux_photo_list_node = NULL;
 
+        for(aux_photo_list_node = list_head; SinglyLinkedList_getNextNode(aux_photo_list_node) != NULL; aux_photo_list_node =   SinglyLinkedList_getNextNode(aux_photo_list_node)){}
+
+        if(SinglyLinkedList_getItem(aux_photo_list_node) == NULL){
+            SinglyLinkedList_setItem(aux_photo_list_node, photo_metadata);
+        }else{
+            SinglyLinkedList_insertAtEnd(aux_photo_list_node, SinglyLinkedList_newNode(photo_metadata));
+        }
+
+    return;
 }
 
 void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_SIZE])
@@ -228,6 +238,7 @@ void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_
 
         fp = fopen(storage_name, "wb");
         fwrite(photo, 1, size, fp);
+        fclose(fp);
 
     return;
 }

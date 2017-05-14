@@ -55,23 +55,45 @@ void* clientHandlerThread(void* args)
         while(false == closeConnection){
             ret_val_recv_from = recvfrom(socket_fd, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);
 
-            switch (message_api_op_type.type){
+            switch(message_api_op_type.type){
                 case GALLERY_API_ADD_PHOTO:
                 {
+                    fprintf(stdout, "Client wants to add a photo\n"); // DEBUG
                     // size of image
                     ret_val_recv = recv(socket_fd, &file_size, sizeof(file_size), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Add photo: Error receiving sizeof image\n");
+                        break;
+                    }
                     // image
+                    fprintf(stderr, "File size %ld\n", file_size);
                     file_buffer = malloc(file_size);
                     ret_val_recv = recv(socket_fd, file_buffer, file_size, NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Add photo: Error receiving image.\n");
+                        free(file_buffer);
+                        break;
+                    }else if(ret_val_recv != file_size){
+                        fprintf(stderr, "Add photo: Wrong number of image bytes received: %d\n", ret_val_recv);
+                        free(file_buffer);
+                        break;
+                    }
+                    fprintf(stdout, "Received %d bytes\n", ret_val_recv);
+
                     // image metadata
                     photoProperties = malloc(sizeof(PhotoProperties));
                     ret_val_recv = recv(socket_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Add photo: Error receiving image metadata\n");
+                        free(photoProperties);
+                        break;
+                    }
 
                     writePhotoToDisk(file_buffer, file_size, photoProperties->storage_name);
                     pthread_mutex_lock(&photo_list_mutex);
                     addPhotoToList(photo_list_head, photoProperties);
                     pthread_mutex_lock(&photo_list_mutex);
-                    fprintf(stdout, "Client wants to add a photo\n"); // DEBUG
+                    free(file_buffer);
                     break;
                 }
                 case GALLERY_API_SEARCH_PHOTO:

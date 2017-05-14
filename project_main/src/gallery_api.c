@@ -156,7 +156,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         strncpy(command, "crc32 \0", COMMAND_STRING_LENGTH);
         strncat(command, file_name, CHAR_BUFFER_SIZE - COMMAND_STRING_LENGTH);
         fp_id = popen(command, "r");
-        fgets(id_buffer, sizeof(id_buffer), fp_id);
+        fgets(id_buffer, CHAR_BUFFER_SIZE, fp_id);
         id = (uint32_t)strtol(id_buffer, NULL, 16);
 
         free(command);
@@ -175,6 +175,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         fseek(fp, 0L, SEEK_END);
         file_size = ftell(fp);
         fseek(fp, 0L, SEEK_SET);
+        fprintf(stderr, "FIle size %ld\n", file_size);
 
         // 20 megabytes - same limit as imgur
         if(file_size > IMAGE_SIZE_LIMIT){
@@ -190,7 +191,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         photoProperties = malloc(sizeof(PhotoProperties));
         photoProperties->photo_id = id;
         strncpy(photoProperties->photo_name, file_name, CHAR_BUFFER_SIZE - 11);
-        snprintf(id_str, 11, "%d", id);
+        snprintf(id_str, 11, "%u", id);
         strncat(file_name, id_str, 11);
         strncpy(photoProperties->storage_name, file_name, CHAR_BUFFER_SIZE);
         photoProperties->keywords = NULL;
@@ -222,6 +223,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
             fclose(fp);
             return 0;
         }
+        fprintf(stdout, "Sent %d bytes.\n", ret_val_send);
 
         // image metadata
         ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
@@ -235,7 +237,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         free(file_buffer);
         fclose(fp);
 
-    return message.id;
+    return id;
 }
 
 int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
