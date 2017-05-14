@@ -17,8 +17,16 @@ void setupPeerAddress(struct sockaddr_in * psa);
 void setupPeerAddressDgram(struct sockaddr_in * psa_dgram);
 void setupGatewayAddress(struct sockaddr_in * gsa);
 
+void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_SIZE]);
+void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata);
+
 // Threads
 void* pingerThread(void*);
 void* clientHandlerThread(void* args);
+
+typedef struct _clientHandlerThreadArgs {
+    int socket_fd;
+    SinglyLinkedList* photo_list_head;
+} ClientHandlerThreadArgs;
 
 #endif

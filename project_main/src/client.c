@@ -1,11 +1,19 @@
 #include "../include/client.h"
 
+bool keepRunning = true;
+
 int main(void)
 {
     int choice = 0;
+    bool closeConnection = false;
     int socket_stream_fd = 0;
     char* gateway_ipv4 = NULL;
     int gateway_port = 0;
+
+    int photo_id = 0;
+    char photo_name[CHAR_BUFFER_SIZE];
+    char buffer[CHAR_BUFFER_SIZE];
+    char keyword[CHAR_BUFFER_SIZE];
 
         //setup SIGINT handler
         setupInterrupt();
@@ -27,79 +35,84 @@ int main(void)
 
         fprintf(stdout, "Client has contated the gateway and is connected to a peer.\n");
 
-// TODO: rest of client
-
-        while(true == keepRunning){
+        while((true == keepRunning) && (false == closeConnection)){
             //Print client options
             choice = showMenu();
 
             //Execute option
             switch(choice){
-                case 1:{ //ADD PHOTO TO GALLERY
-                    char photo_name[100];
-                    char buffer[100];
-                    fprintf(stdout, "You chose to add a photo to the gallery\n");
-                    fprintf(stdout, "Please insert path to photo you want to add:\n");
-                    fgets(buffer, 100, stdin);
+                case ADD_PHOTO:
+                {
+                    fprintf(stdout, "Please insert name of photo you want to add:\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", photo_name);
 
                     gallery_add_photo(socket_stream_fd,photo_name);
 
-                    free(photo_name);
-                    free(buffer);
-                    break;}
-                case 2:
-                    fprintf(stdout, "Not implemented, choose another option\n");
                     break;
-                case 3:{ //SEARCH FOR PHOTO
-                    char keyword[100];
-                    char buffer[100];
-                    fprintf(stdout, "You chose to search for a photo in the gallery\n");
-                    fprintf(stdout, "Insert a keyword:\n");
-                    fgets(buffer, 100, stdin);
+                }
+                case ADD_KEYWORD:
+                {
+                    fprintf(stdout, "Not implemented (yet?), choose another option\n");
+                    break;
+                }
+                case SEARCH_PHOTO:
+                {
+                    fprintf(stdout, "Insert a keyword to search for (blank to list all):\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", keyword);
 
                     gallery_search_photo(socket_stream_fd, keyword, NULL);
 
-                    free(keyword);
-                    free(buffer);
-                    break;}
-                case 4:{ //DELETE A PHOTO FROM THE GALLERY
-                    fprintf(stdout, "You chose to delete a photo from the gallery\n");
-                    int photo_id = 0;
-                    fprintf(stdout, "Insert the id of the photo\n");
-                    scanf("%d\n", &photo_id);
+                    break;
+                }
+                case DELETE_PHOTO:
+                {
+                    fprintf(stdout, "Insert the id of the photo to delete\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+                    sscanf(buffer, "%d", &photo_id);
 
                     gallery_delete_photo(socket_stream_fd, photo_id);
 
-                    free(&photo_id);
-                    break;}
-                case 5:{ //GET PHOTO NAME
-                    int photo_id = 0;
-                    fprintf(stdout, "You chose to get the name of a photo in the gallery\n");
-                    fprintf(stdout, "Insert the id of the photo\n");
-                    scanf("%d\n", &photo_id);
+                    break;
+                }
+                case GET_PHOTO_NAME:
+                {
+                    fprintf(stdout, "Insert the id of the photo to get the name of (0 to get all):\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+                    sscanf(buffer, "%d", &photo_id);
 
                     gallery_get_photo_name(socket_stream_fd, photo_id, NULL);
 
-                    free(&photo_id);
-
-                    break;}
-                case 6:{  //GET PHOTO
-                    fprintf(stdout, "You chose to  get (download) a photo from the gallery\n");
-                    int photo_id = 0;
-                    fprintf(stdout, "Insert the id of the photo\n");
-                    scanf("%d\n", &photo_id);
+                    break;
+                }
+                case GET_PHOTO:
+                {
+                    fprintf(stdout, "Insert the id of the photo to download:\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+                    sscanf(buffer, "%d", &photo_id);
 
                     gallery_get_photo(socket_stream_fd, photo_id, NULL);
 
-                    free(&photo_id);
-                    break;}
+                    break;
+                }
+
+                case CLOSE_CONNECTION:
+                {
+                    fprintf(stdout, "Closed connection with the peer. Exiting.\n");
+                    closeConnection = gallery_close_connection(socket_stream_fd);
+
+                    break;
+                }
                 default:
+                {
                     fprintf(stdout, "Invalid option number. Try again\n");
                     break;
+                }
             }
         }
+
+        fprintf(stdout, "Cleaning up...\n");
 
         free(gateway_ipv4);
 

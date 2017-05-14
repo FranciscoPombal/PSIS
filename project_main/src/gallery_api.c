@@ -125,26 +125,10 @@ void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
     return;
 }
 
-
-// TODO: merge these defines in the .h files
-#ifndef IMAGE_SIZE_LIMIT
-#define IMAGE_SIZE_LIMIT 20971520
-#endif
-
-#ifndef BUFFER_SIZE_TEMP
-#define BUFFER_SIZE_TEMP 1024
-#endif
-
-// crc32 is 8 chars + NULL
-#ifndef BUFFER_SIZE_ID_TEMP
-#define BUFFER_SIZE_ID_TEMP 9
-#endif
-
 uint32_t gallery_add_photo(int peer_socket, char* file_name)
 {
     // communication  variables
-    struct client_message message;
-    int message_type = ADD_PHOTO;
+    Message_api_op_type message_api_op_type = {.type = GALLERY_API_ADD_PHOTO};
     int ret_val_send = 0;
 
     // for calculation of the id
@@ -153,31 +137,34 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
     FILE* fp_id = NULL;
 
     // file to send
+    uint32_t id;
     FILE* fp = NULL;
     long int file_size = 0;
     void* file_buffer = NULL;
+    PhotoProperties* photoProperties = NULL;
+    char id_str[11];
 
         if(file_name == NULL){
             fprintf(stderr, "ERROR: file name is null\n");
             return 0;
         }
 
-        command = malloc(BUFFER_SIZE_TEMP * sizeof(char));
-        id_buffer = malloc(BUFFER_SIZE_ID_TEMP * sizeof(char));
+        command = malloc(CHAR_BUFFER_SIZE * sizeof(char));
+        id_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         //GET ID
-        strncpy(command, "crc32 \0", 7);
-        strncat(command, file_name, BUFFER_SIZE_TEMP - 7);
+        strncpy(command, "crc32 \0", COMMAND_STRING_LENGTH);
+        strncat(command, file_name, CHAR_BUFFER_SIZE - COMMAND_STRING_LENGTH);
         fp_id = popen(command, "r");
         fgets(id_buffer, sizeof(id_buffer), fp_id);
-        message.id = (uint32_t)strtol(id_buffer, NULL, 16);
+        id = (uint32_t)strtol(id_buffer, NULL, 16);
 
         free(command);
         free(id_buffer);
         fclose(fp_id);
 
         // file is assumed to be in the same directory as the program
-        fp = fopen(file_name, "r");
+        fp = fopen(file_name, "rb");
         if(fp == NULL){
             fprintf(stderr, "No such file\n");
             return 0;
@@ -200,11 +187,19 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         file_buffer = malloc(file_size);
         fread(file_buffer, 1, file_size, fp);
 
-        //SEND MESSAGE TO PEER: 3-phase send
+        photoProperties = malloc(sizeof(PhotoProperties));
+        photoProperties->photo_id = id;
+        strncpy(photoProperties->photo_name, file_name, CHAR_BUFFER_SIZE - 11);
+        snprintf(id_str, 11, "%d", id);
+        strncat(file_name, id_str, 11);
+        strncpy(photoProperties->storage_name, file_name, CHAR_BUFFER_SIZE);
+        photoProperties->keywords = NULL;
+
+        //SEND MESSAGE TO PEER: 4-phase send
         // message type
-        ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
-        if(ret_val_send != 0){
-            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+        ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_add_photo function (the operation type).\n");
             free(file_buffer);
             fclose(fp);
             return 0;
@@ -212,8 +207,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
 
         // size of the image
         ret_val_send = send(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
-        if(ret_val_send != 0){
-            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_add_photo function (the size of the image).\n");
             free(file_buffer);
             fclose(fp);
             return 0;
@@ -221,8 +216,17 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
 
         // the image itself
         ret_val_send = send(peer_socket, file_buffer, file_size, NO_FLAGS);
-        if(ret_val_send != 0){
-            fprintf(stderr, "Error sending message in gallery_add_photo function\n");
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
+            free(file_buffer);
+            fclose(fp);
+            return 0;
+        }
+
+        // image metadata
+        ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
             free(file_buffer);
             fclose(fp);
             return 0;
@@ -243,27 +247,27 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 {
     int ret_val_send = 0;
     int ret_val_recv = 0;
-    int message_type = SEARCH_PHOTO;
+    Message_api_op_type message_api_op_type = {.type = GALLERY_API_SEARCH_PHOTO};
     int num_photos = 0;
     int i = 0;
 
     //id_photos** = (int*)calloc(100, 100*sizeof(uint32_t*));
 
     //SEND MESSAGE TO PEER (One with the message_type and another with a string of keywords)
-    ret_val_send = send(peer_socket, &message_type, sizeof(message_type), NO_FLAGS);
-    if (ret_val_send < 0) {
+    ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+    if(ret_val_send == -1){
         fprintf(stderr, "Error sending message in gallery_search_photo function\n");
-        exit(EXIT_FAILURE);
+        return 0;
     }
     ret_val_send = send(peer_socket, keyword, sizeof(keyword), NO_FLAGS);
-    if (ret_val_send < 0) {
+    if (ret_val_send == -1){
         fprintf(stderr, "Error sending message in gallery_search_photo function\n");
         exit(EXIT_FAILURE);
     }
 
     //RECEIVE MESSAGE FROM PEER
     ret_val_recv = recv(peer_socket, *id_photos, sizeof(*id_photos), NO_FLAGS);
-    if (ret_val_recv < 0) {
+    if (ret_val_recv == -1){
         fprintf(stderr, "Error receiving message in gallery_search_photo function\n");
         exit(EXIT_FAILURE);
     }
@@ -277,7 +281,7 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
 
 int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 {
-    int message_type = DELETE_PHOTO;
+    int message_type = GALLERY_API_DELETE_PHOTO;
     int ret_val_send = 0;
     int ret_val_recv = 0;
     int deleted = -1;
@@ -288,14 +292,14 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
         fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
         exit(EXIT_FAILURE);
     }
-    ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
+    ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
     if (ret_val_send < 0) {
         fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
         exit(EXIT_FAILURE);
     }
 
     //RECEIVE CONFIRMATION MESSAGE
-    ret_val_recv = recv(peer_socket, &deleted, sizeof(&deleted), NO_FLAGS);
+    ret_val_recv = recv(peer_socket, &deleted, sizeof(deleted), NO_FLAGS);
     if(ret_val_recv < 0){
         fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
         exit(EXIT_FAILURE);
@@ -306,7 +310,7 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
 {
-    int message_type = GET_PHOTO_NAME;
+    int message_type = GALLERY_API_GET_PHOTO_NAME;
     int ret_val_send = 0;
     int ret_val_recv = 0;
 
@@ -340,7 +344,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
 
 int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
 {
-    int message_type = GET_PHOTO;
+    int message_type = GALLERY_API_GET_PHOTO;
     int ret_val_send = 0;
     int ret_val_recv = 0;
     FILE* fp = fopen(*file_name, "w");
@@ -373,4 +377,18 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
 
     fclose(fp);
     return 0;
+}
+
+bool gallery_close_connection(int peer_socket)
+{
+    int ret_val_send = 0;
+    Message_api_op_type message_api_op_type = {.type = GALLERY_API_CLOSE_CONNECTION};
+
+        ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message in gallery_close_connection function (the operation type).\n");
+            return false;
+        }
+
+    return true;
 }

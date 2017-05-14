@@ -93,24 +93,24 @@
 #define GALLERY_API_ADD_PHOTO 501
 #endif
 
+#ifndef GALLERY_API_ADD_KEYWORD
+#define GALLERY_API_ADD_KEYWORD 502
+#endif
+
 #ifndef GALLERY_API_SEARCH_PHOTO
-#define GALLERY_API_SEARCH_PHOTO 502
+#define GALLERY_API_SEARCH_PHOTO 503
 #endif
 
 #ifndef GALLERY_API_DELETE_PHOTO
-#define GALLERY_API_DELETE_PHOTO 503
+#define GALLERY_API_DELETE_PHOTO 504
 #endif
 
 #ifndef GALLERY_API_GET_PHOTO_NAME
-#define GALLERY_API_GET_PHOTO_NAME 504
+#define GALLERY_API_GET_PHOTO_NAME 505
 #endif
 
 #ifndef GALLERY_API_GET_PHOTO
-#define GALLERY_API_GET_PHOTO 505
-#endif
-
-#ifndef GALLERY_API_ADD_KEYWORD
-#define GALLERY_API_ADD_KEYWORD 506
+#define GALLERY_API_GET_PHOTO 506
 #endif
 
 #ifndef GALLERY_API_CLOSE_CONNECTION
@@ -147,5 +147,12 @@ typedef struct _client_properties{
     struct sockaddr_in client_socket_address;
     struct sockaddr_in connected_peer_socket_address;
 } ClientProperties;
+
+typedef struct _photoProperties {
+    uint32_t photo_id;
+    char photo_name[CHAR_BUFFER_SIZE];
+    char storage_name[CHAR_BUFFER_SIZE];
+    char** keywords;
+} PhotoProperties;
 
 #endif

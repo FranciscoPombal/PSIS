@@ -215,3 +215,19 @@ void setupGatewayAddress(struct sockaddr_in * gsa)
 
     return;
 }
+
+// TODO
+void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata)
+{
+
+}
+
+void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_SIZE])
+{
+    FILE* fp = NULL;
+
+        fp = fopen(storage_name, "wb");
+        fwrite(photo, 1, size, fp);
+
+    return;
+}

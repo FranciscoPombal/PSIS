@@ -14,13 +14,21 @@ int main(void)
     pthread_t thread_master_client_accept_id = 0;
     pthread_t thread_pinger_id = 0;
     int ret_val_phtread_create = 0;
+    ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
+
+    // photo stuff
+    SinglyLinkedList* photo_linked_list;
 
         // Setup SIGINT handler
         setupInterrupt();
 
         conn_sock_fd = (int*)malloc(HUGE_NUMBER * sizeof(int));
 
-        // TODO: we probably need to change these functions so that the y also give us the addresses
+        photo_linked_list = SinglyLinkedList_newNode(NULL);
+        clientHandlerThreadArgs = malloc(sizeof(ClientHandlerThreadArgs));
+        clientHandlerThreadArgs->photo_list_head = photo_linked_list;
+
+        // TODO: we may need more sockets for syncing with the gateway and other peers
         /* socket: create a new communication endpoint */
         // stream socket
         socket_stream_fd = clientStreamSocketSetup();
@@ -36,9 +44,10 @@ int main(void)
         while(true == keepRunning){
 
             conn_sock_fd[i] = accept(socket_stream_fd, NULL, NULL);
+            clientHandlerThreadArgs->socket_fd = conn_sock_fd[i];
 
             // TODO: check atributes and arguments
-            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, &conn_sock_fd[i]);
+            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, clientHandlerThreadArgs);
 
             i += 1;
         }

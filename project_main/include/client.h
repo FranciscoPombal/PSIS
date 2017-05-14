@@ -4,7 +4,7 @@
 #include "messages.h"
 #include "gallery_api.h"
 
-static volatile bool keepRunning = true;
+extern bool keepRunning;
 
 // Client helper functions
 void sigIntHandler(int);

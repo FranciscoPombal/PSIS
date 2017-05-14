@@ -1,9 +1,16 @@
 #include "../include/client.h"
 
-void sigIntHandler(int sig)
+void sigIntHandler(int signal)
 {
-    fprintf(stdout, "Caught signal %d\n", sig);
-    keepRunning = 0;
+    switch(signal){
+        case 2:
+            fprintf(stdout, "\nCaught SIGINT\n");
+            keepRunning = false;
+            break;
+        default:
+            fprintf(stdout, "\nCaught other signal (should not happen!)\n");
+            break;
+    }
 
     return;
 }
@@ -96,12 +103,13 @@ int showMenu(void)
         char_buffer = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         fprintf(stdout, "\nChoose an option (number):\n");
-        fprintf(stdout, "1 - Add a photo to the gallery\n");
+        fprintf(stdout, "1 - Add (upload) a photo to the gallery\n");
         fprintf(stdout, "2 - Add a keyword to a photo in the gallery\n");
         fprintf(stdout, "3 - Search for a photo in the gallery\n");
         fprintf(stdout, "4 - Delete a photo from the gallery\n");
         fprintf(stdout, "5 - Get the name of a photo in the gallery\n");
         fprintf(stdout, "6 - Get (download) a photo from the gallery\n");
+        fprintf(stdout, "7 - Close connection with the peer\n");
 
         fgets(char_buffer, sizeof(char_buffer), stdin);
         ret_val_sscanf = sscanf(char_buffer, "%d\n", &option);
