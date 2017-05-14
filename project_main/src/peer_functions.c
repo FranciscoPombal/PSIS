@@ -242,3 +242,21 @@ void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_
 
     return;
 }
+
+int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
+{
+    SinglyLinkedList* aux_photo_list_node = NULL;
+    PhotoProperties* aux_photo_properties_item = NULL;
+
+        for(aux_photo_list_node = list_head; SinglyLinkedList_getNextNode(aux_photo_list_node) != NULL; aux_photo_list_node =   SinglyLinkedList_getNextNode(aux_photo_list_node)){
+            if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
+                aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
+                if(aux_photo_properties_item->photo_id == id){
+                    SinglyLinkedList_deleteNode(aux_photo_list_node, NULL); // TODO: make deleting func
+                    return PHOTO_DELETE_SUCCESS;
+                }
+            }
+        }
+
+    return PHOTO_NOT_FOUND;
+}

@@ -113,7 +113,7 @@ void* clientHandlerThread(void* args)
                     }
 
                     pthread_mutex_lock(&photo_list_mutex);
-                    delete_response = deletePhotoFromList(id, photo_list_head); //TODO
+                    delete_response = deletePhotoFromList(id, photo_list_head);
                     pthread_mutex_unlock(&photo_list_mutex);
 
                     ret_val_send = send(socket_fd, &delete_response, sizeof(delete_response), NO_FLAGS);
@@ -132,7 +132,6 @@ void* clientHandlerThread(void* args)
                 }
                 case GALLERY_API_GET_PHOTO:
                 {
-                    //call function for this
                     fprintf(stdout, "Client wants to get a photo\n"); // DEBUG
                     break;
                 }

@@ -117,6 +117,14 @@
 #define GALLERY_API_CLOSE_CONNECTION 507
 #endif
 
+#ifndef PHOTO_DELETE_SUCCESS
+#define PHOTO_DELETE_SUCCESS 1
+#endif
+
+#ifndef PHOTO_NOT_FOUND
+#define PHOTO_NOT_FOUND 0
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
@@ -153,6 +161,7 @@ typedef struct _photoProperties {
     char photo_name[CHAR_BUFFER_SIZE];
     char storage_name[CHAR_BUFFER_SIZE];
     char** keywords;
+    int num_keywords;
 } PhotoProperties;
 
 #endif

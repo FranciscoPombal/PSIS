@@ -12,12 +12,13 @@ int main(void)
     int gateway_port = 0;
 
     uint32_t photo_id = 0;
-    char photo_name[CHAR_BUFFER_SIZE];
     char buffer[CHAR_BUFFER_SIZE];
     char keyword[CHAR_BUFFER_SIZE];
     char** photo_names = NULL;
+    char* photo_name = NULL;
     uint32_t num_photos = 0;
     int delete_response = 0;
+    int get_response = 0;
 
         //setup SIGINT handler
         setupInterrupt();
@@ -84,9 +85,9 @@ int main(void)
                     delete_response = gallery_delete_photo(socket_stream_fd, photo_id);
                     if(delete_response == -1){
                         fprintf(stdout, "Error deleting photo from peer\n");
-                    }else if (delete_response == 0){
+                    }else if(delete_response == PHOTO_NOT_FOUND){
                         fprintf(stderr, "Can't delete because photo does not exist\n");
-                    } else {
+                    }else{
                         fprintf(stdout, "Photo with id %u was deleted successfully\n", photo_id);
                     }
 
@@ -104,7 +105,7 @@ int main(void)
                     }else if(num_photos == 0){
                         fprintf(stderr, "Can't get name because photo does not exist\n");
                     }else if(num_photos == 1){
-                        fprintf(stdout, "Photo with id %u exists and its name is:%s\n", photo_names[0]);
+                        fprintf(stdout, "Photo with id %u exists and its name is:%s\n", photo_id, photo_names[0]);
                         free(photo_names[0]);
                         free(photo_names);
                     }else if(num_photos >= 1){
@@ -124,7 +125,15 @@ int main(void)
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%u", &photo_id);
 
-                    gallery_get_photo(socket_stream_fd, photo_id, photo_name);
+                    get_response = gallery_get_photo(socket_stream_fd, photo_id, photo_name);
+                    if(get_response == -1){
+                        fprintf(stderr, "Error getting photo\n");
+                    }else if(get_response == PHOTO_NOT_FOUND){
+                        fprintf(stderr, "Photo with id %u not found in peer.\n", photo_id);
+                    }else{
+                        fprintf(stdout, "File with id %u has been downloaded as file %s\n", photo_id, photo_name);
+                        free(photo_name);
+                    }
 
                     break;
                 }
@@ -147,6 +156,9 @@ int main(void)
         fprintf(stdout, "Cleaning up...\n");
 
         free(gateway_ipv4);
+        if(photo_name != NULL){
+            free(photo_name);
+        }
 
     exit(EXIT_SUCCESS);
 }
