@@ -25,8 +25,6 @@ int main(void)
         conn_sock_fd = (int*)malloc(HUGE_NUMBER * sizeof(int));
 
         photo_linked_list = SinglyLinkedList_newNode(NULL);
-        clientHandlerThreadArgs = malloc(sizeof(ClientHandlerThreadArgs));
-        clientHandlerThreadArgs->photo_list_head = photo_linked_list;
 
         // TODO: we may need more sockets for syncing with the gateway and other peers
         /* socket: create a new communication endpoint */
@@ -44,14 +42,15 @@ int main(void)
         while(true == keepRunning){
 
             conn_sock_fd[i] = accept(socket_stream_fd, NULL, NULL);
+            clientHandlerThreadArgs = malloc(sizeof(ClientHandlerThreadArgs));
             clientHandlerThreadArgs->socket_fd = conn_sock_fd[i];
+            clientHandlerThreadArgs->photo_list_head = photo_linked_list;
 
             // TODO: check atributes and arguments
             ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, clientHandlerThreadArgs);
 
             i += 1;
         }
-
 
         close(socket_stream_fd);
         close(socket_dgram_fd);

@@ -49,6 +49,7 @@ int main(void)
                 case ADD_PHOTO:
                 {
                     fprintf(stdout, "Please insert name of photo you want to add:\n");
+                    photo_name = malloc(CHAR_BUFFER_SIZE * sizeof(char));
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", photo_name);
 
@@ -57,6 +58,10 @@ int main(void)
                         fprintf(stdout, "Photo added to peer with id: %u\n", photo_id);
                     }else{
                         fprintf(stderr, "Error adding photo \"%s\" to peer\n", photo_name);
+                    }
+
+                    if(photo_name != NULL){
+                        free(photo_name);
                     }
 
                     break;

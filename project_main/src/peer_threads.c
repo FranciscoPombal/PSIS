@@ -93,7 +93,7 @@ void* clientHandlerThread(void* args)
                     writePhotoToDisk(file_buffer, file_size, photoProperties->storage_name);
                     pthread_mutex_lock(&photo_list_mutex);
                     addPhotoToList(photo_list_head, photoProperties);
-                    pthread_mutex_lock(&photo_list_mutex);
+                    pthread_mutex_unlock(&photo_list_mutex);
                     free(file_buffer);
                     break;
                 }
@@ -157,6 +157,7 @@ void* clientHandlerThread(void* args)
 
         // close connection with current client
         close(socket_fd);
+        free(clientHandlerThreadArgs);
         fprintf(stdout, "Peer has closed the connection with the client and this thread is exiting\n");
 
     pthread_exit(NULL);
