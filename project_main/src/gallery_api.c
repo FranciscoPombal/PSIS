@@ -175,7 +175,6 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         fseek(fp, 0L, SEEK_END);
         file_size = ftell(fp);
         fseek(fp, 0L, SEEK_SET);
-        fprintf(stderr, "FIle size %ld\n", file_size);
 
         // 20 megabytes - same limit as imgur
         if(file_size > IMAGE_SIZE_LIMIT){
@@ -321,6 +320,7 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
 int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name)
 {
     int i = 0;
+    int j = 0;
     int name_str_len = 0;
     Message_api_op_type message_api_op_type = {.type = GALLERY_API_GET_PHOTO_NAME};
     int ret_val_send = 0;
@@ -358,6 +358,11 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
                 ret_val_recv = recv(peer_socket, photo_name[i], name_str_len, NO_FLAGS);
                 if(ret_val_recv == -1){
                     fprintf(stderr, "Error receiving photo names\n");
+                    for(j = 0; j < i; j++){
+                        free(photo_name[j]);
+                    }
+                    free(photo_name);
+                    return -1;
                 }
             }
             return num_photos;
@@ -373,6 +378,13 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
             }
             photo_name = malloc(sizeof(char*));
             photo_name[0] = malloc(name_str_len * sizeof(char));
+            ret_val_recv = recv(peer_socket, photo_name[0], name_str_len, NO_FLAGS);
+            if(ret_val_recv == -1){
+                fprintf(stderr, "gallery_get_photo_name: Error receiving photo name.\n");
+                free(photo_name[0]);
+                free(photo_name);
+                return -1;
+            }
 
             return 1;
         }

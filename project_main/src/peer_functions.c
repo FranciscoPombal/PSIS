@@ -273,3 +273,23 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
         free(rm_str);
     return PHOTO_NOT_FOUND;
 }
+
+void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char* photo_name)
+{
+    SinglyLinkedList* aux_photo_list_node = NULL;
+    PhotoProperties* aux_photo_properties_item = NULL;
+
+        for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node =     SinglyLinkedList_getNextNode(aux_photo_list_node)){
+            if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
+                aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
+                if(aux_photo_properties_item->photo_id == id){
+                    *name_str_len = strlen(aux_photo_properties_item->photo_name);
+                    photo_name = malloc(*name_str_len * sizeof(char));
+                    strncpy(photo_name, aux_photo_properties_item->photo_name, *name_str_len);
+                    return;
+                }
+            }
+        }
+
+    return;
+}

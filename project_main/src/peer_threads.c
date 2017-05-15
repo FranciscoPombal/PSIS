@@ -50,6 +50,9 @@ void* clientHandlerThread(void* args)
     void* file_buffer = NULL;
     uint32_t id = 0;
     int delete_response = 0;
+    int num_photos = 0;
+    char* photo_name = NULL;
+    int name_str_len = 0;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -126,13 +129,75 @@ void* clientHandlerThread(void* args)
                 }
                 case GALLERY_API_GET_PHOTO_NAME:
                 {
-                    //call function for this
                     fprintf(stdout, "Client wants to get the name of a photo\n"); // DEBUG
+                    ret_val_recv = recv(socket_fd, &id, sizeof(id), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Get photo name: error receiving id\n");
+                        break;
+                    }
+                    // if id is zero, we will retrieve and send all the names
+                    if(id == 0){
+                        //find number of photos TODO
+                        pthread_mutex_lock(&photo_list_mutex);
+                        // TODO
+                        pthread_mutex_unlock(&photo_list_mutex);
+
+                        //send number of photos
+                        ret_val_send = send(socket_fd, &num_photos, sizeof(num_photos), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Get photo name: error sending number of photos\n");
+                            break;
+                        }
+                        // for all photos, send the length of the name and the name string TODO this should go in a function
+                        /*
+                        for(i = 0; i < num_photos; i++){
+                            ret_val_send = send(peer_socket, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                            photo_name[i] = malloc(name_str_len * sizeof(char));
+                            ret_val_send = send(peer_socket, photo_name[i], name_str_len, NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Error sending photo names\n");
+                            }
+                        }
+                        */
+                    }else{
+                        name_str_len = 0;
+                        pthread_mutex_lock(&photo_list_mutex);
+                        findPhotoName(photo_list_head, id, &name_str_len, photo_name);
+                        pthread_mutex_unlock(&photo_list_mutex);
+                        if(name_str_len == 0){
+                            ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo name: error sending name string length\n");
+                                break;
+                            }
+                        }else{
+                            ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo name: error sending name string length\n");
+                                break;
+                            }
+                            ret_val_send = send(socket_fd, photo_name, name_str_len, NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo name: error sending name\n");
+                                break;
+                            }
+                            free(photo_name);
+                        }
+                    }
                     break;
                 }
-                case GALLERY_API_GET_PHOTO:
+                case GALLERY_API_GET_PHOTO: //TODO
                 {
                     fprintf(stdout, "Client wants to get a photo\n"); // DEBUG
+                    // get the id of the photo to get
+                    ret_val_recv = recv(socket_fd, &id, sizeof(id), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Get photo name: error receiving id\n");
+                        break;
+                    }
+                    // get and send: name strlen, name, photo size and photo
+
+
                     break;
                 }
                 case GALLERY_API_ADD_KEYWORD:
@@ -150,6 +215,7 @@ void* clientHandlerThread(void* args)
                 default:
                 {
                     fprintf(stderr, "Error in client<->peer communication. The request operation is unknown.\n");
+                    closeConnection = true;
                     break;
                 }
             }
