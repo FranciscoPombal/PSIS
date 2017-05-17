@@ -142,6 +142,7 @@ void* clientHandlerThread(void* args)
                         //find number of photos TODO
                         pthread_mutex_lock(&photo_list_mutex);
                         // TODO
+                        SinglyLinkedList_getNumberOfNodesWithItem(photo_list_head);
                         pthread_mutex_unlock(&photo_list_mutex);
 
                         //send number of photos
@@ -178,7 +179,7 @@ void* clientHandlerThread(void* args)
                                 fprintf(stderr, "Get photo name: error sending name string length\n");
                                 break;
                             }
-                            ret_val_send = send(socket_fd, photo_name, name_str_len, NO_FLAGS);
+                            ret_val_send = send(socket_fd, photo_name, name_str_len + 1, NO_FLAGS);
                             if(ret_val_send == -1){
                                 fprintf(stderr, "Get photo name: error sending name\n");
                                 break;
