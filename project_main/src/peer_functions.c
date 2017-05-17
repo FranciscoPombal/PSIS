@@ -288,10 +288,8 @@ void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str
                     photo_storage_name_len = strlen(aux_photo_properties_item->storage_name);
                     *photo_storage_name = malloc((photo_storage_name_len + 1) * sizeof(char));
                     *photo_name = malloc((*name_str_len + 1) * sizeof(char));
-                    strncpy(*photo_name, aux_photo_properties_item->photo_name, (*name_str_len + 1));
+                    strncpy(*photo_name, aux_photo_properties_item->photo_name, *name_str_len + 1);
                     strncpy(*photo_storage_name, aux_photo_properties_item->storage_name, photo_storage_name_len + 1);
-                    //photo_name[*name_str_len] = '\0';
-                    fprintf(stdout, "%s,%d\n", *photo_name, *name_str_len);
                     return;
                 }
             }
