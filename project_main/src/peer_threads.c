@@ -53,6 +53,7 @@ void* clientHandlerThread(void* args)
     int num_photos = 0;
     char* photo_name = NULL;
     int name_str_len = 0;
+    int ret_val_retrievePhoto = 0;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -196,6 +197,50 @@ void* clientHandlerThread(void* args)
                         break;
                     }
                     // get and send: name strlen, name, photo size and photo
+                    name_str_len = 0;
+                    pthread_mutex_lock(&photo_list_mutex);
+                    findPhotoName(photo_list_head, id, &name_str_len, &photo_name);
+                    pthread_mutex_unlock(&photo_list_mutex);
+                    if(name_str_len == 0){
+                        ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Get photo: error sending name string length\n");
+                            break;
+                        }
+                    }else{
+                        ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Get photo: error sending name string length\n");
+                            break;
+                        }
+                        ret_val_send = send(socket_fd, photo_name, name_str_len, NO_FLAGS);
+                        fprintf(stderr, "File name is: %s\n", photo_name);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Get photo: error sending name\n");
+                            perror("socket send");
+                            break;
+                        }
+
+                        ret_val_retrievePhoto = retrievePhoto(&photo_name, &file_size, &file_buffer);
+                        if(ret_val_retrievePhoto == -1){
+                            fprintf(stderr, "Get photo: error retrieving photo from disk.\n");
+                            free(photo_name);
+                            break;
+                        }
+
+                        ret_val_send = send(socket_fd, &file_size, sizeof(file_size), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Get photo: error sending file size.\n");
+                            break;
+                        }
+                        ret_val_send = send(socket_fd, file_buffer, file_size, NO_FLAGS);
+                        if (ret_val_send == -1){
+                            fprintf(stderr, "Get photo: error sending photo.\n");
+                            break;
+                        }
+                        free(photo_name);
+                        free(file_buffer);
+                    }
 
 
                     break;
@@ -214,7 +259,7 @@ void* clientHandlerThread(void* args)
                 }
                 default:
                 {
-                    fprintf(stderr, "Error in client<->peer communication. The request operation is unknown.\n");
+                    fprintf(stderr, "Error in client<->peer communication. The request operation is unknown. Received %d\n", message_api_op_type.type);
                     closeConnection = true;
                     break;
                 }

@@ -274,7 +274,7 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
     return PHOTO_NOT_FOUND;
 }
 
-void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char* photo_name)
+void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char** photo_name)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
     PhotoProperties* aux_photo_properties_item = NULL;
@@ -284,12 +284,43 @@ void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str
                 aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
                 if(aux_photo_properties_item->photo_id == id){
                     *name_str_len = strlen(aux_photo_properties_item->photo_name);
-                    photo_name = malloc(*name_str_len * sizeof(char));
-                    strncpy(photo_name, aux_photo_properties_item->photo_name, *name_str_len);
+                    *photo_name = malloc((*name_str_len + 1) * sizeof(char));
+                    strncpy(*photo_name, aux_photo_properties_item->photo_name, (*name_str_len + 1));
+                    //photo_name[*name_str_len] = '\0';
+                    fprintf(stdout, "%s,%d\n", *photo_name, *name_str_len);
                     return;
                 }
             }
         }
 
     return;
+}
+
+int retrievePhoto(char** photo_name, long int* file_size, void** file_buffer)
+{
+    FILE* fp = NULL;
+    int ret_val_fread = 0;
+
+        fp = fopen(*photo_name, "wb");
+        if(fp == NULL){
+            fprintf(stderr, "No such file on disk to retrieve.\n");
+            return -1;
+        }
+
+        fseek(fp, 0L, SEEK_END);
+        *file_size = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
+
+        *file_buffer = malloc(*file_size);
+
+        ret_val_fread = fread(*file_buffer, 1, *file_size, fp);
+        if(ret_val_fread != *file_size){
+            fprintf(stderr, "Error retrieving file from disk.\n");
+            free(*file_buffer);
+            return -1;
+        }
+
+        fclose(fp);
+
+    return 0;
 }

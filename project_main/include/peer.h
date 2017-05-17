@@ -22,7 +22,9 @@ void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata
 
 int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head);
 
-void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char* photo_name);
+void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char** photo_name);
+
+int retrievePhoto(char** photo_name, long int* file_size, void** file_buffer);
 
 // Threads
 void* pingerThread(void*);

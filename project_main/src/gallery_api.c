@@ -424,14 +424,15 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
             fprintf(stderr, "get_photo: Error receiving name string length.\n");
             return -1;
         }
+        fprintf(stdout, "Strlen of the name is: %d\n", name_str_len);
         if(name_str_len == 0){
             return PHOTO_NOT_FOUND;
         }
         // alloc memory for the name and receive the name
-        file_name = malloc(name_str_len * sizeof(char));
-        ret_val_recv = recv(peer_socket, file_name, name_str_len, NO_FLAGS);
+        file_name = malloc((name_str_len + 1) * sizeof(char));
+        ret_val_recv = recv(peer_socket, file_name, name_str_len + 1, NO_FLAGS);
         if(ret_val_recv == -1){
-            fprintf(stderr, "get_photo: Error receiving name.\n");
+            fprintf(stderr, "get_photo: Error receiving name. %s\n", file_name);
             free(file_name);
             return -1;
         }
@@ -448,7 +449,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
         file_buffer = malloc(file_size);
         ret_val_recv = recv(peer_socket, file_buffer, file_size, NO_FLAGS);
         if(ret_val_recv == -1){
-            fprintf(stderr, "get_photo: Error receiving photo\n");
+            fprintf(stderr, "get_photo: Error receiving photo.\n");
             free(file_name);
             free(file_buffer);
         }
@@ -456,7 +457,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
         //write the file to disk
         fp = fopen(file_name, "wb");
         if(fp == NULL){
-            fprintf(stderr, "get_photo: Error creating file on disk\n");
+            fprintf(stderr, "get_photo: Error creating file on disk. %s\n", file_name);
             free(file_name);
             free(file_buffer);
             return -1;
