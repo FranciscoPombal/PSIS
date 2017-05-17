@@ -52,7 +52,7 @@ int main(void)
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", photo_name);
 
-                    photo_id = gallery_add_photo(socket_stream_fd,photo_name);
+                    photo_id = gallery_add_photo(socket_stream_fd, photo_name);
                     if(photo_id != 0){
                         fprintf(stdout, "Photo added to peer with id: %u\n", photo_id);
                     }else{
@@ -140,7 +140,6 @@ int main(void)
 
                     break;
                 }
-
                 case CLOSE_CONNECTION:
                 {
                     fprintf(stdout, "Closed connection with the peer. Exiting.\n");
