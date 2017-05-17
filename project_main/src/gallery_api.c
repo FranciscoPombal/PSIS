@@ -403,7 +403,6 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
     long int file_size = 0;
     int name_str_len = 0;
 
-
         //send message type
         ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
         if(ret_val_send == -1){
@@ -424,7 +423,6 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
             fprintf(stderr, "get_photo: Error receiving name string length.\n");
             return -1;
         }
-        fprintf(stdout, "Strlen of the name is: %d\n", name_str_len);
         if(name_str_len == 0){
             return PHOTO_NOT_FOUND;
         }
@@ -436,7 +434,6 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
             free(*file_name);
             return -1;
         }
-        fprintf(stderr, "api DEBUG recv name is: %s\n", *file_name);
 
         // receive the size of the image
         ret_val_recv = recv(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
@@ -445,7 +442,6 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
             free(*file_name);
             return -1;
         }
-        fprintf(stderr, "api DEBUG file size is: %ld\n", file_size);
 
         // alloc memory for the file and receive the file
         file_buffer = malloc(file_size);
