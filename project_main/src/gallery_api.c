@@ -335,7 +335,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
         }
 
         // send id of photo
-        ret_val_send = send(peer_socket, &id_photo, sizeof(&id_photo), NO_FLAGS);
+        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
         if (ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
             return -1;
