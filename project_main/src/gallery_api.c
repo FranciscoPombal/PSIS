@@ -376,13 +376,11 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
             if(name_str_len == 0){
                 return PHOTO_NOT_FOUND;
             }
-            photo_name = malloc(sizeof(char*));
-            photo_name[0] = malloc(name_str_len * sizeof(char));
-            ret_val_recv = recv(peer_socket, photo_name[0], name_str_len, NO_FLAGS);
+            *photo_name = malloc((name_str_len + 1) * sizeof(char));
+            ret_val_recv = recv(peer_socket, *photo_name, name_str_len + 1, NO_FLAGS);
             if(ret_val_recv == -1){
                 fprintf(stderr, "gallery_get_photo_name: Error receiving photo name.\n");
-                free(photo_name[0]);
-                free(photo_name);
+                free(*photo_name);
                 return -1;
             }
 

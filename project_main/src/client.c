@@ -14,7 +14,6 @@ int main(void)
     uint32_t photo_id = 0;
     char buffer[CHAR_BUFFER_SIZE];
     char keyword[CHAR_BUFFER_SIZE];
-    char** photo_names = NULL;
     char* photo_name = NULL;
     uint32_t num_photos = 0;
     int delete_response = 0;
@@ -104,22 +103,21 @@ int main(void)
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%u", &photo_id);
 
-                    num_photos = gallery_get_photo_name(socket_stream_fd, photo_id, photo_names);
+                    num_photos = gallery_get_photo_name(socket_stream_fd, photo_id, &photo_name);
                     if((int)num_photos == -1){
                         fprintf(stdout, "Error getting photo from peer\n");
                     }else if(num_photos == 0){
                         fprintf(stderr, "Can't get name because photo does not exist\n");
                     }else if(num_photos == 1){
-                        fprintf(stdout, "Photo with id %u exists and its name is:%s\n", photo_id, photo_names[0]);
-                        free(photo_names[0]);
-                        free(photo_names);
-                    }else if(num_photos >= 1){
+                        fprintf(stdout, "Photo with id %u exists and its name is: %s\n", photo_id, photo_name);
+                        free(photo_name);
+                    }else if(num_photos >= 1){ //this is wrong, TODO
                         fprintf(stdout, "These are the names of all the photos in the peer:\n");
                         for(i = 0; i < num_photos; i++) {
-                            fprintf(stdout, "%s\n", photo_names[i]);
-                            free(photo_names[i]);
+                            fprintf(stdout, "%s\n", photo_name);
+                            free(photo_name);
                         }
-                        free(photo_names);
+                        free(photo_name);
                     }
 
                     break;
