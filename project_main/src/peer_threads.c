@@ -139,9 +139,8 @@ void* clientHandlerThread(void* args)
                     }
                     // if id is zero, we will retrieve and send all the names
                     if(id == 0){
-                        //find number of photos TODO
+                        //find number of photos
                         pthread_mutex_lock(&photo_list_mutex);
-                        // TODO
                         SinglyLinkedList_getNumberOfNodesWithItem(photo_list_head);
                         pthread_mutex_unlock(&photo_list_mutex);
 
@@ -189,7 +188,7 @@ void* clientHandlerThread(void* args)
                     }
                     break;
                 }
-                case GALLERY_API_GET_PHOTO: //TODO
+                case GALLERY_API_GET_PHOTO:
                 {
                     fprintf(stdout, "Client wants to get a photo\n"); // DEBUG
                     // get the id of the photo to get
@@ -215,8 +214,8 @@ void* clientHandlerThread(void* args)
                             fprintf(stderr, "Get photo: error sending name string length\n");
                             break;
                         }
+
                         ret_val_send = send(socket_fd, photo_name, name_str_len + 1, NO_FLAGS);
-                        fprintf(stderr, "File name is: %s\n", photo_name);
                         if(ret_val_send == -1){
                             fprintf(stderr, "Get photo: error sending name\n");
                             perror("socket send");
@@ -230,21 +229,21 @@ void* clientHandlerThread(void* args)
                             break;
                         }
 
-                        fprintf(stderr, "peer DEBUG: file size is: %ld\n", file_size);
                         ret_val_send = send(socket_fd, &file_size, sizeof(file_size), NO_FLAGS);
                         if(ret_val_send == -1){
                             fprintf(stderr, "Get photo: error sending file size.\n");
                             break;
                         }
+
                         ret_val_send = send(socket_fd, file_buffer, file_size, NO_FLAGS);
                         if (ret_val_send == -1){
                             fprintf(stderr, "Get photo: error sending photo.\n");
                             break;
                         }
+
                         free(photo_name);
                         free(file_buffer);
                     }
-
 
                     break;
                 }
