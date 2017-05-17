@@ -217,6 +217,10 @@ bool SinglyLinkedList_nodeExistsWithItem(SinglyLinkedList* head, Item item, bool
 SinglyLinkedList* SinglyLinkedList_findAndRetrieveNodeWithItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item));
 Item SinglyLinkedList_findAndRetrieveItem(SinglyLinkedList* head, Item item, bool(*Item_Compare)(Item, Item));
 
+int SinglyLinkedList_getNumberOfNodes(SinglyLinkedList* head);
+int SinglyLinkedList_getNumberOfNodesWithItem(SinglyLinkedList* head);
+int SinglyLinkedList_getNumberOfNodesWithouItem(SinglyLinkedList* head);
+
 // TODO: Implement and check if more are needed
 DoublyLinkedList* DoublyLinkedList_newNode(Item);
 void DoublyLinkedList_freeNode(DoublyLinkedList*, void(*)(Item));

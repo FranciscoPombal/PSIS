@@ -205,3 +205,43 @@ SinglyLinkedList* SinglyLinkedList_reverseList(SinglyLinkedList* head)
 
     return res;
 }
+
+int SinglyLinkedList_getNumberOfNodes(SinglyLinkedList* head)
+{
+    int n = 0;
+    SinglyLinkedList* aux = NULL;
+
+        for(aux = head; aux != NULL; aux = SinglyLinkedList_getNextNode(aux)){
+            n += 1;
+        }
+
+    return n;
+}
+
+int SinglyLinkedList_getNumberOfNodesWithItem(SinglyLinkedList* head)
+{
+    int n = 0;
+    SinglyLinkedList* aux = NULL;
+
+        for(aux = head; aux != NULL; aux = SinglyLinkedList_getNextNode(aux)){
+            if(SinglyLinkedList_getItem(aux) != NULL){
+                n += 1;
+            }
+        }
+
+    return n;
+}
+
+int SinglyLinkedList_getNumberOfNodesWithouItem(SinglyLinkedList* head)
+{
+    int n = 0;
+    SinglyLinkedList* aux = NULL;
+
+        for(aux = head; aux != NULL; aux = SinglyLinkedList_getNextNode(aux)){
+            if(SinglyLinkedList_getItem(aux) == NULL){
+                n += 1;
+            }
+        }
+
+    return n;
+}
