@@ -130,7 +130,7 @@ int main(void)
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%u", &photo_id);
 
-                    get_response = gallery_get_photo(socket_stream_fd, photo_id, photo_name);
+                    get_response = gallery_get_photo(socket_stream_fd, photo_id, &photo_name);
                     if(get_response == -1){
                         fprintf(stderr, "Error getting photo\n");
                     }else if(get_response == PHOTO_NOT_FOUND){

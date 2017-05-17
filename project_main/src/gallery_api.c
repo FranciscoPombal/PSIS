@@ -392,7 +392,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
     return -1;
 }
 
-int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
+int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
 {
     Message_api_op_type message_api_op_type = {.type = GALLERY_API_GET_PHOTO};
     int ret_val_send = 0;
@@ -400,7 +400,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
     int ret_val_fwrite = 0;
     FILE* fp = NULL;
     void* file_buffer = NULL;
-    int file_size = 0;
+    long int file_size = 0;
     int name_str_len = 0;
 
 
@@ -429,43 +429,45 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char* file_name)
             return PHOTO_NOT_FOUND;
         }
         // alloc memory for the name and receive the name
-        file_name = malloc((name_str_len + 1) * sizeof(char));
-        ret_val_recv = recv(peer_socket, file_name, name_str_len + 1, NO_FLAGS);
+        *file_name = malloc((name_str_len + 1) * sizeof(char));
+        ret_val_recv = recv(peer_socket, *file_name, name_str_len + 1, NO_FLAGS);
         if(ret_val_recv == -1){
-            fprintf(stderr, "get_photo: Error receiving name. %s\n", file_name);
-            free(file_name);
+            fprintf(stderr, "get_photo: Error receiving name. %s\n", *file_name);
+            free(*file_name);
             return -1;
         }
+        fprintf(stderr, "api DEBUG recv name is: %s\n", *file_name);
 
         // receive the size of the image
         ret_val_recv = recv(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
         if(ret_val_recv == -1){
             fprintf(stderr, "get_photo: Error receiving file size.\n");
-            free(file_name);
+            free(*file_name);
             return -1;
         }
+        fprintf(stderr, "api DEBUG file size is: %ld\n", file_size);
 
         // alloc memory for the file and receive the file
         file_buffer = malloc(file_size);
         ret_val_recv = recv(peer_socket, file_buffer, file_size, NO_FLAGS);
         if(ret_val_recv == -1){
             fprintf(stderr, "get_photo: Error receiving photo.\n");
-            free(file_name);
+            free(*file_name);
             free(file_buffer);
         }
 
         //write the file to disk
-        fp = fopen(file_name, "wb");
+        fp = fopen(*file_name, "wb");
         if(fp == NULL){
-            fprintf(stderr, "get_photo: Error creating file on disk. %s\n", file_name);
-            free(file_name);
+            fprintf(stderr, "get_photo: Error creating file on disk. %s\n", *file_name);
+            free(*file_name);
             free(file_buffer);
             return -1;
         }
         ret_val_fwrite = fwrite(file_buffer, 1, file_size, fp);
         if(ret_val_fwrite != file_size){
-            fprintf(stderr, "get_photo: Error writing file to disk. Expected bytes: %d | Bytes written: %d\n", file_size, ret_val_fwrite);
-            free(file_name);
+            fprintf(stderr, "get_photo: Error writing file to disk. Expected bytes: %ld | Bytes written: %d\n", file_size, ret_val_fwrite);
+            free(*file_name);
             free(file_buffer);
             fclose(fp);
             return -1;

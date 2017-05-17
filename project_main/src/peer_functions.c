@@ -274,18 +274,22 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
     return PHOTO_NOT_FOUND;
 }
 
-void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char** photo_name)
+void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str_len, char** photo_name, char** photo_storage_name)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
     PhotoProperties* aux_photo_properties_item = NULL;
+    int photo_storage_name_len = 0;
 
         for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node =     SinglyLinkedList_getNextNode(aux_photo_list_node)){
             if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
                 aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
                 if(aux_photo_properties_item->photo_id == id){
                     *name_str_len = strlen(aux_photo_properties_item->photo_name);
+                    photo_storage_name_len = strlen(aux_photo_properties_item->storage_name);
+                    *photo_storage_name = malloc((photo_storage_name_len + 1) * sizeof(char));
                     *photo_name = malloc((*name_str_len + 1) * sizeof(char));
                     strncpy(*photo_name, aux_photo_properties_item->photo_name, (*name_str_len + 1));
+                    strncpy(*photo_storage_name, aux_photo_properties_item->storage_name, photo_storage_name_len + 1);
                     //photo_name[*name_str_len] = '\0';
                     fprintf(stdout, "%s,%d\n", *photo_name, *name_str_len);
                     return;
@@ -296,13 +300,14 @@ void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str
     return;
 }
 
-int retrievePhoto(char** photo_name, long int* file_size, void** file_buffer)
+int retrievePhoto(char* photo_name, long int* file_size, void** file_buffer)
 {
     FILE* fp = NULL;
     int ret_val_fread = 0;
 
-        fp = fopen(*photo_name, "wb");
+        fp = fopen(photo_name, "rb");
         if(fp == NULL){
+            // TODO: delete metadata from list in this case
             fprintf(stderr, "No such file on disk to retrieve.\n");
             return -1;
         }
