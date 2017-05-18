@@ -1,5 +1,7 @@
 #include "../include/peer.h"
 
+bool keepRunning = true;
+
 int main(void)
 {
     // generic/program-specific variables

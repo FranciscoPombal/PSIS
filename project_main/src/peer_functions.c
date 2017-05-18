@@ -216,7 +216,6 @@ void setupGatewayAddress(struct sockaddr_in * gsa)
     return;
 }
 
-// TODO
 void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
@@ -340,4 +339,40 @@ int getPhotoName(SinglyLinkedList* photo_node, int* name_str_len, char** photo_n
             *name_str_len = 0;
             return -1;
         }
+}
+
+SinglyLinkedList* findPhotoById(SinglyLinkedList* photo_list_head, uint32_t id)
+{
+    SinglyLinkedList* aux_photo_list_node = NULL;
+    PhotoProperties* aux_photo_properties_item = NULL;
+
+    for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node =     SinglyLinkedList_getNextNode(aux_photo_list_node)){
+        if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
+            aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
+            if(aux_photo_properties_item->photo_id == id){
+                return aux_photo_list_node;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+void addKeywordtoPhoto(SinglyLinkedList*  photo_list_node, int keyword_str_len, char* keyword)
+{
+    PhotoProperties* photoProperties = NULL;
+    int* num_keywords = 0;
+    char*** keywords = NULL;
+
+        photoProperties = (PhotoProperties*)SinglyLinkedList_getItem(photo_list_node);
+        num_keywords = &(photoProperties->num_keywords);
+        keywords = &(photoProperties->keywords);
+
+        *num_keywords += 1;
+        *keywords = realloc(*keywords, *num_keywords);
+        *keywords[*num_keywords-1] = malloc((keyword_str_len + 1) * sizeof(char));
+        strncpy(*keywords[0], keyword, keyword_str_len + 1);
+
+
+    return;
 }

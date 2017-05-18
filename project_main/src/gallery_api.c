@@ -244,10 +244,10 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
     Message_api_op_type message_api_op_type = {.type = GALLERY_API_ADD_KEYWORD};
     int ret_val_send = 0;
     int ret_val_recv = 0;
-    int keyword_status = 0;
     bool photo_exists = false;
     int keyword_str_len = 0;
     char* buffer = NULL;
+    char* buffer2 = NULL;
 
         ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
         if(ret_val_send == -1){
@@ -262,6 +262,7 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
             return -1;
         }
 
+        // receive info if photo exists
         ret_val_recv = recv(peer_socket, &photo_exists, sizeof(photo_exists), NO_FLAGS);
         if(ret_val_recv == -1){
             fprintf(stderr, "Error receiving photo_exists in gallery_add_keyword function\n");
@@ -275,26 +276,27 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
         // need to parse with sscanf to get rid of the newline
         fprintf(stdout, "Insert keyword to add:\n");
         buffer = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
-        keyword = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
-        fgets(keyword, CHAR_BUFFER_SIZE, stdin);
-        sscanf(buffer, "%s", keyword);
-        keyword_str_len = strlen(keyword);
+        buffer2 = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
+        fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+        sscanf(buffer, "%s", buffer2);
+        keyword_str_len = strlen(buffer2);
+        keyword = (char*)malloc((keyword_str_len + 1) * sizeof(char));
+
+        //send the string length of the keyword
+        ret_val_send = send(peer_socket, &keyword_str_len, sizeof(keyword_str_len), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending the keyword string length in gallery_add_keyword function.\n");
+            free(keyword);
+            free(buffer);
+            return -1;
+        }
 
         // send the keyword itself
         ret_val_send = send(peer_socket, keyword, strlen(keyword) + 1, NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending the keyword int gallery_add_keyword function\n");
-            return -1;
-        }
-
-        // receive confirmation message
-        ret_val_recv = recv(peer_socket, &keyword_status, sizeof(keyword_status), NO_FLAGS);
-        if(ret_val_recv == -1){
-            fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
-            return -1;
-        }
-        if(keyword_status == -1){
-            fprintf(stderr, "Peer reports error on adding the keyword\n");
+            free(keyword);
+            free(buffer);
             return -1;
         }
 

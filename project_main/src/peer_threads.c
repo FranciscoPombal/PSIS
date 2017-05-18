@@ -59,6 +59,9 @@ void* clientHandlerThread(void* args)
     int i = 0;
     int ret_val_get_photo_name = 0;
     char** photo_names = NULL;
+    int keyword_str_len = 0;
+    char* keyword = NULL;
+    bool photo_exists = false;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -277,8 +280,58 @@ void* clientHandlerThread(void* args)
                 }
                 case GALLERY_API_ADD_KEYWORD:
                 {
-                    //call function for this
-                    fprintf(stdout, "Client wants to add a keyword to a photo\n"); // DEBUG
+                    fprintf(stdout, "Client wants to add a keyword to a photo\n");
+                    // get the id of the photo to add keyword to
+                    ret_val_recv = recv(socket_fd, &id, sizeof(id), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Add keyword: error receiving id\n");
+                        break;
+                    }
+
+                    // check if photo exsists and send the information
+                    pthread_mutex_lock(&photo_list_mutex);
+                    aux_photo_list_node = findPhotoById(photo_list_head, id);
+                    pthread_mutex_unlock(&photo_list_mutex);
+                    if(aux_photo_list_node == NULL){
+                        photo_exists = false;
+                        ret_val_send = send(socket_fd, &photo_exists, sizeof(photo_exists), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Error sending info that photo exists.\n");
+                            break;
+                        }
+                        break;
+                    }else{
+                        photo_exists = true;
+                        ret_val_send = send(socket_fd, &photo_exists, sizeof(photo_exists), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Error sending info that photo exists.\n");
+                            break;
+                        }
+                    }
+
+                    //receive string length
+                    ret_val_recv = recv(socket_fd, &keyword_str_len, sizeof(keyword_str_len), NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Error receiving keyword str len.\n");
+                        break;
+                    }
+
+                    // alloc string
+                    keyword = (char*)malloc((keyword_str_len + 1) * sizeof(char));
+
+                    //receive string
+                    ret_val_recv = recv(socket_fd, keyword, keyword_str_len + 1, NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Error receiving keyword.\n");
+                        free(keyword);
+                        break;
+                    }
+
+                    pthread_mutex_lock(&photo_list_mutex);
+                    addKeywordtoPhoto(aux_photo_list_node, keyword_str_len, keyword);
+                    pthread_mutex_unlock(&photo_list_mutex);
+                    free(keyword);
+
                     break;
                 }
                 case GALLERY_API_CLOSE_CONNECTION:
