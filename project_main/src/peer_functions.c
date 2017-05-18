@@ -243,7 +243,6 @@ void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_
     return;
 }
 
-// FIXME: the deletion from disk must be reviewed
 int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
@@ -251,18 +250,18 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
     int name_len = 0;
     char* name = NULL;
     char* rm_str = NULL;
-    char rm_cmd[4] = "rm \0";
+    char rm_cmd[4] = "rm ";
 
         for(aux_photo_list_node = list_head; aux_photo_list_node != NULL; aux_photo_list_node =   SinglyLinkedList_getNextNode(aux_photo_list_node)){
             if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
                 aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
                 if(aux_photo_properties_item->photo_id == id){
                     name_len = strlen(aux_photo_properties_item->storage_name);
-                    name = malloc(name_len * sizeof(char));
-                    strncpy(name, aux_photo_properties_item->storage_name, name_len);
+                    name = malloc((name_len + 1) * sizeof(char));
+                    strncpy(name, aux_photo_properties_item->storage_name, name_len + 1);
                     rm_str = malloc((strlen(name) + 1 + strlen(rm_cmd)) * sizeof(char));
-                    strncpy(rm_str, rm_cmd, strlen(rm_cmd));
-                    strcat(rm_str, name);
+                    strncpy(rm_str, rm_cmd, strlen(rm_cmd) + 1);
+                    strncat(rm_str, name, name_len);
                     system(rm_str);
                     SinglyLinkedList_deleteNode(aux_photo_list_node, NULL); // TODO: make deleting func
                     return PHOTO_DELETE_SUCCESS;

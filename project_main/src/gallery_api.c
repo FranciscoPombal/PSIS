@@ -153,7 +153,7 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         id_buffer = malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         //GET ID
-        strncpy(command, "crc32 \0", COMMAND_STRING_LENGTH);
+        strncpy(command, "crc32 ", COMMAND_STRING_LENGTH);
         strncat(command, file_name, CHAR_BUFFER_SIZE - COMMAND_STRING_LENGTH);
         fp_id = popen(command, "r");
         fgets(id_buffer, CHAR_BUFFER_SIZE, fp_id);
