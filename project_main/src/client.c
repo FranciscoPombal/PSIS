@@ -15,6 +15,7 @@ int main(void)
     char buffer[CHAR_BUFFER_SIZE];
     char keyword[CHAR_BUFFER_SIZE];
     char* photo_name = NULL;
+    char** aux_photo_names = NULL;
     uint32_t num_photos = 0;
     int delete_response = 0;
     int get_response = 0;
@@ -113,11 +114,14 @@ int main(void)
                         free(photo_name);
                     }else if(num_photos >= 1){ //this is wrong, TODO
                         fprintf(stdout, "These are the names of all the photos in the peer:\n");
-                        for(i = 0; i < num_photos; i++) {
-                            fprintf(stdout, "%s\n", photo_name);
-                            free(photo_name);
+                        aux_photo_names = (char**)photo_name;
+                        for(i = 0; i < num_photos; i++){
+                            fprintf(stdout, "%s\n", aux_photo_names[i]);
+                            if(aux_photo_names[i] != NULL){
+                                free(aux_photo_names[i]);
+                            }
                         }
-                        free(photo_name);
+                        free(aux_photo_names);
                     }
 
                     break;

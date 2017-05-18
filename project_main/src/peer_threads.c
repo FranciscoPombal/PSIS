@@ -45,6 +45,7 @@ void* clientHandlerThread(void* args)
     int socket_fd = 0;
 
     SinglyLinkedList* photo_list_head = NULL;
+    SinglyLinkedList* aux_photo_list_node = NULL;
     PhotoProperties* photoProperties = NULL;
     long int file_size = 0;
     void* file_buffer = NULL;
@@ -55,6 +56,9 @@ void* clientHandlerThread(void* args)
     char* photo_storage_name = NULL;
     int name_str_len = 0;
     int ret_val_retrievePhoto = 0;
+    int i = 0;
+    int ret_val_get_photo_name = 0;
+    char** photo_names = NULL;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -141,7 +145,7 @@ void* clientHandlerThread(void* args)
                     if(id == 0){
                         //find number of photos
                         pthread_mutex_lock(&photo_list_mutex);
-                        SinglyLinkedList_getNumberOfNodesWithItem(photo_list_head);
+                        num_photos = SinglyLinkedList_getNumberOfNodesWithItem(photo_list_head);
                         pthread_mutex_unlock(&photo_list_mutex);
 
                         //send number of photos
@@ -150,17 +154,37 @@ void* clientHandlerThread(void* args)
                             fprintf(stderr, "Get photo name: error sending number of photos\n");
                             break;
                         }
-                        // for all photos, send the length of the name and the name string TODO this should go in a function
-                        /*
+
+                        photo_names = (char**)malloc(num_photos * sizeof(char*));
+
+                        // for all photos, send the length of the name and the name string
+                        aux_photo_list_node = photo_list_head;
                         for(i = 0; i < num_photos; i++){
-                            ret_val_send = send(peer_socket, &name_str_len, sizeof(name_str_len), NO_FLAGS);
-                            photo_name[i] = malloc(name_str_len * sizeof(char));
-                            ret_val_send = send(peer_socket, photo_name[i], name_str_len, NO_FLAGS);
+                            pthread_mutex_lock(&photo_list_mutex);
+                            ret_val_get_photo_name = getPhotoName(aux_photo_list_node, &name_str_len, &photo_names[i]);
+                            pthread_mutex_unlock(&photo_list_mutex);
+
+                            ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
                             if(ret_val_send == -1){
+                                //TODO what to do in case of error?
                                 fprintf(stderr, "Error sending photo names\n");
+                                break;
+                            }
+
+                            if(ret_val_get_photo_name != -1){
+                                ret_val_send = send(socket_fd, photo_names[i], name_str_len + 1, NO_FLAGS);
+                                if(ret_val_send == -1){
+                                    //TODO what to do in case of error?
+                                    fprintf(stderr, "Error sending photo names\n");
+                                    break;
+                                }
+                                pthread_mutex_lock(&photo_list_mutex);
+                                aux_photo_list_node = SinglyLinkedList_getNextNode(aux_photo_list_node);
+                                pthread_mutex_unlock(&photo_list_mutex);
+                                free(photo_names[i]);
                             }
                         }
-                        */
+                        free(photo_names);
                     }else{
                         name_str_len = 0;
                         pthread_mutex_lock(&photo_list_mutex);

@@ -326,6 +326,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
     int ret_val_send = 0;
     int ret_val_recv = 0;
     int num_photos = 0;
+    char** aux_photo_names = NULL;
 
         // send message type to peer
         ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
@@ -351,20 +352,27 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
             if(num_photos == 0){
                 return PHOTO_NOT_FOUND;
             }
-            photo_name = (char**)malloc(num_photos * sizeof(char*));
+            aux_photo_names = (char**)malloc(num_photos * sizeof(char*));
             for(i = 0; i < num_photos; i++){
                 ret_val_recv = recv(peer_socket, &name_str_len, sizeof(name_str_len), NO_FLAGS);
-                photo_name[i] = malloc(name_str_len * sizeof(char));
-                ret_val_recv = recv(peer_socket, photo_name[i], name_str_len, NO_FLAGS);
-                if(ret_val_recv == -1){
-                    fprintf(stderr, "Error receiving photo names\n");
-                    for(j = 0; j < i; j++){
-                        free(photo_name[j]);
+                if(name_str_len != 0){
+                    aux_photo_names[i] = malloc((name_str_len + 1) * sizeof(char));
+                    ret_val_recv = recv(peer_socket, aux_photo_names[i], name_str_len + 1, NO_FLAGS);
+                    if(ret_val_recv == -1){
+                        fprintf(stderr, "Error receiving photo names\n");
+                        for(j = 0; j < i; j++){
+                            if(aux_photo_names[j] != NULL){
+                                free(aux_photo_names[j]);
+                            }
+                        }
+                        free(aux_photo_names);
+                        return -1;
                     }
-                    free(photo_name);
-                    return -1;
+                }else{
+                    aux_photo_names[i] = NULL;
                 }
             }
+            *photo_name = (char*)aux_photo_names;
             return num_photos;
         }else{
             // receive photo names

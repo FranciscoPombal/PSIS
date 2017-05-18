@@ -26,6 +26,8 @@ void findPhotoName(SinglyLinkedList* photo_list_head, uint32_t id, int* name_str
 
 int retrievePhoto(char* photo_name, long int* file_size, void** file_buffer);
 
+int getPhotoName(SinglyLinkedList* aux_photo_list_node, int* name_str_len, char** photo_names);
+
 // Threads
 void* pingerThread(void*);
 void* clientHandlerThread(void* args);

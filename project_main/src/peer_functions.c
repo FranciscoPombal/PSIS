@@ -327,3 +327,17 @@ int retrievePhoto(char* photo_name, long int* file_size, void** file_buffer)
 
     return 0;
 }
+
+int getPhotoName(SinglyLinkedList* photo_node, int* name_str_len, char** photo_name){
+// TODO
+
+        if(SinglyLinkedList_getItem(photo_node) != NULL){
+            *name_str_len = strlen(((PhotoProperties*)SinglyLinkedList_getItem(photo_node))->photo_name);
+            *photo_name = malloc((*name_str_len + 1) * sizeof(char));
+            strncpy(*photo_name, ((PhotoProperties*)SinglyLinkedList_getItem(photo_node))->photo_name, *name_str_len + 1);
+            return 0;
+        }else{
+            *name_str_len = 0;
+            return -1;
+        }
+}
