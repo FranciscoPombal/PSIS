@@ -243,6 +243,7 @@ void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_
     return;
 }
 
+// FIXME: the deletion from disk must be reviewed
 int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
