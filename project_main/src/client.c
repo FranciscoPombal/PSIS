@@ -19,6 +19,7 @@ int main(void)
     uint32_t num_photos = 0;
     int delete_response = 0;
     int get_response = 0;
+    int add_keyword_response = 0;
 
         //setup SIGINT handler
         setupInterrupt();
@@ -68,7 +69,19 @@ int main(void)
                 }
                 case ADD_KEYWORD:
                 {
-                    fprintf(stdout, "Not implemented (yet?), choose another option\n");
+                    fprintf(stdout, "Insert the id of the photo to add a keyword to:\n");
+                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+                    sscanf(buffer, "%u", &photo_id);
+
+                    add_keyword_response = gallery_add_keyword(socket_stream_fd, photo_id, NULL);
+                    if(add_keyword_response == -1){
+                        fprintf(stderr, "There was an error adding that keyword to photo with id %u.", photo_id);
+                    }else if(add_keyword_response == PHOTO_NOT_FOUND){
+                        fprintf(stderr, "Peer says photo with id %u does not exist.", photo_id);
+                    }else{
+                        fprintf(stdout, "keyword added successfully to the photo\n");
+                    }
+
                     break;
                 }
                 case SEARCH_PHOTO:
