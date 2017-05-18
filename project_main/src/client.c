@@ -128,7 +128,7 @@ int main(void)
                 }
                 case GET_PHOTO:
                 {
-                    fprintf(stdout, "Insert the id of the photo to download:\n");
+                    fprintf(stdout, "Insert the id of the photo to download (0 to get all):\n");
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%u", &photo_id);
 
@@ -137,9 +137,11 @@ int main(void)
                         fprintf(stderr, "Error getting photo\n");
                     }else if(get_response == PHOTO_NOT_FOUND){
                         fprintf(stderr, "Photo with id %u not found in peer.\n", photo_id);
-                    }else{
+                    }else if(get_response == 1){
                         fprintf(stdout, "File with id %u has been downloaded as file %s\n", photo_id, photo_name);
                         free(photo_name);
+                    }else if(get_response >= 1){
+                        fprintf(stdout, "All photos in the peer were downloaded (TODO)\n");
                     }
 
                     break;

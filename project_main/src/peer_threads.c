@@ -221,52 +221,56 @@ void* clientHandlerThread(void* args)
                         fprintf(stderr, "Get photo name: error receiving id\n");
                         break;
                     }
-                    // get and send: name strlen, name, photo size and photo
-                    name_str_len = 0;
-                    pthread_mutex_lock(&photo_list_mutex);
-                    findPhotoName(photo_list_head, id, &name_str_len, &photo_name, &photo_storage_name);
-                    pthread_mutex_unlock(&photo_list_mutex);
-                    if(name_str_len == 0){
-                        ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
-                        if(ret_val_send == -1){
-                            fprintf(stderr, "Get photo: error sending name string length\n");
-                            break;
-                        }
-                    }else{
-                        ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
-                        if(ret_val_send == -1){
-                            fprintf(stderr, "Get photo: error sending name string length\n");
-                            break;
-                        }
+                    if(id != 0){
+                        // get and send: name strlen, name, photo size and photo
+                        name_str_len = 0;
+                        pthread_mutex_lock(&photo_list_mutex);
+                        findPhotoName(photo_list_head, id, &name_str_len, &photo_name, &photo_storage_name);
+                        pthread_mutex_unlock(&photo_list_mutex);
+                        if(name_str_len == 0){
+                            ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo: error sending name string length\n");
+                                break;
+                            }
+                        }else{
+                            ret_val_send = send(socket_fd, &name_str_len, sizeof(name_str_len), NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo: error sending name string length\n");
+                                break;
+                            }
 
-                        ret_val_send = send(socket_fd, photo_name, name_str_len + 1, NO_FLAGS);
-                        if(ret_val_send == -1){
-                            fprintf(stderr, "Get photo: error sending name\n");
-                            perror("socket send");
-                            break;
-                        }
+                            ret_val_send = send(socket_fd, photo_name, name_str_len + 1, NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo: error sending name\n");
+                                perror("socket send");
+                                break;
+                            }
 
-                        ret_val_retrievePhoto = retrievePhoto(photo_storage_name, &file_size, &file_buffer);
-                        if(ret_val_retrievePhoto == -1){
-                            fprintf(stderr, "Get photo: error retrieving photo from disk.\n");
+                            ret_val_retrievePhoto = retrievePhoto(photo_storage_name, &file_size, &file_buffer);
+                            if(ret_val_retrievePhoto == -1){
+                                fprintf(stderr, "Get photo: error retrieving photo from disk.\n");
+                                free(photo_name);
+                                break;
+                            }
+
+                            ret_val_send = send(socket_fd, &file_size, sizeof(file_size), NO_FLAGS);
+                            if(ret_val_send == -1){
+                                fprintf(stderr, "Get photo: error sending file size.\n");
+                                break;
+                            }
+
+                            ret_val_send = send(socket_fd, file_buffer, file_size, NO_FLAGS);
+                            if (ret_val_send == -1){
+                                fprintf(stderr, "Get photo: error sending photo.\n");
+                                break;
+                            }
+
                             free(photo_name);
-                            break;
+                            free(file_buffer);
                         }
-
-                        ret_val_send = send(socket_fd, &file_size, sizeof(file_size), NO_FLAGS);
-                        if(ret_val_send == -1){
-                            fprintf(stderr, "Get photo: error sending file size.\n");
-                            break;
-                        }
-
-                        ret_val_send = send(socket_fd, file_buffer, file_size, NO_FLAGS);
-                        if (ret_val_send == -1){
-                            fprintf(stderr, "Get photo: error sending photo.\n");
-                            break;
-                        }
-
-                        free(photo_name);
-                        free(file_buffer);
+                    }else{ /// get all photos
+                        //TODO
                     }
 
                     break;
