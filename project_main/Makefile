@@ -8,6 +8,11 @@ CFLAGS=-Wall \
        -O2 \
 
 # compiler flags for main program (debug)
+CFLAGSDBG_0=-Wall \
+			-Wextra \
+			-pthread \
+			-g \
+
 CFLAGSDBG_1=-Wall \
             -Wextra \
             -pthread \
@@ -51,29 +56,38 @@ gateway: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_
 peer: src/peer.c src/peer_functions.c src/peer_threads.c src/linked_list.c $(IFILES)
 	$(CC) $(CFLAGS) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/release/peer/peer 2> build/release/peer_compile.log
 
-client_dbg: client_dbg_1 client_dbg_2
+client_dbg: client_dbg_0 client_dbg_1 client_dbg_2
+
+client_dbg_0: src/client.c src/client_functions.c src/linked_list.c include/client.h $(IFILES)
+	$(CC) $(CFLAGSDBG_0) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/debug/client/client 2> build/debug/client_compile_dbg.log
 
 client_dbg_1: src/client.c src/client_functions.c src/linked_list.c include/client.h $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/debug/client/client 2> build/debug/client_compile_asan.log
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/debug/client/client_asan 2> build/debug/client_compile_dbg_asan.log
 
 client_dbg_2: src/client.c src/client_functions.c src/linked_list.c include/client.h $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/debug/client/client 2> build/debug/client_compile_tsan.log
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/client.c src/client_functions.c src/gallery_api.c -o bin/debug/client/client_tsan 2> build/debug/client_compile_dbg_tsan.log
 
-gateway_dbg: gateway_dbg_1 gateway_dbg_2
+gateway_dbg: gateway_dbg_0 gateway_dbg_1 gateway_dbg_2
+
+gateway_dbg_0: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_0) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway/gateway 2> build/debug/gateway_compile_dbg.log
 
 gateway_dbg_1: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway/gateway 2> build/debug/gateway_compile_asan.log
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway/gateway_asan 2> build/debug/gateway_compile_dbg_asan.log
 
 gateway_dbg_2: src/gateway.c src/gateway_functions.c src/gateway_threads.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway/gateway 2> build/debug/gateway_compile_tsan.log
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/gateway.c src/gateway_functions.c src/gateway_threads.c -o bin/debug/gateway/gateway_tsan 2> build/debug/gateway_compile_dbg_tsan.log
 
-peer_dbg: peer_dbg_1 peer_dbg_2
+peer_dbg: peer_dbg_0 peer_dbg_1 peer_dbg_2
+
+peer_dbg_0: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
+	$(CC) $(CFLAGSDBG_0) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer/peer 2> build/debug/peer_compile_dbg.log
 
 peer_dbg_1: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer/peer 2> build/debug/peer_compile_asan.log
+	$(CC) $(CFLAGSDBG_1) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer/peer_asan 2> build/debug/peer_compile_dbg_asan.log
 
 peer_dbg_2: src/peer.c src/peer_functions.c src/linked_list.c $(IFILES)
-	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer/peer 2> build/debug/peer_compile_tsan.log
+	$(CC) $(CFLAGSDBG_2) -I$(IDIR) $(CFILES) src/peer.c src/peer_functions.c src/peer_threads.c -o bin/debug/peer/peer_tsan 2> build/debug/peer_compile_dbg_tsan.log
 
 .PHONY: clean
 clean:
@@ -81,8 +95,17 @@ clean:
     bin/release/client/client \
     bin/release/gateway/gateway \
     bin/release/peer/* \
+	\
     bin/debug/client/client \
-    bin/debug/gateway/gateway \
+	bin/debug/client/client_asan \
+	bin/debug/client/client_tsan \
+	\
+	bin/debug/gateway/gateway \
+	bin/debug/gateway/gateway_asan \
+	bin/debug/gateway/gateway_tsan \
+	\
     bin/debug/peer/* \
+	\
     build/release/* \
+	\
     build/debug/*
