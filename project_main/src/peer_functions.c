@@ -361,17 +361,18 @@ SinglyLinkedList* findPhotoById(SinglyLinkedList* photo_list_head, uint32_t id)
 void addKeywordtoPhoto(SinglyLinkedList*  photo_list_node, int keyword_str_len, char* keyword)
 {
     PhotoProperties* photoProperties = NULL;
-    int* num_keywords = 0;
+    int* num_keywords = NULL;
     char*** keywords = NULL;
 
         photoProperties = (PhotoProperties*)SinglyLinkedList_getItem(photo_list_node);
         num_keywords = &(photoProperties->num_keywords);
         keywords = &(photoProperties->keywords);
 
-        *num_keywords += 1;
-        *keywords = realloc(*keywords, *num_keywords);
-        *keywords[*num_keywords-1] = malloc((keyword_str_len + 1) * sizeof(char));
-        strncpy(*keywords[0], keyword, keyword_str_len + 1);
+
+        (*num_keywords) += 1;
+        *keywords = realloc(*keywords, (*num_keywords) * sizeof(char*));
+        (*keywords)[(*num_keywords)-1] = malloc((keyword_str_len + 1) * sizeof(char));
+        strncpy((*keywords)[(*num_keywords)-1], keyword, keyword_str_len + 1);
 
 
     return;

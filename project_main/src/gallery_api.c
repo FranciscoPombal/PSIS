@@ -281,6 +281,7 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
         sscanf(buffer, "%s", buffer2);
         keyword_str_len = strlen(buffer2);
         keyword = (char*)malloc((keyword_str_len + 1) * sizeof(char));
+        strncpy(keyword, buffer2, keyword_str_len + 1);
 
         //send the string length of the keyword
         ret_val_send = send(peer_socket, &keyword_str_len, sizeof(keyword_str_len), NO_FLAGS);
