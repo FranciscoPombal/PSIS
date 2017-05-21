@@ -31,9 +31,13 @@ int main(void)
     // pinger thread
     pthread_t thread_master_peer_pinger_id = 0;
 
-    // other threads TODO: is this needed?
+    // other threads
     pthread_t* thread_ids = NULL;
 
+    pthread_attr_t attr;
+
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
         thread_ids = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
 
@@ -60,19 +64,19 @@ int main(void)
         masterClientRecvThreadArgs->client_list_head = client_linked_list;
 
         //Initialize infinite master recv threads
-        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_recv_id, NULL, &masterPeerRecvThread, masterPeerRecvThreadArgs);
+        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_recv_id, &attr, &masterPeerRecvThread, masterPeerRecvThreadArgs);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (peer) error!\n");
             exit(EXIT_FAILURE);
         }
 
-        ret_val_recv_phtread_create = pthread_create(&thread_master_client_recv_id, NULL, &masterClientRecvThread, masterClientRecvThreadArgs);
+        ret_val_recv_phtread_create = pthread_create(&thread_master_client_recv_id, &attr, &masterClientRecvThread, masterClientRecvThreadArgs);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (client) error!\n");
             exit(EXIT_FAILURE);
         }
 
-        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_pinger_id, NULL, &masterPeerPinger, peer_linked_list);
+        ret_val_recv_phtread_create = pthread_create(&thread_master_peer_pinger_id, &attr, &masterPeerPinger, peer_linked_list);
         if(ret_val_recv_phtread_create != 0){
             fprintf(stderr, "recv_pthread_create (peer pinger) error!\n");
             exit(EXIT_FAILURE);
@@ -88,11 +92,10 @@ int main(void)
         pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 
         while(true == keepRunning){
-            // TODO: rest of gateway
+            // TODO: sync
             sleep(1);
         }
 
-    // TODO: cleanup
     fprintf(stdout, "Cleaning up...\n");
     pthread_cancel(thread_master_peer_recv_id);
     pthread_cancel(thread_master_client_recv_id);
@@ -107,6 +110,9 @@ int main(void)
     thread_ids = NULL;
     masterClientRecvThreadArgs = NULL;
     masterPeerRecvThreadArgs = NULL;
+
+    SinglyLinkedList_freeList(peer_linked_list, NULL);
+    SinglyLinkedList_freeList(client_linked_list, NULL);
 
     return 0;
 }

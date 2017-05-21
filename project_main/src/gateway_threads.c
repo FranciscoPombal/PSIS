@@ -3,6 +3,16 @@
 pthread_mutex_t client_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t peer_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static int cleanup_pop_arg = 1;
+
+void spawnerThreadsCleanupHandler(void* arg)
+{
+    free(arg);
+    arg = NULL;
+
+    return;
+}
+
 /* THREAD: receive peer address and add it to Peers linked list */
 void* peerRecvThread(void* args)
 {
@@ -70,9 +80,16 @@ void* masterPeerRecvThread(void* args)
     Message_gw message_gw;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
     PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
+    pthread_attr_t attr;
+
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
         // TODO: big enough? when to increase? how to increase?
         thread_peer_recv_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+
+        pthread_cleanup_push(spawnerThreadsCleanupHandler, (void*)thread_peer_recv_id);
+
         masterPeerRecvThreadArgs = (MasterPeerRecvThreadArgs*)args;
         socket_fd = masterPeerRecvThreadArgs->socket_fd;
         peer_list_head = masterPeerRecvThreadArgs->peer_list_head;
@@ -93,7 +110,7 @@ void* masterPeerRecvThread(void* args)
                 peerRecvThreadArgs->peer_socket_dgram_address = peer_socket_dgram_address;
                 peerRecvThreadArgs->peer_socket_stream_address = peer_socket_stream_address;
 
-                ret_val_pthread_create = pthread_create(&thread_peer_recv_id[i], NULL, &peerRecvThread, (void *)peerRecvThreadArgs);
+                ret_val_pthread_create = pthread_create(&thread_peer_recv_id[i], &attr, &peerRecvThread, (void *)peerRecvThreadArgs);
                 if(ret_val_pthread_create != 0){
                     fprintf(stderr, "recv_pthread_create (peer - slave) error!\n");
                     exit(EXIT_FAILURE);
@@ -106,7 +123,9 @@ void* masterPeerRecvThread(void* args)
             }
         }
 
-    free(thread_peer_recv_id);
+        pthread_cleanup_pop(cleanup_pop_arg);
+
+    pthread_exit(NULL);
 }
 
 /* THREAD: receive client address and add it to Clients linked list */
@@ -233,6 +252,9 @@ void* masterClientRecvThread(void* args)
 
         // TODO: big enough? when to increase? how to increase?
         thread_client_recv_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
+
+        pthread_cleanup_push(spawnerThreadsCleanupHandler, (void*)thread_client_recv_id);
+
         masterClientRecvThreadArgs = (MasterClientRecvThreadArgs*)args;
         socket_fd = masterClientRecvThreadArgs->socket_fd;
         client_list_head = masterClientRecvThreadArgs->client_list_head;
@@ -262,7 +284,9 @@ void* masterClientRecvThread(void* args)
             }
         }
 
-    free(thread_client_recv_id);
+        pthread_cleanup_pop(cleanup_pop_arg);
+
+    pthread_exit(NULL);
 }
 
 void* slavePeerPinger(void* args)
@@ -328,6 +352,8 @@ void* masterPeerPinger(void* args)
         peer_list_head = (SinglyLinkedList*)args;
         thread_peer_pinger_id = (pthread_t*)malloc(HUGE_NUMBER * sizeof(pthread_t));
 
+        pthread_cleanup_push(spawnerThreadsCleanupHandler, (void*)thread_peer_pinger_id);
+
         while(true){
             i = 0;
             fprintf(stdout, "Checking if peers are still alive\n");
@@ -357,7 +383,7 @@ void* masterPeerPinger(void* args)
             sleep(PEER_ALIVE_INTERVAL);
         }
 
-        free(thread_peer_pinger_id);
+        pthread_cleanup_pop(cleanup_pop_arg);
 
     pthread_exit(NULL);
 }

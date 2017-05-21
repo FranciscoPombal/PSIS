@@ -15,6 +15,7 @@ int main(void)
     //thread stuff
     pthread_t thread_master_client_accept_id = 0;
     pthread_t thread_pinger_id = 0;
+    pthread_attr_t attr;
     int ret_val_phtread_create = 0;
     ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
 
@@ -23,6 +24,9 @@ int main(void)
 
         // Setup SIGINT handler
         setupInterrupt();
+
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
         conn_sock_fd = (int*)malloc(HUGE_NUMBER * sizeof(int));
 
@@ -38,7 +42,7 @@ int main(void)
         fprintf(stdout, "Peer socket stream address sent to gateway via the dgram socket.\n");
 
         // start the pinger thread
-        ret_val_phtread_create = pthread_create(&thread_pinger_id, NULL, &pingerThread, &socket_dgram_fd);
+        ret_val_phtread_create = pthread_create(&thread_pinger_id, &attr, &pingerThread, &socket_dgram_fd);
 
         // TODO: the rest of the peer
         while(true == keepRunning){
@@ -49,14 +53,19 @@ int main(void)
             clientHandlerThreadArgs->photo_list_head = photo_linked_list;
 
             // TODO: check atributes and arguments
-            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, NULL, &clientHandlerThread, clientHandlerThreadArgs);
+            ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, &attr, &clientHandlerThread, clientHandlerThreadArgs);
 
             i += 1;
         }
 
+        fprintf(stdout, "Cleaning up...\n");
+        pthread_cancel(thread_pinger_id);
+        pthread_cancel(thread_master_client_accept_id);
+
         close(socket_stream_fd);
         close(socket_dgram_fd);
         free(conn_sock_fd);
+        conn_sock_fd = NULL;
         fprintf(stdout, "Caught SIGINT, exiting cleanly\n");
 
     exit(EXIT_SUCCESS);
