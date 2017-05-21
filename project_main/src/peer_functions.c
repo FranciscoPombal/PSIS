@@ -199,7 +199,7 @@ void setupPeerAddressDgram(struct sockaddr_in * psa_dgram)
 
 void setupGatewayAddress(struct sockaddr_in * gsa)
 {
-    char* gateway_ipv4;
+    char* gateway_ipv4 = NULL;
     int gateway_port = 0;
 
         gateway_ipv4 = (char*)malloc(IPV4_STRING_SIZE * sizeof(char));
@@ -210,8 +210,11 @@ void setupGatewayAddress(struct sockaddr_in * gsa)
         /* set gateway address struct */
         memset((void*)gsa, 0, sizeof(*gsa));   // first we reset the struct
         gsa->sin_family = AF_INET;
-        gsa->sin_addr.s_addr = htonl(INADDR_ANY);
+        inet_aton(gateway_ipv4, &(gsa->sin_addr));
         gsa->sin_port = htons(gateway_port);
+
+    free(gateway_ipv4);
+    gateway_ipv4 = NULL;
 
     return;
 }
