@@ -63,6 +63,7 @@ int main(void)
 
                     if(photo_name != NULL){
                         free(photo_name);
+                        photo_name = NULL;
                     }
 
                     break;
@@ -125,6 +126,7 @@ int main(void)
                     }else if(num_photos == 1){
                         fprintf(stdout, "Photo with id %u exists and its name is: %s\n", photo_id, photo_name);
                         free(photo_name);
+                        photo_name = NULL;
                     }else if(num_photos >= 1){ //this is wrong, TODO
                         fprintf(stdout, "These are the names of all the photos in the peer:\n");
                         aux_photo_names = (char**)photo_name;
@@ -132,9 +134,11 @@ int main(void)
                             fprintf(stdout, "%s\n", aux_photo_names[i]);
                             if(aux_photo_names[i] != NULL){
                                 free(aux_photo_names[i]);
+                                aux_photo_names[i] = NULL;
                             }
                         }
                         free(aux_photo_names);
+                        aux_photo_names = NULL;
                     }
 
                     break;
@@ -153,6 +157,7 @@ int main(void)
                     }else if(get_response == 1){
                         fprintf(stdout, "File with id %u has been downloaded as file %s\n", photo_id, photo_name);
                         free(photo_name);
+                        photo_name = NULL;
                     }else if(get_response >= 1){
                         fprintf(stdout, "All photos in the peer were downloaded (TODO)\n");
                     }
@@ -177,6 +182,7 @@ int main(void)
         fprintf(stdout, "Cleaning up...\n");
 
         free(gateway_ipv4);
+        gateway_ipv4 = NULL;
         if(photo_name != NULL){
             free(photo_name);
         }

@@ -48,6 +48,9 @@ void* peerRecvThread(void* args)
         pthread_mutex_unlock(&peer_list_mutex);
         // CRITICAL SECTION END
 
+        free(peerRecvThreadArgs);
+        peerRecvThreadArgs = NULL;
+
     pthread_exit(NULL);
 }
 
@@ -206,6 +209,7 @@ void* clientRecvThread(void* args)
 
         // We free the args which were allocated in the calling thread; must free list of clients in main
         free(client_recv_thread_args);
+        client_recv_thread_args = NULL;
 
     pthread_exit(NULL);
 }

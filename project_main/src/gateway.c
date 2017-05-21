@@ -102,6 +102,11 @@ int main(void)
     close(socket_dgram_peers_fd);
     close(socket_dgram_clients_fd);
     free(thread_ids);
+    free(masterClientRecvThreadArgs);
+    free(masterPeerRecvThreadArgs);
+    thread_ids = NULL;
+    masterClientRecvThreadArgs = NULL;
+    masterPeerRecvThreadArgs = NULL;
 
     return 0;
 }

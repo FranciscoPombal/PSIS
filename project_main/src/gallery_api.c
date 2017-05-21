@@ -160,7 +160,9 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         id = (uint32_t)strtol(id_buffer, NULL, 16);
 
         free(command);
+        command = NULL;
         free(id_buffer);
+        id_buffer = NULL;
         fclose(fp_id);
 
         // file is assumed to be in the same directory as the program
@@ -202,7 +204,9 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the operation type).\n");
             free(file_buffer);
+            file_buffer = NULL;
             fclose(fp);
+            fp = NULL;
             return 0;
         }
 
@@ -211,7 +215,9 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the size of the image).\n");
             free(file_buffer);
+            file_buffer = NULL;
             fclose(fp);
+            fp = NULL;
             return 0;
         }
 
@@ -220,7 +226,9 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
             free(file_buffer);
+            file_buffer = NULL;
             fclose(fp);
+            fp = NULL;
             return 0;
         }
 
@@ -229,12 +237,16 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
             free(file_buffer);
+            file_buffer = NULL;
             fclose(fp);
+            fp = NULL;
             return 0;
         }
 
         free(file_buffer);
+        file_buffer = NULL;
         fclose(fp);
+        fp = NULL;
 
     return id;
 }
@@ -289,6 +301,8 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
             fprintf(stderr, "Error sending the keyword string length in gallery_add_keyword function.\n");
             free(keyword);
             free(buffer);
+            keyword = NULL;
+            buffer = NULL;
             return -1;
         }
 
@@ -298,11 +312,15 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
             fprintf(stderr, "Error sending the keyword int gallery_add_keyword function\n");
             free(keyword);
             free(buffer);
+            keyword = NULL;
+            buffer = NULL;
             return -1;
         }
 
         free(keyword);
         free(buffer);
+        keyword = NULL;
+        buffer = NULL;
 
     return 1;
 }
@@ -426,9 +444,11 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
                         for(j = 0; j < i; j++){
                             if(aux_photo_names[j] != NULL){
                                 free(aux_photo_names[j]);
+                                aux_photo_names[j] = NULL;
                             }
                         }
                         free(aux_photo_names);
+                        aux_photo_names = NULL;
                         return -1;
                     }
                 }else{
@@ -452,6 +472,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
             if(ret_val_recv == -1){
                 fprintf(stderr, "gallery_get_photo_name: Error receiving photo name.\n");
                 free(*photo_name);
+                (*photo_name) = NULL;
                 return -1;
             }
 
@@ -504,6 +525,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
             if(ret_val_recv == -1){
                 fprintf(stderr, "get_photo: Error receiving name. %s\n", *file_name);
                 free(*file_name);
+                (*file_name) = NULL;
                 return -1;
             }
 
@@ -512,6 +534,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
             if(ret_val_recv == -1){
                 fprintf(stderr, "get_photo: Error receiving file size.\n");
                 free(*file_name);
+                (*file_name) = NULL;
                 return -1;
             }
 
@@ -522,6 +545,8 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                 fprintf(stderr, "get_photo: Error receiving photo.\n");
                 free(*file_name);
                 free(file_buffer);
+                (*file_name) = NULL;
+                file_buffer = NULL;
             }
 
             //write the file to disk
@@ -530,6 +555,8 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                 fprintf(stderr, "get_photo: Error creating file on disk. %s\n", *file_name);
                 free(*file_name);
                 free(file_buffer);
+                (*file_name) = NULL;
+                file_buffer = NULL;
                 return -1;
             }
             ret_val_fwrite = fwrite(file_buffer, 1, file_size, fp);
@@ -537,10 +564,14 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
                 fprintf(stderr, "get_photo: Error writing file to disk. Expected bytes: %ld | Bytes written: %d\n", file_size, ret_val_fwrite);
                 free(*file_name);
                 free(file_buffer);
+                (*file_name) = NULL;
+                file_buffer = NULL;
                 fclose(fp);
+                fp = NULL;
                 return -1;
             }
             fclose(fp);
+            fp = NULL;
 
             return 1;
         }else{

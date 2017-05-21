@@ -36,6 +36,7 @@ int getGatewayPort(void)
         }
 
         free(char_buffer);
+        char_buffer = NULL;
 
     return gateway_port;
 }

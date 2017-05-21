@@ -132,6 +132,7 @@ void getGatewayIPv4(char* gateway_ipv4)
 
         sprintf(gateway_ipv4, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         free(buffer);
+        buffer = NULL;
 
     return;
 }
@@ -157,6 +158,7 @@ int getGatewayPort(void)
         }
 
         free(char_buffer);
+        char_buffer = NULL;
 
     return gateway_port;
 }
@@ -273,6 +275,9 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
 
         free(name);
         free(rm_str);
+        name = NULL;
+        rm_str = NULL;
+
     return PHOTO_NOT_FOUND;
 }
 
@@ -322,6 +327,7 @@ int retrievePhoto(char* photo_name, long int* file_size, void** file_buffer)
         if(ret_val_fread != *file_size){
             fprintf(stderr, "Error retrieving file from disk.\n");
             free(*file_buffer);
+            (*file_buffer) = NULL;
             return -1;
         }
 
@@ -370,7 +376,6 @@ void addKeywordtoPhoto(SinglyLinkedList*  photo_list_node, int keyword_str_len, 
         photoProperties = (PhotoProperties*)SinglyLinkedList_getItem(photo_list_node);
         num_keywords = &(photoProperties->num_keywords);
         keywords = &(photoProperties->keywords);
-
 
         (*num_keywords) += 1;
         *keywords = realloc(*keywords, (*num_keywords) * sizeof(char*));

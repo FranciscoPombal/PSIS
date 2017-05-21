@@ -86,10 +86,12 @@ void* clientHandlerThread(void* args)
                     if(ret_val_recv == -1){
                         fprintf(stderr, "Add photo: Error receiving image.\n");
                         free(file_buffer);
+                        file_buffer = NULL;
                         break;
                     }else if(ret_val_recv != file_size){
                         fprintf(stderr, "Add photo: Wrong number of image bytes received: %d\n", ret_val_recv);
                         free(file_buffer);
+                        file_buffer = NULL;
                         break;
                     }
 
@@ -99,6 +101,7 @@ void* clientHandlerThread(void* args)
                     if(ret_val_recv == -1){
                         fprintf(stderr, "Add photo: Error receiving image metadata\n");
                         free(photoProperties);
+                        photoProperties = NULL;
                         break;
                     }
 
@@ -107,6 +110,7 @@ void* clientHandlerThread(void* args)
                     addPhotoToList(photo_list_head, photoProperties);
                     pthread_mutex_unlock(&photo_list_mutex);
                     free(file_buffer);
+                    file_buffer = NULL;
                     break;
                 }
                 case GALLERY_API_SEARCH_PHOTO:
@@ -185,9 +189,11 @@ void* clientHandlerThread(void* args)
                                 aux_photo_list_node = SinglyLinkedList_getNextNode(aux_photo_list_node);
                                 pthread_mutex_unlock(&photo_list_mutex);
                                 free(photo_names[i]);
+                                photo_names[i] = NULL;
                             }
                         }
                         free(photo_names);
+                        photo_names = NULL;
                     }else{
                         name_str_len = 0;
                         pthread_mutex_lock(&photo_list_mutex);
@@ -211,6 +217,7 @@ void* clientHandlerThread(void* args)
                                 break;
                             }
                             free(photo_name);
+                            photo_name = NULL;
                         }
                     }
                     break;
@@ -254,6 +261,7 @@ void* clientHandlerThread(void* args)
                             if(ret_val_retrievePhoto == -1){
                                 fprintf(stderr, "Get photo: error retrieving photo from disk.\n");
                                 free(photo_name);
+                                photo_name = NULL;
                                 break;
                             }
 
@@ -270,7 +278,9 @@ void* clientHandlerThread(void* args)
                             }
 
                             free(photo_name);
+                            photo_name = NULL;
                             free(file_buffer);
+                            file_buffer = NULL;
                         }
                     }else{ /// get all photos
                         //TODO
@@ -324,6 +334,7 @@ void* clientHandlerThread(void* args)
                     if(ret_val_recv == -1){
                         fprintf(stderr, "Error receiving keyword.\n");
                         free(keyword);
+                        keyword = NULL;
                         break;
                     }
 
@@ -331,6 +342,7 @@ void* clientHandlerThread(void* args)
                     addKeywordtoPhoto(aux_photo_list_node, keyword_str_len, keyword);
                     pthread_mutex_unlock(&photo_list_mutex);
                     free(keyword);
+                    keyword = NULL;
 
                     break;
                 }
@@ -352,6 +364,7 @@ void* clientHandlerThread(void* args)
         // close connection with current client
         close(socket_fd);
         free(clientHandlerThreadArgs);
+        clientHandlerThreadArgs = NULL;
         fprintf(stdout, "Peer has closed the connection with the client and this thread is exiting\n");
 
     pthread_exit(NULL);

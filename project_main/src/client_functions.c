@@ -65,6 +65,7 @@ void getGatewayIPv4(char* gateway_ipv4)
 
         sprintf(gateway_ipv4, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         free(buffer);
+        buffer = NULL;
 
     return;
 }
@@ -90,6 +91,7 @@ int getGatewayPort(void)
         }
 
         free(char_buffer);
+        char_buffer = NULL;
 
     return gateway_port;
 }
@@ -118,6 +120,7 @@ int showMenu(void)
         }
 
         free(char_buffer);
+        char_buffer = NULL;
 
     return option;
 }
