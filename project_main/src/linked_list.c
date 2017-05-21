@@ -24,7 +24,12 @@ SinglyLinkedList* SinglyLinkedList_newNode(Item item)
 
 void SinglyLinkedList_freeNode(SinglyLinkedList* node, void (*Item_Free)(Item))
 {
-    (*Item_Free)(node->item);
+    if(Item_Free == NULL){
+        free(node->item);
+    }else{
+        (*Item_Free)(node->item);
+    }
+
     free(node);
 }
 
