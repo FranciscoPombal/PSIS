@@ -52,8 +52,8 @@ int gallery_connect(char* host, in_port_t port)
         }
 
         message_gw.type = CLIENT_ADDRESS;
-        message_gw.port = client_socket_address.sin_port;
-        message_gw.address = client_socket_address.sin_addr.s_addr;
+        message_gw.port = ntohs(client_socket_address.sin_port);
+        message_gw.address = ntohl(client_socket_address.sin_addr.s_addr);
 
         ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
         if(ret_val_send_to == -1){
