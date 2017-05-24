@@ -208,7 +208,7 @@ void* clientRecvThread(void* args)
                 }
             }
         }
-        if(true == peerAvailable){
+        if((true == peerAvailable) && (((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node)) != NULL)){
             message_gw.type = PEER_ADDRESS;
             peer_socket_address = ((PeerProperties*)SinglyLinkedList_getItem(aux_peer_list_node))->peer_socket_stream_address;
             pthread_mutex_lock(&client_list_mutex);
