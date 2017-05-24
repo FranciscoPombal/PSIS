@@ -115,8 +115,28 @@ void* clientHandlerThread(void* args)
                 }
                 case GALLERY_API_SEARCH_PHOTO:
                 {
-                    //call function for this
                     fprintf(stdout, "Client wants to search for a photo\n"); // DEBUG
+
+                    ret_val_recv = recv(socket_fd, &keyword_str_len, sizeof(keyword_str_len), NO_FLAGS);
+                    if (ret_val_recv == -1){
+                        fprintf(stderr, "Error receiving search keyword length\n");
+                        break;
+                    }
+
+                    keyword = (char*)malloc((keyword_str_len + 1) * sizeof(char));
+
+                    ret_val_recv = recv(socket_fd, keyword, keyword_str_len + 1, NO_FLAGS);
+                    if (ret_val_recv == -1){
+                        fprintf(stderr, "Error receiving search keyword\n");
+                        break;
+                    }
+
+                    // search
+
+                    // send number of matches
+
+                    // send matches
+
                     break;
                 }
                 case GALLERY_API_DELETE_PHOTO:
