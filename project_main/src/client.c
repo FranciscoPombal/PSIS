@@ -20,6 +20,7 @@ int main(void)
     int delete_response = 0;
     int get_response = 0;
     int add_keyword_response = 0;
+    uint32_t* photo_ids = NULL;
 
         //setup SIGINT handler
         setupInterrupt();
@@ -91,7 +92,17 @@ int main(void)
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", keyword);
 
-                    gallery_search_photo(socket_stream_fd, keyword, NULL);
+                    num_photos = gallery_search_photo(socket_stream_fd, keyword, &photo_ids);
+
+                    fprintf(stdout, "Found the keyword \"%s\" in %d photos with ids:\n", keyword, num_photos);
+                    for(i = 0; i < num_photos; i++){
+                        fprintf(stdout, "%u\n", photo_ids[i]);
+                    }
+
+                    free(keyword);
+                    keyword = NULL;
+                    free(photo_ids);
+                    photo_ids = NULL;
 
                     break;
                 }
