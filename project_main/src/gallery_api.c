@@ -203,6 +203,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the operation type).\n");
+            free(photoProperties);
+            photoProperties = NULL;
             free(file_buffer);
             file_buffer = NULL;
             fclose(fp);
@@ -214,6 +216,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         ret_val_send = send(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the size of the image).\n");
+            free(photoProperties);
+            photoProperties = NULL;
             free(file_buffer);
             file_buffer = NULL;
             fclose(fp);
@@ -225,6 +229,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         ret_val_send = send(peer_socket, file_buffer, file_size, NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
+            free(photoProperties);
+            photoProperties = NULL;
             free(file_buffer);
             file_buffer = NULL;
             fclose(fp);
@@ -236,6 +242,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
         ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_add_photo function (the image).\n");
+            free(photoProperties);
+            photoProperties = NULL;
             free(file_buffer);
             file_buffer = NULL;
             fclose(fp);
@@ -243,6 +251,8 @@ uint32_t gallery_add_photo(int peer_socket, char* file_name)
             return 0;
         }
 
+        free(photoProperties);
+        photoProperties = NULL;
         free(file_buffer);
         file_buffer = NULL;
         fclose(fp);

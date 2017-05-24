@@ -268,6 +268,10 @@ int deletePhotoFromList(uint32_t id, SinglyLinkedList* list_head)
                     strncat(rm_str, name, name_len);
                     system(rm_str);
                     SinglyLinkedList_deleteNode(aux_photo_list_node, NULL); // TODO: make deleting func
+                    free(name);
+                    free(rm_str);
+                    name = NULL;
+                    rm_str = NULL;
                     return PHOTO_DELETE_SUCCESS;
                 }
             }
