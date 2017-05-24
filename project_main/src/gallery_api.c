@@ -340,33 +340,54 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
     int ret_val_send = 0;
     int ret_val_recv = 0;
     Message_api_op_type message_api_op_type = {.type = GALLERY_API_SEARCH_PHOTO};
+    int keyword_str_len = 0;
     int num_photos = 0;
-    int i = 0;
 
-    //id_photos** = (int*)calloc(100, 100*sizeof(uint32_t*));
+        // send message type
+        ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending message type in gallery_search_photo function\n");
+            return -1;
+        }
 
-    //SEND MESSAGE TO PEER (One with the message_type and another with a string of keywords)
-    ret_val_send = send(peer_socket, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS);
-    if(ret_val_send == -1){
-        fprintf(stderr, "Error sending message in gallery_search_photo function\n");
-        return 0;
-    }
-    ret_val_send = send(peer_socket, keyword, sizeof(keyword), NO_FLAGS);
-    if (ret_val_send == -1){
-        fprintf(stderr, "Error sending message in gallery_search_photo function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send keyword strlen
+        keyword_str_len = strlen(keyword);
+        ret_val_send = send(peer_socket, &keyword_str_len, sizeof(keyword_str_len), NO_FLAGS);
+        if(ret_val_send == -1){
+            fprintf(stderr, "Error sending str len in gallery_search_photo function\n");
+            return -1;
+        }
 
-    //RECEIVE MESSAGE FROM PEER
-    ret_val_recv = recv(peer_socket, *id_photos, sizeof(*id_photos), NO_FLAGS);
-    if (ret_val_recv == -1){
-        fprintf(stderr, "Error receiving message in gallery_search_photo function\n");
-        exit(EXIT_FAILURE);
-    }
+        // send keyword
+        ret_val_send = send(peer_socket, keyword, keyword_str_len + 1, NO_FLAGS);
+        if (ret_val_send == -1){
+            fprintf(stderr, "Error sending keyword in gallery_search_photo function\n");
+            return -1;
+        }
 
-    for(i = 0; *id_photos[i] != '\0'; i++){
-        num_photos++;
-    }
+        // receive number of matches
+        ret_val_recv = recv(peer_socket, &num_photos, sizeof(num_photos), NO_FLAGS);
+        if (ret_val_recv == -1){
+            fprintf(stderr, "Error receiving number of matches in gallery_search_photo function\n");
+            return -1;
+        }
+
+        if(num_photos < 0){
+            fprintf(stderr, "Error receiving number of matches in gallery_search_photo function\n");
+            return -1;
+        }else if(num_photos == 0){
+            return 0;
+        }
+
+        *id_photos = (uint32_t*)malloc(num_photos * sizeof(uint32_t));
+
+        //receive mataches
+
+        ret_val_recv = recv(peer_socket, *id_photos, num_photos * sizeof(uint32_t) , NO_FLAGS);
+        if (ret_val_recv == -1){
+            fprintf(stderr, "Error receiving id array of matches in gallery_search_photo function\n");
+            return -1;
+        }
 
     return num_photos;
 }
