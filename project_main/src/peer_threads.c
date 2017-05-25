@@ -62,6 +62,7 @@ void* clientHandlerThread(void* args)
     int keyword_str_len = 0;
     char* keyword = NULL;
     bool photo_exists = false;
+    uint32_t* photo_ids = NULL;
 
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
@@ -132,10 +133,37 @@ void* clientHandlerThread(void* args)
                     }
 
                     // search
+                    // we need the number of matches and array of ids of the matching photos
+                    pthread_mutex_lock(&photo_list_mutex);
+                    findPhotoByKeyword(photo_list_head, keyword, &photo_ids, &num_photos);
+                    pthread_mutex_unlock(&photo_list_mutex);
 
                     // send number of matches
+                    ret_val_send = send(socket_fd, &num_photos, sizeof(num_photos), NO_FLAGS);
+                    if (ret_val_send == -1){
+                        fprintf(stderr, "Error sending number of matches\n");
+                        free(keyword);
+                        keyword = NULL;
+                        break;
+                    }
 
                     // send matches
+                    if(num_photos > 0){
+                        ret_val_send = send(socket_fd, photo_ids, num_photos * sizeof(uint32_t), NO_FLAGS);
+                        if(ret_val_send == -1){
+                            fprintf(stderr, "Error sending number of matches\n");
+                            free(keyword);
+                            keyword = NULL;
+                            free(photo_ids);
+                            photo_ids = NULL;
+                            break;
+                        }
+                    }
+
+                    free(keyword);
+                    keyword = NULL;
+                    free(photo_ids);
+                    photo_ids = NULL;
 
                     break;
                 }

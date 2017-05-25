@@ -389,3 +389,33 @@ void addKeywordtoPhoto(SinglyLinkedList* photo_list_node, int keyword_str_len, c
 
     return;
 }
+
+void findPhotoByKeyword(SinglyLinkedList* photo_list_head, char* keyword, uint32_t** photo_ids, int* num_photos)
+{
+    int i = 0;
+    SinglyLinkedList* aux_photo_list_node = NULL;
+    PhotoProperties* aux_photo_properties_item = NULL;
+    int aux_num_keywords = 0;
+    char** aux_keywords = NULL;
+
+        *num_photos = 0;
+
+        for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node =       SinglyLinkedList_getNextNode(aux_photo_list_node)){
+            if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
+                aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
+                aux_num_keywords = aux_photo_properties_item->num_keywords;
+                if(aux_num_keywords > 0){
+                    aux_keywords = aux_photo_properties_item->keywords;
+                    for(i = 0; i < aux_num_keywords; i++){
+                        if((strncmp(aux_keywords[i], keyword, strlen(aux_keywords[i])) == 0) || (strstr(aux_keywords[i], keyword) != NULL)){
+                            *num_photos += 1;
+                            *photo_ids = realloc(*photo_ids, *num_photos);
+                            (*photo_ids)[(*num_photos)-1] = aux_photo_properties_item->photo_id;
+                        }
+                    }
+                }
+            }
+        }
+
+    return;
+}

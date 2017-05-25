@@ -31,6 +31,8 @@ int getPhotoName(SinglyLinkedList* aux_photo_list_node, int* name_str_len, char*
 SinglyLinkedList* findPhotoById(SinglyLinkedList* photo_list_head, uint32_t id);
 void addKeywordtoPhoto(SinglyLinkedList*  photo_list_node, int keyword_str_len, char* keyword);
 
+void findPhotoByKeyword(SinglyLinkedList* photo_list_head, char* keyword, uint32_t** photo_ids, int* num_photos);
+
 // Threads
 void* pingerThread(void*);
 void* clientHandlerThread(void* args);
