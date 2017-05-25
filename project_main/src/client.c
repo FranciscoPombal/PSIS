@@ -13,7 +13,7 @@ int main(void)
 
     uint32_t photo_id = 0;
     char buffer[CHAR_BUFFER_SIZE];
-    char keyword[CHAR_BUFFER_SIZE];
+    char* keyword;
     char* photo_name = NULL;
     char** aux_photo_names = NULL;
     uint32_t num_photos = 0;
@@ -40,7 +40,8 @@ int main(void)
             exit(EXIT_FAILURE);
         }
 
-        fprintf(stdout, "Client has contated the gateway and is connected to a peer.\n");
+        fprintf(stdout, "Client has contacted the gateway and is connected to a peer.\n");
+        keyword = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         while((true == keepRunning) && (false == closeConnection)){
             //Print client options
@@ -196,6 +197,9 @@ int main(void)
         gateway_ipv4 = NULL;
         if(photo_name != NULL){
             free(photo_name);
+        }
+        if(keyword != NULL){
+            free(keyword);
         }
 
     exit(EXIT_SUCCESS);
