@@ -371,7 +371,7 @@ SinglyLinkedList* findPhotoById(SinglyLinkedList* photo_list_head, uint32_t id)
     return NULL;
 }
 
-void addKeywordtoPhoto(SinglyLinkedList*  photo_list_node, int keyword_str_len, char* keyword)
+void addKeywordtoPhoto(SinglyLinkedList* photo_list_node, int keyword_str_len, char* keyword)
 {
     PhotoProperties* photoProperties = NULL;
     int* num_keywords = NULL;
