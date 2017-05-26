@@ -75,7 +75,7 @@ void* masterPeerRecvThread(void* args)
     pthread_t* thread_peer_recv_id = NULL;
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
-    socklen_t peer_socket_dgram_address_len = sizeof(peer_socket_dgram_address);
+    socklen_t peer_socket_dgram_address_len = sizeof(struct sockaddr_in);
     SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
@@ -95,9 +95,9 @@ void* masterPeerRecvThread(void* args)
         peer_list_head = masterPeerRecvThreadArgs->peer_list_head;
 
         while(true){
-            memset((void*)&peer_socket_dgram_address, 0, sizeof(peer_socket_dgram_address));
-            memset((void*)&peer_socket_stream_address, 0, sizeof(peer_socket_stream_address));
-            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+            memset((void*)&peer_socket_dgram_address, 0, sizeof(struct sockaddr_in));
+            memset((void*)&peer_socket_stream_address, 0, sizeof(struct sockaddr_in));
+            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
 
             if(message_gw.type == PEER_ADDRESS){
                 fprintf(stdout, "Received peer\n");
@@ -119,7 +119,7 @@ void* masterPeerRecvThread(void* args)
             }else{
                 fprintf(stdout, "Peer receive thread error: bad message type\n");
                 message_gw.type = BAD_PEER;
-                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
+                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
             }
         }
 
@@ -223,7 +223,7 @@ void* clientRecvThread(void* args)
         // CRITTICAL SECTION END
 
         // send message_gw to client
-        ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
+        ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, sizeof(struct sockaddr_in));
         fprintf(stdout, "Message sent to client is of type: %d\n", message_gw.type); // DEBUG
 
         // We free the args which were allocated in the calling thread; must free list of clients in main
@@ -243,7 +243,7 @@ void* masterClientRecvThread(void* args)
     int ret_val_pthread_create = 0;
     pthread_t* thread_client_recv_id = NULL;
     struct sockaddr_in client_socket_address;
-    socklen_t client_socket_address_len = sizeof(client_socket_address);
+    socklen_t client_socket_address_len = sizeof(struct sockaddr_in);
     SinglyLinkedList* client_list_head = NULL;
     SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
@@ -261,7 +261,7 @@ void* masterClientRecvThread(void* args)
         peer_list_head = masterClientRecvThreadArgs->peer_list_head;
 
         while(true){
-            memset((void*)&client_socket_address, 0, sizeof(client_socket_address));
+            memset((void*)&client_socket_address, 0, sizeof(struct sockaddr_in));
             ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);
 
             if(message_gw.type == CLIENT_ADDRESS){
@@ -280,7 +280,7 @@ void* masterClientRecvThread(void* args)
             }else{
                 fprintf(stdout, "Client receive thread error: bad message type\n");
                 message_gw.type = BAD_CLIENT;
-                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, client_socket_address_len);
+                ret_val_send_to = sendto(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&client_socket_address, client_socket_address_len);
             }
         }
 
@@ -296,7 +296,7 @@ void* slavePeerPinger(void* args)
     int ret_val_recvfrom = 0;
     int socket_dgram_fd = 0;
     struct sockaddr_in peer_socket_dgram_address;
-    socklen_t peer_socket_dgram_address_len = sizeof(peer_socket_dgram_address);
+    socklen_t peer_socket_dgram_address_len = sizeof(struct sockaddr_in);
     struct timeval ping_send_timeout;
     struct timeval ping_recv_timeout;
     Message_ping message_ping;
@@ -314,12 +314,12 @@ void* slavePeerPinger(void* args)
 
         // TODO: error handling
         socket_dgram_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
-        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&ping_send_timeout, sizeof(ping_send_timeout));
-        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&ping_recv_timeout, sizeof(ping_recv_timeout));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&ping_send_timeout, sizeof(struct timeval));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&ping_recv_timeout, sizeof(struct timeval));
 
         fprintf(stdout, "Sending ping to peer on port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
         message_ping.type = MESSAGE_TYPE_PEER_PING;
-        ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
+        ret_val_send_to = sendto(socket_dgram_fd, &message_ping, sizeof(Message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, peer_socket_dgram_address_len);
         if(ret_val_send_to == -1){
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             pthread_mutex_lock(&peer_list_mutex);
@@ -328,7 +328,7 @@ void* slavePeerPinger(void* args)
         }
 
         fprintf(stdout, "Receiving ping from peer on port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
-        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_ping, sizeof(Message_ping), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
         if(ret_val_recvfrom == -1){
             fprintf(stdout, "Peer is dead, removing it from list. port %d (thread %lu).\n", ntohs(peer_socket_dgram_address.sin_port), pthread_self()); // DEBUG
             pthread_mutex_lock(&peer_list_mutex);

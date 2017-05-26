@@ -13,7 +13,7 @@ int gallery_connect(char* host, in_port_t port)
     int ret_val_recvfrom = 0;
     int ret_val_connect = 0;
     Message_gw message_gw;
-    socklen_t gateway_socket_address_len = 0;
+    socklen_t gateway_socket_address_len = sizeof(struct sockaddr_in);
     struct timeval client_send_to_gateway_timeout;
     struct timeval client_recv_from_gateway_timeout;
 
@@ -38,14 +38,14 @@ int gallery_connect(char* host, in_port_t port)
         }
 
         // set timeouts for dgram socket
-        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void *)&client_send_to_gateway_timeout, sizeof(client_send_to_gateway_timeout));
-        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void *)&client_recv_from_gateway_timeout, sizeof(client_recv_from_gateway_timeout));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_SNDTIMEO, (void *)&client_send_to_gateway_timeout, sizeof(struct timeval));
+        setsockopt(socket_dgram_fd, SOL_SOCKET, SO_RCVTIMEO, (void *)&client_recv_from_gateway_timeout, sizeof(struct timeval));
 
         setupClientAddress(&client_socket_address);
         setupGatewayAddress(&gateway_socket_address, host, port);
 
         /* bind datagram socket, since we will be receiving */
-        ret_val_bind = bind(socket_dgram_fd, (struct sockaddr *)&client_socket_address, sizeof(client_socket_address));
+        ret_val_bind = bind(socket_dgram_fd, (struct sockaddr *)&client_socket_address, sizeof(struct sockaddr_in));
         if(ret_val_bind == -1){
             fprintf(stderr, "Error binding socket dgram\n");
             exit(EXIT_FAILURE);
@@ -55,13 +55,12 @@ int gallery_connect(char* host, in_port_t port)
         message_gw.port = ntohs(client_socket_address.sin_port);
         message_gw.address = ntohl(client_socket_address.sin_addr.s_addr);
 
-        ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(gateway_socket_address));
+        ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
         if(ret_val_send_to == -1){
             return -1;
         }
 
-        gateway_socket_address_len = sizeof(gateway_socket_address);
-        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+        ret_val_recvfrom = recvfrom(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
         if(ret_val_recvfrom == -1){
             return -1;
         }
@@ -77,7 +76,7 @@ int gallery_connect(char* host, in_port_t port)
 
         /* Connect socket to socket address (server) */
         /* connect */
-        ret_val_connect = connect(socket_stream_fd, (struct sockaddr *)&peer_socket_address, sizeof(peer_socket_address));
+        ret_val_connect = connect(socket_stream_fd, (struct sockaddr *)&peer_socket_address, sizeof(struct sockaddr_in));
         if(ret_val_connect != 0){  // check for error
             fprintf(stderr, "Error connecting socket.\n");
             perror("connect");
@@ -94,7 +93,7 @@ void setupClientAddress(struct sockaddr_in * csa)
 {
     int client_port = 0;
 
-        memset((void*)csa, 0, sizeof(*csa));  // reset struct
+        memset((void*)csa, 0, sizeof(struct sockaddr_in));  // reset struct
         csa->sin_family = AF_INET;
         csa->sin_addr.s_addr = htonl(INADDR_ANY);
         client_port = BASE_PORT + getpid();
@@ -108,7 +107,7 @@ void setupClientAddress(struct sockaddr_in * csa)
 }
 void setupGatewayAddress(struct sockaddr_in * gsa, char* gateway_IP, int gateway_port)
 {
-    memset((void*)gsa, 0, sizeof(*gsa));   // first we reset the struct
+    memset((void*)gsa, 0, sizeof(struct sockaddr_in));   // first we reset the struct
     gsa->sin_family = AF_INET;
     inet_aton(gateway_IP, &(gsa->sin_addr));
     gsa->sin_port = htons(gateway_port);
@@ -117,7 +116,7 @@ void setupGatewayAddress(struct sockaddr_in * gsa, char* gateway_IP, int gateway
 }
 void setupPeerAddress(struct sockaddr_in * psa, unsigned int address, int port)
 {
-    memset((void*)psa, 0, sizeof(*psa));  // reset struct
+    memset((void*)psa, 0, sizeof(struct sockaddr_in));  // reset struct
     psa->sin_family = AF_INET;
     psa->sin_addr.s_addr = htonl(address);
     psa->sin_port = htons(port);
@@ -278,14 +277,14 @@ int gallery_add_keyword(int peer_socket, uint32_t id_photo, char* keyword)
         }
 
         // send id to add keyword
-        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
+        ret_val_send = send(peer_socket, &id_photo, sizeof(uint32_t), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending id in gallery_add_keyword function\n");
             return -1;
         }
 
         // receive info if photo exists
-        ret_val_recv = recv(peer_socket, &photo_exists, sizeof(photo_exists), NO_FLAGS);
+        ret_val_recv = recv(peer_socket, &photo_exists, sizeof(bool), NO_FLAGS);
         if(ret_val_recv == -1){
             fprintf(stderr, "Error receiving photo_exists in gallery_add_keyword function\n");
             return -1;
@@ -366,7 +365,7 @@ int gallery_search_photo(int peer_socket, char* keyword, uint32_t** id_photos)
         }
 
         // receive number of matches
-        ret_val_recv = recv(peer_socket, &num_photos, sizeof(num_photos), NO_FLAGS);
+        ret_val_recv = recv(peer_socket, &num_photos, sizeof(int), NO_FLAGS);
         if (ret_val_recv == -1){
             fprintf(stderr, "Error receiving number of matches in gallery_search_photo function\n");
             return -1;
@@ -408,14 +407,14 @@ int gallery_delete_photo(int peer_socket, uint32_t id_photo)
         }
 
         // send id to delete
-        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
+        ret_val_send = send(peer_socket, &id_photo, sizeof(uint32_t), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_delete_photo function\n");
             return -1;
         }
 
         // receive confirmation message
-        ret_val_recv = recv(peer_socket, &deleted, sizeof(deleted), NO_FLAGS);
+        ret_val_recv = recv(peer_socket, &deleted, sizeof(uint32_t), NO_FLAGS);
         if(ret_val_recv == -1){
             fprintf(stderr, "Error receiving confirmation message in gallery_delete_photo function\n");
             return -1;
@@ -448,7 +447,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
         }
 
         // send id of photo
-        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
+        ret_val_send = send(peer_socket, &id_photo, sizeof(uint32_t), NO_FLAGS);
         if (ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_get_photo_name function\n");
             return -1;
@@ -456,7 +455,7 @@ int gallery_get_photo_name(int peer_socket, uint32_t id_photo, char** photo_name
 
         // if id is 0 we have to receive every photo, so we need the number of photos we will receive
         if(id_photo == 0){
-            ret_val_recv = recv(peer_socket, &num_photos, sizeof(num_photos), NO_FLAGS);
+            ret_val_recv = recv(peer_socket, &num_photos, sizeof(int), NO_FLAGS);
             if(ret_val_recv == -1){
                 fprintf(stdout, "gallery_get_photo_name: Error receiving number of photos.\n");
                 return -1;
@@ -533,7 +532,7 @@ int gallery_get_photo(int peer_socket, uint32_t id_photo, char** file_name)
         }
 
         // send the id of the photo
-        ret_val_send = send(peer_socket, &id_photo, sizeof(id_photo), NO_FLAGS);
+        ret_val_send = send(peer_socket, &id_photo, sizeof(uint32_t), NO_FLAGS);
         if(ret_val_send == -1){
             fprintf(stderr, "Error sending message in gallery_get_photo function\n");
             return -1;

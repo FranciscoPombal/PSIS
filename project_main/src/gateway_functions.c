@@ -25,7 +25,7 @@ int getGatewayPort(void)
 
         while((gateway_port < 1024) || (gateway_port > USHRT_MAX) || (ret_val_sscanf != 1)){
             fprintf(stdout, "Insert gateway port:\n");
-            fgets(char_buffer, sizeof(char_buffer), stdin);
+            fgets(char_buffer, CHAR_BUFFER_SIZE, stdin);
             ret_val_sscanf = sscanf(char_buffer, "%d\n", &gateway_port);
 
             if ((gateway_port < 1024) || (gateway_port > USHRT_MAX)){
@@ -57,7 +57,7 @@ int peersDgramSocketSetup(void)
         setupGatewayAddressPeers(&gateway_peers_dgram_socket_address);
 
         /* bind datagram socket, since we will be receiving PEERS*/
-        ret_val_bind = bind(socket_dgram_peers_fd, (struct sockaddr *)&gateway_peers_dgram_socket_address, sizeof(gateway_peers_dgram_socket_address));
+        ret_val_bind = bind(socket_dgram_peers_fd, (struct sockaddr *)&gateway_peers_dgram_socket_address, sizeof(struct sockaddr_in));
         if(ret_val_bind == -1){
             fprintf(stderr, "Error binding socket dgram\n");
             exit(EXIT_FAILURE);
@@ -82,7 +82,7 @@ int clientDgramSocketSetup(void)
         setupGatewayAddressClients(&gateway_clients_dgram_socket_address);
 
         /* bind datagram socket, since we will be receiving CLIENTS*/
-        ret_val_bind = bind(socket_dgram_clients_fd, (struct sockaddr *)&gateway_clients_dgram_socket_address,  sizeof(gateway_clients_dgram_socket_address));
+        ret_val_bind = bind(socket_dgram_clients_fd, (struct sockaddr *)&gateway_clients_dgram_socket_address,  sizeof(struct sockaddr_in));
         if(ret_val_bind == -1){
             fprintf(stderr, "Error binding socket dgram\n");
             exit(EXIT_FAILURE);
@@ -95,7 +95,7 @@ void setupGatewayAddressPeers(struct sockaddr_in * gsa)
 {
     int gateway_port = 0;
 
-        memset((void*)gsa, 0, sizeof(*gsa));   // first we reset the struct
+        memset((void*)gsa, 0, sizeof(struct sockaddr_in));   // first we reset the struct
         gsa->sin_family = AF_INET;
         gsa->sin_addr.s_addr = htonl(INADDR_ANY);
         gateway_port = BASE_PORT + getpid();
@@ -113,7 +113,7 @@ void setupGatewayAddressClients(struct sockaddr_in * gsa)
 {
     int gateway_port = 0;
 
-        memset((void*)gsa, 0, sizeof(*gsa));   // first we reset the struct
+        memset((void*)gsa, 0, sizeof(struct sockaddr_in));   // first we reset the struct
         gsa->sin_family = AF_INET;
         gsa->sin_addr.s_addr = htonl(INADDR_ANY);
         gateway_port = BASE_PORT + getpid() + 1;

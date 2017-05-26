@@ -113,7 +113,7 @@ int showMenu(void)
         fprintf(stdout, "6 - Get (download) a photo from the gallery\n");
         fprintf(stdout, "7 - Close connection with the peer\n");
 
-        fgets(char_buffer, sizeof(char_buffer), stdin);
+        fgets(char_buffer, CHAR_BUFFER_SIZE, stdin);
         ret_val_sscanf = sscanf(char_buffer, "%d\n", &option);
         if(ret_val_sscanf != 1){
             fprintf(stdout, "Error reading option, try again.\n");
