@@ -84,9 +84,12 @@ int gatewayConnect(int peerStreamSocket)
 
         /* get gateway address info */
         setupGatewayAddress(&gateway_socket_address);
+
+        // this only gets us the port, the adress comes out as 0.0.0.0
         getsockname(peerStreamSocket, (struct sockaddr *)&peer_socket_address_stream, &peer_socket_address_len);
 
-        message_gw.address = ntohl(peer_socket_address_stream.sin_addr.s_addr);
+        // the gateway will get the adress from the dgram socket
+        message_gw.address = 0;
         message_gw.type = PEER_ADDRESS;
         message_gw.port = ntohs(peer_socket_address_stream.sin_port);
 
