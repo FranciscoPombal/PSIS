@@ -102,7 +102,7 @@ void* masterPeerRecvThread(void* args)
             if(message_gw.type == PEER_ADDRESS){
                 fprintf(stdout, "Received peer\n");
                 peer_socket_stream_address.sin_family = AF_INET;
-                peer_socket_stream_address.sin_addr.s_addr = htonl(message_gw.address);
+                peer_socket_stream_address.sin_addr.s_addr = peer_socket_dgram_address.sin_addr.s_addr;
                 peer_socket_stream_address.sin_port = htons(message_gw.port);
 
                 peerRecvThreadArgs = (PeerRecvThreadArgs*)malloc(sizeof(PeerRecvThreadArgs));
