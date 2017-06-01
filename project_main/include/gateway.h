@@ -37,6 +37,11 @@ typedef struct _clientRecvThreadArgs {
     SinglyLinkedList* peer_list_head;
 } ClientRecvThreadArgs;
 
+typedef struct _peerSyncThread {
+    int socket_fd;
+    SinglyLinkedList* peer_linked_list;
+} PeerSyncThread;
+
 // Functions
 int peersDgramSocketSetup(void);
 void setupGatewayAddressClients(struct sockaddr_in *);

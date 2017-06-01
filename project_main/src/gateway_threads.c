@@ -391,27 +391,30 @@ void* masterPeerPinger(void* args)
 // Threads that syncs all the peers (sends photo to all the peers)
 void* peerSyncAdd(void* args)
 {
-    int socket_fd = 0;
     int ret_val_recv = 0;
     int ret_val_send = 0;
     int file_size;
     void* file_buffer = NULL;
     PhotoProperties* photoProperties = NULL;
     SinglyLinkedList* peer_list_head = args;
-    SinglyLinkedList* aux_photo_list_node = NULL;
     SinglyLinkedList* aux_peer_list_node = NULL;
-
+    PeerSyncThread* msg;
+    msg = (PeerSyncThread*) args;
+    struct sockaddr_in gateway_socket_address;
+    int gateway_sync_fd = 0;
+    struct sockaddr_in peer_socket_address;
+    socklen_t peer_socket_address_len = sizeof(struct sockaddr_in);
 
     fprintf(stdout, "Receiving photo from peer for sync_add\n");
 
     // size of image
-    ret_val_recv = recvfrom(socket_fd, &file_size, sizeof(long int), NO_FLAGS);
+    ret_val_recv = recv( msg->socket_fd, &file_size, sizeof(long int), NO_FLAGS);
     if(ret_val_recv == -1){
         fprintf(stderr, "Add photo: Error receiving size of image\n");
     }
     // image
     file_buffer = malloc(file_size);
-    ret_val_recv = recv(socket_fd, file_buffer, file_size, NO_FLAGS);
+    ret_val_recv = recv(msg->socket_fd, file_buffer, file_size, NO_FLAGS);
     if(ret_val_recv == -1){
         fprintf(stderr, "Add photo: Error receiving image.\n");
         free(file_buffer);
@@ -424,7 +427,7 @@ void* peerSyncAdd(void* args)
 
     // image metadata
     photoProperties = malloc(sizeof(PhotoProperties));
-    ret_val_recv = recv(socket_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+    ret_val_recv = recv(msg->socket_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
     if(ret_val_recv == -1){
         fprintf(stderr, "Add photo: Error receiving image metadata\n");
         free(photoProperties);
@@ -435,18 +438,18 @@ void* peerSyncAdd(void* args)
     for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node =   SinglyLinkedList_getNextNode(aux_peer_list_node))
     {
         //Create temporary SOCK_STREAM
-        socket();
-        bind();
-        connect();
+        socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
+        bind(gateway_sync_fd, (struct sockaddr *)&gateway_socket_address, sizeof(struct sockaddr_in));
+        connect(gateway_sync_fd, (struct sockaddr *)&peer_socket_address, peer_socket_address_len);
 
         // size of the image
-        ret_val_send = send(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
+        ret_val_send = send(gateway_sync_fd, &file_size, sizeof(file_size), NO_FLAGS);
 
         // the image itself
-        ret_val_send = send(peer_socket, file_buffer, file_size, NO_FLAGS);
+        ret_val_send = send(gateway_sync_fd, file_buffer, file_size, NO_FLAGS);
 
         // image metadata
-        ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+        ret_val_send = send(gateway_sync_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
 
         fprintf(stdout, "File sync_add done to a peer\n");
     }
@@ -458,21 +461,21 @@ void* peerSyncAdd(void* args)
 
 void* peerSyncDelete(void* args)
 {
-    int socket_fd = 0;
     int ret_val_recv = 0;
     int ret_val_send = 0;
-    int file_size;
-    void* file_buffer = NULL;
-    PhotoProperties* photoProperties = NULL;
     SinglyLinkedList* peer_list_head = args;
-    SinglyLinkedList* aux_photo_list_node = NULL;
     SinglyLinkedList* aux_peer_list_node = NULL;
+    PeerSyncThread* msg;
+    msg = (PeerSyncThread*) args;
+    int* file_id = 0;
+    struct sockaddr_in peer_socket_address;
+    socklen_t peer_socket_address_len = sizeof(struct sockaddr_in);
 
 
     fprintf(stdout, "Receiving photo id from peer for sync_delete\n");
 
     // receive file id
-    ret_val_recv = recv(socket_fd, &file_size, sizeof(long int), NO_FLAGS);
+    ret_val_recv = recvfrom(msg->socket_fd, file_id, sizeof(file_id), NO_FLAGS, (struct sockaddr *)&peer_socket_address, &peer_socket_address_len);
     if(ret_val_recv == -1){
         fprintf(stderr, "Add photo: Error receiving size of image\n");
     }
@@ -481,7 +484,7 @@ void* peerSyncDelete(void* args)
     for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node =   SinglyLinkedList_getNextNode(aux_peer_list_node))
     {
         // send id of photo to delete to peer
-        ret_val_send = send(peer_socket, &file_id, sizeof(file_id), NO_FLAGS);
+        ret_val_send = sendto(msg->socket_fd, &file_id, sizeof(file_id), NO_FLAGS, (struct sockaddr *)&peer_socket_address, peer_socket_address_len);
 
         fprintf(stdout, "File sync_delete done to a peer\n");
     }
@@ -489,5 +492,4 @@ void* peerSyncDelete(void* args)
     fprintf(stdout, "File sync_delete done to ALL peers :)\n");
 
     pthread_exit(NULL);
-}
 }

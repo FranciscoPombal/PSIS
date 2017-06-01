@@ -47,6 +47,8 @@ int main(void)
     pthread_t* thread_ids = NULL;
     pthread_t thread_sync_add[HUGE_NUMBER];
     pthread_t thread_sync_delete[HUGE_NUMBER];
+    PeerSyncThread* message_sync = malloc(sizeof(message_sync));
+    message_sync->peer_linked_list = NULL;
 
     pthread_attr_t attr;
 
@@ -105,11 +107,15 @@ int main(void)
         // Restore the old signal mask only for this thread.
         pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 
+        socket_sync_fd = socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
+        memset((void*)&peer_socket_dgram_sync_recv_address,0 , sizeof(struct sockaddr_in));
+
+        message_sync->peer_linked_list = peer_linked_list;
+        message_sync->socket_fd = socket_sync_fd;
+
+
         while(true == keepRunning){
             // TODO: sync
-            socket_sync_fd = socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
-
-            memset((void*)&peer_socket_dgram_sync_recv_address,0 , sizeof(struct sockaddr_in));
 
             ret_val_sync = recvfrom(socket_sync_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_sync_recv_address, &peer_socket_dgram_sync_recv_address_len);
 
@@ -124,7 +130,7 @@ int main(void)
                     thread_queue = 0;
                 }
                 fprintf(stdout, "Initializing SYNC ADD\n");
-                ret_val_sync_pthread_create = pthread_create(&thread_sync_add[add_id], &attr, &peerSyncAdd, peer_linked_list);
+                ret_val_sync_pthread_create = pthread_create(&thread_sync_add[add_id], &attr, &peerSyncAdd, message_sync);
                 if(ret_val_sync_pthread_create != 0){
                     fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
                     exit(EXIT_FAILURE);
@@ -143,7 +149,7 @@ int main(void)
                     thread_queue = 0;
                 }
                 fprintf(stdout, "Initializing SYNC DELETE\n");
-                ret_val_sync_pthread_create = pthread_create(&thread_sync_delete[del_id], &attr, &peerSyncDelete, peer_linked_list);
+                ret_val_sync_pthread_create = pthread_create(&thread_sync_delete[del_id], &attr, &peerSyncDelete, message_sync);
                 if(ret_val_sync_pthread_create != 0){
                     fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
                     exit(EXIT_FAILURE);
