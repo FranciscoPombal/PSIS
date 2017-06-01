@@ -135,6 +135,13 @@ typedef struct _message_gw{
     int port;
 } Message_gw;
 
+typedef struct _message_gw_sync{
+    int type;
+    int port_stream;
+    int port_sync_recv;
+    int port_sync_send;
+} Message_gw_sync;
+
 typedef struct _message_ping {
     int type;
 } Message_ping;

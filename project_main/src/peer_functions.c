@@ -55,16 +55,18 @@ int clientStreamSocketSetup(void)
     return socket_stream_fd;
 }
 
-int gatewayConnect(int peerStreamSocket)
+int gatewayConnect(int peerStreamSocket, struct sockaddr_in * gateway_socket_address_ptr, int* sock_sync_send, int* sock_sync_recv)
 {
     int socket_dgram_fd = 0;
     struct sockaddr_in gateway_socket_address;  // address of the gateway socket
     struct sockaddr_in peer_socket_address_stream;
     struct sockaddr_in peer_socket_address_dgram;
+    struct sockaddr_in peer_socket_address_sync_send_dgram;
+    struct sockaddr_in peer_socket_address_sync_recv_dgram;
     socklen_t peer_socket_address_len = sizeof(struct sockaddr_in);
     int ret_val_send_to = 0;
     int ret_val_bind = 0;
-    Message_gw message_gw;
+    Message_gw_sync message_gw_sync;
 
         //dgram socket
         socket_dgram_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
@@ -84,17 +86,22 @@ int gatewayConnect(int peerStreamSocket)
 
         /* get gateway address info */
         setupGatewayAddress(&gateway_socket_address);
+        *gateway_socket_address_ptr = gateway_socket_address;
+
+        *sock_sync_send = setupSyncSendSocket(&peer_socket_address_sync_send_dgram);
+        *sock_sync_recv = setupSyncRecvSocket(&peer_socket_address_sync_recv_dgram);
 
         // this only gets us the port, the adress comes out as 0.0.0.0
         getsockname(peerStreamSocket, (struct sockaddr *)&peer_socket_address_stream, &peer_socket_address_len);
 
         // the gateway will get the adress from the dgram socket
-        message_gw.address = 0;
-        message_gw.type = PEER_ADDRESS;
-        message_gw.port = ntohs(peer_socket_address_stream.sin_port);
+        message_gw_sync.type = PEER_ADDRESS;
+        message_gw_sync.port_stream = ntohs(peer_socket_address_stream.sin_port);
+        message_gw_sync.port_sync_send = ntohs(peer_socket_address_sync_send_dgram.sin_port);
+        message_gw_sync.port_sync_recv = ntohs(peer_socket_address_sync_recv_dgram.sin_port);
 
         // send peer address to gateway
-        ret_val_send_to = sendto(socket_dgram_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(struct sockaddr_in));
+        ret_val_send_to = sendto(socket_dgram_fd, &message_gw_sync, sizeof(Message_gw_sync), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, sizeof(struct sockaddr_in));
 
     return socket_dgram_fd;
 }
@@ -224,6 +231,72 @@ void setupGatewayAddress(struct sockaddr_in * gsa)
     return;
 }
 
+int setupSyncSendSocket(struct sockaddr_in * peer_socket_address)
+{
+    int socket_dgram_sync_send_fd = 0;
+    int ret_val_bind = 0;
+    int peer_port = 0;
+
+        socket_dgram_sync_send_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_sync_send_fd == -1){
+            fprintf(stderr, "Error opening sync send dgram socket.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        /* connect socket to socket address */
+        memset((void*)peer_socket_address, 0, sizeof(struct sockaddr_in));   // first we reset the struct
+        peer_socket_address->sin_family = AF_INET;
+        peer_socket_address->sin_addr.s_addr = htonl(INADDR_ANY);
+        peer_port = BASE_PORT + getpid() + 2;
+        if(peer_port > USHRT_MAX){
+            fprintf(stderr, "Port number too large\n");
+            exit(EXIT_FAILURE);
+        }
+        peer_socket_address->sin_port = htons(peer_port);
+        fprintf(stdout, "peer datagram send sync socket is on port: %d\n", peer_port);
+
+        ret_val_bind = bind(socket_dgram_sync_send_fd, (struct sockaddr *)&peer_socket_address, sizeof(struct sockaddr_in));
+        if(ret_val_bind == -1){  // check for error
+            fprintf(stderr, "Error binding socket stream\n");
+            exit(EXIT_FAILURE);
+        }
+
+    return socket_dgram_sync_send_fd;
+}
+
+int setupSyncRecvSocket(struct sockaddr_in * peer_socket_address)
+{
+    int socket_dgram_sync_recv_fd = 0;
+    int ret_val_bind = 0;
+    int peer_port = 0;
+
+        socket_dgram_sync_recv_fd = socket(AF_INET, SOCK_DGRAM, DEFAULT_PROTOCOL);
+        if(socket_dgram_sync_recv_fd == -1){
+            fprintf(stderr, "Error opening recv send dgram socket.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        /* connect socket to socket address */
+        memset((void*)peer_socket_address, 0, sizeof(struct sockaddr_in));   // first we reset the struct
+        peer_socket_address->sin_family = AF_INET;
+        peer_socket_address->sin_addr.s_addr = htonl(INADDR_ANY);
+        peer_port = BASE_PORT + getpid() + 3;
+        if(peer_port > USHRT_MAX){
+            fprintf(stderr, "Port number too large\n");
+            exit(EXIT_FAILURE);
+        }
+        peer_socket_address->sin_port = htons(peer_port);
+        fprintf(stdout, "peer datagram send recv socket is on port: %d\n", peer_port);
+
+        ret_val_bind = bind(socket_dgram_sync_recv_fd, (struct sockaddr *)&peer_socket_address, sizeof(struct sockaddr_in));
+        if(ret_val_bind == -1){  // check for error
+            fprintf(stderr, "Error binding socket stream\n");
+            exit(EXIT_FAILURE);
+        }
+
+    return socket_dgram_sync_recv_fd;
+}
+
 void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata)
 {
     SinglyLinkedList* aux_photo_list_node = NULL;
@@ -343,8 +416,9 @@ int retrievePhoto(char* photo_name, long int* file_size, void** file_buffer)
     return 0;
 }
 
-int getPhotoName(SinglyLinkedList* photo_node, int* name_str_len, char** photo_name){
-// TODO
+int getPhotoName(SinglyLinkedList* photo_node, int* name_str_len, char** photo_name)
+{
+        // TODO
 
         if(SinglyLinkedList_getItem(photo_node) != NULL){
             *name_str_len = strlen(((PhotoProperties*)SinglyLinkedList_getItem(photo_node))->photo_name);

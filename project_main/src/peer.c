@@ -10,14 +10,23 @@ int main(void)
     // socket/ipc related variables
     int socket_stream_fd = 0;
     int socket_dgram_fd = 0;
+    int socket_dgram_sync_send_fd = 0;
+    int socket_dgram_sync_recv_fd = 0;
     int* conn_sock_fd = NULL;
+
+    struct sockaddr_in gateway_socket_address;
 
     //thread stuff
     pthread_t thread_master_client_accept_id = 0;
     pthread_t thread_pinger_id = 0;
+
+    pthread_t thread_sync_send_id = 0;
+    pthread_t thread_sync_recv_id = 0;
+
     pthread_attr_t attr;
     int ret_val_phtread_create = 0;
     ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
+    SyncRecvThreadArgs* syncRecvThreadArgs = NULL;
 
     // photo stuff
     SinglyLinkedList* photo_linked_list;
@@ -37,12 +46,19 @@ int main(void)
         // stream socket
         socket_stream_fd = clientStreamSocketSetup();
         // dgram socket (for sending and receiving)
-        socket_dgram_fd = gatewayConnect(socket_stream_fd);
+        socket_dgram_fd = gatewayConnect(socket_stream_fd, &gateway_socket_address, &socket_dgram_sync_send_fd, &socket_dgram_sync_recv_fd);
+
 
         fprintf(stdout, "Peer socket stream address sent to gateway via the dgram socket.\n");
 
         // start the pinger thread
         ret_val_phtread_create = pthread_create(&thread_pinger_id, &attr, &pingerThread, &socket_dgram_fd);
+
+        // start the thread that receives sync requests
+        syncRecvThreadArgs = (SyncRecvThreadArgs*)malloc(sizeof(SyncRecvThreadArgs));
+        syncRecvThreadArgs->photo_list_head = photo_linked_list;
+        syncRecvThreadArgs->peer_socket_address_sync_recv_dgram = socket_dgram_sync_recv_fd;
+        ret_val_phtread_create = pthread_create(&thread_sync_recv_id, &attr, syncRecvThread, syncRecvThreadArgs);
 
         // TODO: the rest of the peer
         while(true == keepRunning){

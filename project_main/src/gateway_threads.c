@@ -23,12 +23,17 @@ void* peerRecvThread(void* args)
     PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
+    struct sockaddr_in peer_socket_address_sync_send_dgram;
+    struct sockaddr_in peer_socket_address_sync_recv_dgram;
     PeerProperties* aux_peer_list_item = NULL;
 
         peerRecvThreadArgs = (PeerRecvThreadArgs*)args;
         peer_list_head = peerRecvThreadArgs->peer_list_head;
         peer_socket_dgram_address = peerRecvThreadArgs->peer_socket_dgram_address;
         peer_socket_stream_address = peerRecvThreadArgs->peer_socket_stream_address;
+
+        peer_socket_address_sync_send_dgram = peerRecvThreadArgs->peer_dgram_sync_send_socket_address;
+        peer_socket_address_sync_recv_dgram = peerRecvThreadArgs->peer_dgram_sync_recv_socket_address;
 
         // CRITICAL SECTION BEGIN
         pthread_mutex_lock(&peer_list_mutex);
@@ -48,6 +53,9 @@ void* peerRecvThread(void* args)
             aux_peer_list_item->num_connected_clients = 0;
             aux_peer_list_item->peer_socket_dgram_address = peer_socket_dgram_address;
             aux_peer_list_item->peer_socket_stream_address = peer_socket_stream_address;
+
+            aux_peer_list_item->peer_socket_sync_send_dgram_address = peer_socket_address_sync_send_dgram;
+            aux_peer_list_item->peer_socket_sync_recv_dgram_address = peer_socket_address_sync_recv_dgram;
             if(SinglyLinkedList_getItem(aux_peer_list_node) == NULL){
                 SinglyLinkedList_setItem(aux_peer_list_node, aux_peer_list_item);
             }else{
@@ -75,9 +83,12 @@ void* masterPeerRecvThread(void* args)
     pthread_t* thread_peer_recv_id = NULL;
     struct sockaddr_in peer_socket_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
+    struct sockaddr_in peer_socket_address_sync_send_dgram;
+    struct sockaddr_in peer_socket_address_sync_recv_dgram;
     socklen_t peer_socket_dgram_address_len = sizeof(struct sockaddr_in);
     SinglyLinkedList* peer_list_head = NULL;
     Message_gw message_gw;
+    Message_gw_sync message_gw_sync;
     MasterPeerRecvThreadArgs* masterPeerRecvThreadArgs = NULL;
     PeerRecvThreadArgs* peerRecvThreadArgs = NULL;
     pthread_attr_t attr;
@@ -97,18 +108,28 @@ void* masterPeerRecvThread(void* args)
         while(true){
             memset((void*)&peer_socket_dgram_address, 0, sizeof(struct sockaddr_in));
             memset((void*)&peer_socket_stream_address, 0, sizeof(struct sockaddr_in));
-            ret_val_recvfrom = recvfrom(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+            ret_val_recvfrom = recvfrom(socket_fd, &message_gw_sync, sizeof(Message_gw_sync), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
 
-            if(message_gw.type == PEER_ADDRESS){
+            if(message_gw_sync.type == PEER_ADDRESS){
                 fprintf(stdout, "Received peer\n");
                 peer_socket_stream_address.sin_family = AF_INET;
                 peer_socket_stream_address.sin_addr.s_addr = peer_socket_dgram_address.sin_addr.s_addr;
-                peer_socket_stream_address.sin_port = htons(message_gw.port);
+                peer_socket_stream_address.sin_port = htons(message_gw_sync.port_stream);
+
+                peer_socket_address_sync_send_dgram.sin_family = AF_INET;
+                peer_socket_address_sync_send_dgram.sin_addr.s_addr = peer_socket_dgram_address.sin_addr.s_addr;
+                peer_socket_address_sync_send_dgram.sin_port = htons(message_gw_sync.port_sync_send);
+
+                peer_socket_address_sync_recv_dgram.sin_family = AF_INET;
+                peer_socket_address_sync_recv_dgram.sin_addr.s_addr = peer_socket_dgram_address.sin_addr.s_addr;
+                peer_socket_address_sync_recv_dgram.sin_port = htons(message_gw_sync.port_sync_recv);
 
                 peerRecvThreadArgs = (PeerRecvThreadArgs*)malloc(sizeof(PeerRecvThreadArgs));
                 peerRecvThreadArgs->peer_list_head = peer_list_head;
                 peerRecvThreadArgs->peer_socket_dgram_address = peer_socket_dgram_address;
                 peerRecvThreadArgs->peer_socket_stream_address = peer_socket_stream_address;
+                peerRecvThreadArgs->peer_dgram_sync_send_socket_address = peer_socket_address_sync_send_dgram;
+                peerRecvThreadArgs->peer_dgram_sync_recv_socket_address = peer_socket_address_sync_recv_dgram;
 
                 ret_val_pthread_create = pthread_create(&thread_peer_recv_id[i], &attr, &peerRecvThread, (void *)peerRecvThreadArgs);
                 if(ret_val_pthread_create != 0){

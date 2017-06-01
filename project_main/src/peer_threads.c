@@ -31,6 +31,18 @@ void* pingerThread(void* args)
     pthread_exit(NULL);
 }
 
+void* syncRecvThread(void* args)
+{
+
+        while(true){
+            // TODO receive dgram stuff from gw and update list
+            pthread_mutex_lock(&photo_list_mutex);
+            pthread_mutex_unlock(&photo_list_mutex);
+        }
+
+    pthread_exit(NULL);
+}
+
 
 void* clientHandlerThread(void* args)
 {

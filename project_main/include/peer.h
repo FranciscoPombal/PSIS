@@ -6,7 +6,7 @@
 extern bool keepRunning;
 
 // Peer helper functions
-int gatewayConnect(int peerStreamSocket);
+int gatewayConnect(int peerStreamSocket, struct sockaddr_in * gateway_socket_address, int* sock_sync_send, int* sock_sync_recv);
 int clientStreamSocketSetup(void);
 
 void sigIntHandler(int);
@@ -16,6 +16,9 @@ int getGatewayPort(void);
 void setupPeerAddress(struct sockaddr_in * psa);
 void setupPeerAddressDgram(struct sockaddr_in * psa_dgram);
 void setupGatewayAddress(struct sockaddr_in * gsa);
+
+int setupSyncSendSocket(struct sockaddr_in * peer_dgram_sync_send_socket_address);
+int setupSyncRecvSocket(struct sockaddr_in * peer_dgram_sync_recv_socket_address);
 
 void writePhotoToDisk(void* photo, long int size, char storage_name[CHAR_BUFFER_SIZE]);
 void addPhotoToList(SinglyLinkedList* list_head, PhotoProperties* photo_metadata);
@@ -35,11 +38,17 @@ void findPhotoByKeyword(SinglyLinkedList* photo_list_head, char* keyword, uint32
 
 // Threads
 void* pingerThread(void*);
+void* syncRecvThread(void*);
 void* clientHandlerThread(void* args);
 
 typedef struct _clientHandlerThreadArgs {
     int socket_fd;
     SinglyLinkedList* photo_list_head;
 } ClientHandlerThreadArgs;
+
+typedef struct _syncRecvThreadArgs {
+    int peer_socket_address_sync_recv_dgram;
+    SinglyLinkedList* photo_list_head;
+} SyncRecvThreadArgs;
 
 #endif
