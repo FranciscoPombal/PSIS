@@ -145,6 +145,8 @@ typedef struct _message_api_op_type {
 
 typedef struct _peer_properties{
     struct sockaddr_in peer_socket_dgram_address;
+    struct sockaddr_in peer_socket_sync_recv_dgram_address;
+    struct sockaddr_in peer_socket_sync_send_dgram_address;
     struct sockaddr_in peer_socket_stream_address;
     int num_connected_clients;
     bool toDelete;
