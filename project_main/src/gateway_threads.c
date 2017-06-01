@@ -387,3 +387,64 @@ void* masterPeerPinger(void* args)
 
     pthread_exit(NULL);
 }
+
+// Thread that syncs all the peers (sends photo to all the peers)
+void* peerSync(void* args)
+{
+    int socket_fd = 0;
+
+    fprintf(stdout, "Receiving photo from peer for sync\n");
+
+    // size of image
+    ret_val_recv = recv(socket_fd, &file_size, sizeof(long int), NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving size of image\n");
+        break;
+    }
+    // image
+    file_buffer = malloc(file_size);
+    ret_val_recv = recv(socket_fd, file_buffer, file_size, NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving image.\n");
+        free(file_buffer);
+        file_buffer = NULL;
+        break;
+    }else if(ret_val_recv != file_size){
+        fprintf(stderr, "Add photo: Wrong number of image bytes received: %d\n", ret_val_recv);
+        free(file_buffer);
+        file_buffer = NULL;
+        break;
+    }
+
+    // image metadata
+    photoProperties = malloc(sizeof(PhotoProperties));
+    ret_val_recv = recv(socket_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving image metadata\n");
+        free(photoProperties);
+        photoProperties = NULL;
+        break;
+    }
+
+    //Now that we have the photo we send it to all the peers in the list
+    SinglyLinkedList* photo_list_head = NULL;
+
+    for(aux_photo_list_node = list_head; SinglyLinkedList_getNextNode(aux_photo_list_node) != NULL; aux_photo_list_node =   SinglyLinkedList_getNextNode(aux_photo_list_node))
+    {
+        // size of the image
+        ret_val_send = send(peer_socket, &file_size, sizeof(file_size), NO_FLAGS);
+
+        // the image itself
+        ret_val_send = send(peer_socket, file_buffer, file_size, NO_FLAGS);
+
+        // image metadata
+        ret_val_send = send(peer_socket, photoProperties, sizeof(PhotoProperties), NO_FLAGS);
+
+        fprintf(stdout, "File sync done to a peer\n");
+    }
+
+    fprintf(stdout, "File sync done to ALL peers :)\n");
+
+    pthread_exit(NULL);
+
+}

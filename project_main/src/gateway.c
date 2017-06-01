@@ -33,6 +33,7 @@ int main(void)
 
     // other threads
     pthread_t* thread_ids = NULL;
+    pthread_t thread_sync = 0;
 
     pthread_attr_t attr;
 
@@ -93,6 +94,20 @@ int main(void)
 
         while(true == keepRunning){
             // TODO: sync
+
+            ret_val_sync = recv(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+
+            if(message_gw.type == SYNC){
+                fprintf(stdout, "Received new sync request, sending photo to all peers\n");
+
+                ret_val_sync_pthread_create = pthread_create(&pthread_sync, &attr, &peerSync, peer_linked_list);
+                if(ret_val_sync_pthread_create != 0){
+                    fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            }
+
             sleep(1);
         }
 
