@@ -40,6 +40,8 @@ void* clientHandlerThread(void* args)
     int ret_val_send = 0;
     struct sockaddr_in client_socket_address;
     socklen_t client_socket_address_len = sizeof(struct sockaddr_in);
+    struct sockaddr_in gateway_socket_address;
+    socklen_t gateway_socket_address_len = sizeof(struct sockaddr_in);
     Message_api_op_type message_api_op_type;
     ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
     int socket_fd = 0;
@@ -110,6 +112,7 @@ void* clientHandlerThread(void* args)
                     pthread_mutex_lock(&photo_list_mutex);
                     addPhotoToList(photo_list_head, photoProperties);
                     pthread_mutex_unlock(&photo_list_mutex);
+                    //TODO: sync
                     free(file_buffer);
                     file_buffer = NULL;
                     break;

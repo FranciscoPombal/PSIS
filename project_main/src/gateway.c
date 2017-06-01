@@ -4,9 +4,15 @@ bool keepRunning = true;
 
 int main(void)
 {
+    int i = 0;
     // socket stuff
     int socket_dgram_clients_fd = 0;
     int socket_dgram_peers_fd = 0;
+    int socket_sync_fd = 0;
+
+    Message_gw message_gw;
+    struct sockaddr_in peer_socket_dgram_sync_recv_address;
+    socklen_t peer_socket_dgram_sync_recv_address_len = sizeof(struct sockaddr_in);
 
     //linked list stuff
     // Linked list of peers
@@ -21,6 +27,12 @@ int main(void)
 
     // thread stuff
     int ret_val_recv_phtread_create = 0;
+    int ret_val_sync_pthread_create = 0;
+    int ret_val_sync = 0;
+    int last_sync = -1;
+    int add_id = 0;
+    int del_id = 0;
+    int thread_queue = 0;
 
     // recv threads
     pthread_t thread_master_peer_recv_id = 0;
@@ -33,7 +45,8 @@ int main(void)
 
     // other threads
     pthread_t* thread_ids = NULL;
-    pthread_t thread_sync = 0;
+    pthread_t thread_sync_add[HUGE_NUMBER];
+    pthread_t thread_sync_delete[HUGE_NUMBER];
 
     pthread_attr_t attr;
 
@@ -94,18 +107,50 @@ int main(void)
 
         while(true == keepRunning){
             // TODO: sync
+            socket_sync_fd = socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
 
-            ret_val_sync = recv(socket_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_address, &peer_socket_dgram_address_len);
+            memset((void*)&peer_socket_dgram_sync_recv_address,0 , sizeof(struct sockaddr_in));
 
-            if(message_gw.type == SYNC){
-                fprintf(stdout, "Received new sync request, sending photo to all peers\n");
+            ret_val_sync = recvfrom(socket_sync_fd, &message_gw, sizeof(Message_gw), NO_FLAGS, (struct sockaddr *)&peer_socket_dgram_sync_recv_address, &peer_socket_dgram_sync_recv_address_len);
 
-                ret_val_sync_pthread_create = pthread_create(&pthread_sync, &attr, &peerSync, peer_linked_list);
+            switch(message_gw.type){
+                case SYNC_ADD:
+                if(last_sync != SYNC_ADD)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_delete[del_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+                fprintf(stdout, "Initializing SYNC ADD\n");
+                ret_val_sync_pthread_create = pthread_create(&thread_sync_add[add_id], &attr, &peerSyncAdd, peer_linked_list);
                 if(ret_val_sync_pthread_create != 0){
                     fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
                     exit(EXIT_FAILURE);
                 }
+                last_sync = SYNC_ADD;
+                thread_queue++;
+                break;
 
+                case SYNC_DELETE:
+                if(last_sync != SYNC_DELETE)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_add[add_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+                fprintf(stdout, "Initializing SYNC DELETE\n");
+                ret_val_sync_pthread_create = pthread_create(&thread_sync_delete[del_id], &attr, &peerSyncDelete, peer_linked_list);
+                if(ret_val_sync_pthread_create != 0){
+                    fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
+                    exit(EXIT_FAILURE);
+                }
+                last_sync = SYNC_DELETE;
+                thread_queue++;
+                break;
             }
 
             sleep(1);
@@ -119,9 +164,12 @@ int main(void)
     // close and free stuff
     close(socket_dgram_peers_fd);
     close(socket_dgram_clients_fd);
+    close(socket_sync_fd);
     free(thread_ids);
     free(masterClientRecvThreadArgs);
     free(masterPeerRecvThreadArgs);
+    free(thread_sync_add);
+    free(thread_sync_delete);
     thread_ids = NULL;
     masterClientRecvThreadArgs = NULL;
     masterPeerRecvThreadArgs = NULL;

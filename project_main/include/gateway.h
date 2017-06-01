@@ -5,6 +5,14 @@
 
 extern bool keepRunning;
 
+#ifndef SYNC_ADD
+#define SYNC_ADD 0
+#endif
+
+#ifndef SYNC_DELETE
+#define SYNC_DELETE 1
+#endif
+
 typedef struct _masterPeerRecvThreadArgs {
     int socket_fd;
     SinglyLinkedList* peer_list_head;
@@ -43,6 +51,8 @@ void* masterClientRecvThread(void* args);
 void* slavePeerRecvThread(void* args);
 void* slaveClientRecvThread(void* args);
 void* masterPeerPinger(void* args);
+void* peerSyncAdd(void* args);
+void* peerSyncDelete(void* args);
 
 
 #endif
