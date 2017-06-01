@@ -33,10 +33,122 @@ void* pingerThread(void* args)
 
 void* syncRecvThread(void* args)
 {
+    int ret_val_recvfrom = 0;
+    SyncRecvThreadArgs* syncRecvThreadArgs = NULL;
+    SinglyLinkedList* photo_list_head = NULL;
+    SinglyLinkedList* aux_photo_list_node = NULL;
+    int socket_sync_recv_fd = 0;
+    int sync_type = 0;
+    uint32_t photo_id = 0;
+    int keyword_str_len = 0;
+    char* keyword = NULL;
+    long int file_size = 0;
+    void* file_buffer = NULL;
 
+    PhotoProperties* photoProperties = NULL;
+
+    struct sockaddr_in gateway_socket_address;
+    socklen_t gateway_socket_address_len = sizeof(struct sockaddr_in);
+
+        syncRecvThreadArgs = (SyncRecvThreadArgs*)args;
+        photo_list_head = syncRecvThreadArgs->photo_list_head;
+        socket_sync_recv_fd = syncRecvThreadArgs->peer_socket_address_sync_recv_dgram;
+
+        // TODO: narrow down critical region?
         while(true){
-            // TODO receive dgram stuff from gw and update list
+            ret_val_recvfrom = recvfrom(socket_sync_recv_fd, &sync_type, sizeof(int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+            if(ret_val_recvfrom == -1){
+                fprintf(stderr, "Add keyword sync: error receiving sync type\n");
+                continue;
+            }
+
             pthread_mutex_lock(&photo_list_mutex);
+            if(sync_type == SYNC_RECV_ADD_PHOTO){
+
+                // size of image
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, &file_size, sizeof(long int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Add photo: sync Error receiving size of image\n");
+                    continue;
+                }
+                // image
+                file_buffer = malloc(file_size);
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, file_buffer, file_size, NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Add photo: sync Error receiving image.\n");
+                    free(file_buffer);
+                    file_buffer = NULL;
+                    continue;
+                }else if(ret_val_recvfrom != file_size){
+                    fprintf(stderr, "Add photo: sync Wrong number of image bytes received: %d\n", ret_val_recvfrom);
+                    free(file_buffer);
+                    file_buffer = NULL;
+                    continue;
+                }
+
+                // image metadata
+                photoProperties = malloc(sizeof(PhotoProperties));
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, photoProperties, sizeof(PhotoProperties), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Add photo: sync Error receiving image metadata\n");
+                    free(photoProperties);
+                    photoProperties = NULL;
+                    continue;
+                }
+
+                writePhotoToDisk(file_buffer, file_size, photoProperties->storage_name);
+                addPhotoToList(photo_list_head, photoProperties);
+                free(file_buffer);
+                file_buffer = NULL;
+                continue;
+
+            }else if(sync_type == SYNC_RECV_ADD_KEYWORD){
+                // receive id
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, &photo_id, sizeof(uint32_t), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Add keyword sync: error receiving id\n");
+                    continue;
+                }
+
+                // check if photo exsists and send the information
+                aux_photo_list_node = findPhotoById(photo_list_head, photo_id);
+                if(aux_photo_list_node == NULL){
+                    fprintf(stderr, "WARNING: sync add keyword: tried to add keyword to photo that doesn't exist!\n");
+                    continue;
+                }
+
+                //receive string length
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, &keyword_str_len, sizeof(int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Error keyword sync receiving keyword str len.\n");
+                    continue;
+                }
+
+                // alloc string
+                keyword = (char*)malloc((keyword_str_len + 1) * sizeof(char));
+
+                //receive string
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, keyword, keyword_str_len + 1, NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Error sync keyword receiving keyword.\n");
+                    free(keyword);
+                    keyword = NULL;
+                    continue;
+                }
+
+                addKeywordtoPhoto(aux_photo_list_node, keyword_str_len, keyword);
+                free(keyword);
+                keyword = NULL;
+
+            }else if(sync_type == SYNC_RECV_DELETE_PHOTO){
+                ret_val_recvfrom = recvfrom(socket_sync_recv_fd, &photo_id, sizeof(uint32_t), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, &gateway_socket_address_len);
+                if(ret_val_recvfrom == -1){
+                    fprintf(stderr, "Delete photo sync: error receiving id\n");
+                    continue;
+                }
+
+                deletePhotoFromList(photo_id, photo_list_head);
+            }
             pthread_mutex_unlock(&photo_list_mutex);
         }
 
@@ -55,6 +167,7 @@ void* clientHandlerThread(void* args)
     Message_api_op_type message_api_op_type;
     ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
     int socket_fd = 0;
+    int socket_sync_send_fd = 0;
 
     SinglyLinkedList* photo_list_head = NULL;
     SinglyLinkedList* aux_photo_list_node = NULL;
@@ -76,9 +189,12 @@ void* clientHandlerThread(void* args)
     bool photo_exists = false;
     uint32_t* photo_ids = NULL;
 
+    pthread_t thread_sync_send_id = 0;
+
         clientHandlerThreadArgs = (ClientHandlerThreadArgs*)args;
         socket_fd = clientHandlerThreadArgs->socket_fd;
         photo_list_head = clientHandlerThreadArgs->photo_list_head;
+        socket_sync_send_fd = clientHandlerThreadArgs->peer_socket_address_sync_send_dgram;
 
         while(false == closeConnection){
             ret_val_recv_from = recvfrom(socket_fd, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);

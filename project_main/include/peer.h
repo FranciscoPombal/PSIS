@@ -43,6 +43,7 @@ void* clientHandlerThread(void* args);
 
 typedef struct _clientHandlerThreadArgs {
     int socket_fd;
+    int peer_socket_address_sync_send_dgram;
     SinglyLinkedList* photo_list_head;
 } ClientHandlerThreadArgs;
 

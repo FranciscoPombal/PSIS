@@ -6,6 +6,7 @@ int main(void)
 {
     // generic/program-specific variables
     long int i = 0;
+    int k = 1;
 
     // socket/ipc related variables
     int socket_stream_fd = 0;
@@ -20,7 +21,6 @@ int main(void)
     pthread_t thread_master_client_accept_id = 0;
     pthread_t thread_pinger_id = 0;
 
-    pthread_t thread_sync_send_id = 0;
     pthread_t thread_sync_recv_id = 0;
 
     pthread_attr_t attr;
@@ -29,7 +29,7 @@ int main(void)
     SyncRecvThreadArgs* syncRecvThreadArgs = NULL;
 
     // photo stuff
-    SinglyLinkedList* photo_linked_list;
+    SinglyLinkedList* photo_linked_list = NULL;
 
         // Setup SIGINT handler
         setupInterrupt();
@@ -67,11 +67,15 @@ int main(void)
             clientHandlerThreadArgs = malloc(sizeof(ClientHandlerThreadArgs));
             clientHandlerThreadArgs->socket_fd = conn_sock_fd[i];
             clientHandlerThreadArgs->photo_list_head = photo_linked_list;
+            clientHandlerThreadArgs->peer_socket_address_sync_send_dgram = socket_dgram_sync_send_fd;
 
-            // TODO: check atributes and arguments
             ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, &attr, &clientHandlerThread, clientHandlerThreadArgs);
 
             i += 1;
+            if(i == HUGE_NUMBER - 1){
+                k += 1;
+                conn_sock_fd = realloc(conn_sock_fd, HUGE_NUMBER * k);
+            }
         }
 
         fprintf(stdout, "Cleaning up...\n");

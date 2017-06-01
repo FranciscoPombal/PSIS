@@ -125,6 +125,30 @@
 #define PHOTO_NOT_FOUND 0
 #endif
 
+#ifndef SYNC_RECV_ADD_PHOTO
+#define SYNC_RECV_ADD_PHOTO 666
+#endif
+
+#ifndef SYNC_RECV_ADD_KEYWORD
+#define SYNC_RECV_ADD_KEYWORD 667
+#endif
+
+#ifndef SYNC_RECV_DELETE_PHOTO
+#define SYNC_RECV_DELETE_PHOTO 668
+#endif
+
+#ifndef SYNC_SEND_ADD_PHOTO
+#define SYNC_SEND_ADD_PHOTO 669
+#endif
+
+#ifndef SYNC_SEND_ADD_KEYWORD
+#define SYNC_SEND_ADD_KEYWORD 670
+#endif
+
+#ifndef SYNC_SEND_DELETE_PHOTO
+#define SYNC_SEND_DELETE_PHOTO 671
+#endif
+
 typedef struct _message{
     char buffer[MESSAGE_LEN];
 } Message;
