@@ -10,6 +10,7 @@ int main(void)
     int socket_stream_fd = 0;
     char* gateway_ipv4 = NULL;
     int gateway_port = 0;
+    int ret_val_sscanf = 0;
 
     uint32_t photo_id = 0;
     char buffer[CHAR_BUFFER_SIZE];
@@ -71,9 +72,11 @@ int main(void)
                 }
                 case ADD_KEYWORD:
                 {
-                    fprintf(stdout, "Insert the id of the photo to add a keyword to:\n");
-                    fgets(buffer, CHAR_BUFFER_SIZE, stdin);
-                    sscanf(buffer, "%u", &photo_id);
+                    while (ret_val_sscanf != 1){
+                        fprintf(stdout, "Insert the id of the photo to add a keyword to:\n");
+                        fgets(buffer, CHAR_BUFFER_SIZE, stdin);
+                        sscanf(buffer, "%u\n", &photo_id);
+                    }
 
                     add_keyword_response = gallery_add_keyword(socket_stream_fd, photo_id, NULL);
                     if(add_keyword_response == -1){

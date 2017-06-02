@@ -360,7 +360,7 @@ void* clientHandlerThread(void* args)
                         break;
                     }else{
                         photo_exists = true;
-                        ret_val_send = send(socket_fd, &photo_exists, sizeof(photo_exists), NO_FLAGS);
+                        ret_val_send = send(socket_fd, &photo_exists, sizeof(bool), NO_FLAGS);
                         if(ret_val_send == -1){
                             fprintf(stderr, "Error sending info that photo exists.\n");
                             break;
