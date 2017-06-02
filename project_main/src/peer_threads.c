@@ -152,6 +152,8 @@ void* syncRecvThread(void* args)
             pthread_mutex_unlock(&photo_list_mutex);
         }
 
+        free(syncRecvThreadArgs);
+
     pthread_exit(NULL);
 }
 
@@ -162,8 +164,11 @@ void* clientHandlerThread(void* args)
     int ret_val_recv_from = 0;
     int ret_val_recv = 0;
     int ret_val_send = 0;
+    int ret_val_sendto = 0;
     struct sockaddr_in client_socket_address;
     socklen_t client_socket_address_len = sizeof(struct sockaddr_in);
+    struct sockaddr_in gateway_socket_address;
+    socklen_t gateway_socket_address_len = sizeof(struct sockaddr_in);
     Message_api_op_type message_api_op_type;
     ClientHandlerThreadArgs* clientHandlerThreadArgs = NULL;
     int socket_fd = 0;
@@ -188,6 +193,8 @@ void* clientHandlerThread(void* args)
     char* keyword = NULL;
     bool photo_exists = false;
     uint32_t* photo_ids = NULL;
+    Message_gw message_gw;
+    int sync_type = 0;
 
     pthread_t thread_sync_send_id = 0;
 
@@ -195,6 +202,7 @@ void* clientHandlerThread(void* args)
         socket_fd = clientHandlerThreadArgs->socket_fd;
         photo_list_head = clientHandlerThreadArgs->photo_list_head;
         socket_sync_send_fd = clientHandlerThreadArgs->peer_socket_address_sync_send_dgram;
+        gateway_socket_address = clientHandlerThreadArgs->gateway_socket_dgram_address;
 
         while(false == closeConnection){
             ret_val_recv_from = recvfrom(socket_fd, &message_api_op_type, sizeof(Message_api_op_type), NO_FLAGS, (struct sockaddr *)&client_socket_address, &client_socket_address_len);
@@ -238,6 +246,40 @@ void* clientHandlerThread(void* args)
                     pthread_mutex_lock(&photo_list_mutex);
                     addPhotoToList(photo_list_head, photoProperties);
                     pthread_mutex_unlock(&photo_list_mutex);
+
+
+                    // Send sync information
+                    pthread_mutex_lock(&photo_list_mutex);
+                    sync_type = SYNC_SEND_ADD_PHOTO;
+                    ret_val_sendto = sendto(socket_sync_send_fd, &sync_type, sizeof(int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
+                    if(ret_val_sendto == -1){
+                        fprintf(stderr, "Add photo sync send: error sending sync type\n");
+                        break;
+                    }
+
+
+
+
+                    //send file size
+                    sendto(socket_sync_send_fd, &file_size, sizeof(long int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
+                    if(ret_val_sendto == -1){
+                        fprintf(stderr, "Add photo sync send: error sending file size\n");
+                        break;
+                    }
+                    // open stream socket
+                    //send photo
+
+
+                    sendto(socket_sync_send_fd, &id, sizeof(uint32_t), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
+                    if(ret_val_sendto == -1){
+                        fprintf(stderr, "Delete photo sync send: error sending id to delete\n");
+                        break;
+                    }
+
+
+
+                    pthread_mutex_unlock(&photo_list_mutex);
+
                     free(file_buffer);
                     file_buffer = NULL;
                     break;
@@ -313,6 +355,22 @@ void* clientHandlerThread(void* args)
                         fprintf(stderr, "Delete photo: error sending response to client\n");
                         break;
                     }
+
+                    // Send sync information
+                    pthread_mutex_lock(&photo_list_mutex);
+                    sync_type = SYNC_SEND_DELETE_PHOTO;
+                    ret_val_sendto = sendto(socket_sync_send_fd, &sync_type, sizeof(int), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
+                    if(ret_val_sendto == -1){
+                        fprintf(stderr, "Delete photo sync send: error sending sync type\n");
+                        break;
+                    }
+
+                    sendto(socket_sync_send_fd, &id, sizeof(uint32_t), NO_FLAGS, (struct sockaddr *)&gateway_socket_address, gateway_socket_address_len);
+                    if(ret_val_sendto == -1){
+                        fprintf(stderr, "Delete photo sync send: error sending id to delete\n");
+                        break;
+                    }
+                    pthread_mutex_unlock(&photo_list_mutex);
 
                     break;
                 }

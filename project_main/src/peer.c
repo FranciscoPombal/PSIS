@@ -68,6 +68,7 @@ int main(void)
             clientHandlerThreadArgs->socket_fd = conn_sock_fd[i];
             clientHandlerThreadArgs->photo_list_head = photo_linked_list;
             clientHandlerThreadArgs->peer_socket_address_sync_send_dgram = socket_dgram_sync_send_fd;
+            clientHandlerThreadArgs->gateway_socket_dgram_address = gateway_socket_address;
 
             ret_val_phtread_create = pthread_create(&thread_master_client_accept_id, &attr, &clientHandlerThread, clientHandlerThreadArgs);
 
