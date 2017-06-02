@@ -31,6 +31,7 @@ int main(void)
     int ret_val_sync = 0;
     int last_sync = -1;
     int add_id = 0;
+    int key_id = 0;
     int del_id = 0;
     int thread_queue = 0;
 
@@ -46,6 +47,7 @@ int main(void)
     // other threads
     pthread_t* thread_ids = NULL;
     pthread_t thread_sync_add[HUGE_NUMBER];
+    pthread_t thread_sync_keyword[HUGE_NUMBER];
     pthread_t thread_sync_delete[HUGE_NUMBER];
     PeerSyncThread* message_sync = malloc(sizeof(message_sync));
     message_sync->peer_linked_list = NULL;
@@ -121,11 +123,19 @@ int main(void)
 
             switch(message_gw.type){
                 case SYNC_ADD:
-                if(last_sync != SYNC_ADD)
+                if(last_sync == SYNC_DELETE)
                 {
                     for(i=thread_queue; i>0; i++)
                     {
                         pthread_join(thread_sync_delete[del_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+                if(last_sync == SYNC_KEYWORD)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_keyword[key_id-i+1], NULL);
                     }
                     thread_queue = 0;
                 }
@@ -135,16 +145,54 @@ int main(void)
                     fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
                     exit(EXIT_FAILURE);
                 }
+                add_id++;
                 last_sync = SYNC_ADD;
                 thread_queue++;
                 break;
 
-                case SYNC_DELETE:
-                if(last_sync != SYNC_DELETE)
+                case SYNC_KEYWORD:
+                if(last_sync == SYNC_ADD)
                 {
                     for(i=thread_queue; i>0; i++)
                     {
                         pthread_join(thread_sync_add[add_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+                if(last_sync == SYNC_DELETE)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_delete[del_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+
+                fprintf(stdout, "Initializing SYNC KEYWORD\n");
+                ret_val_sync_pthread_create = pthread_create(&thread_sync_delete[key_id], &attr, &peerSyncKeyword, message_sync);
+                if(ret_val_sync_pthread_create != 0){
+                    fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
+                    exit(EXIT_FAILURE);
+                }
+                key_id++;
+                last_sync = SYNC_KEYWORD;
+                thread_queue++;
+                break;
+
+                case SYNC_DELETE:
+                if(last_sync == SYNC_ADD)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_add[add_id-i+1], NULL);
+                    }
+                    thread_queue = 0;
+                }
+                if(last_sync == SYNC_KEYWORD)
+                {
+                    for(i=thread_queue; i>0; i++)
+                    {
+                        pthread_join(thread_sync_keyword[key_id-i+1], NULL);
                     }
                     thread_queue = 0;
                 }
@@ -154,6 +202,7 @@ int main(void)
                     fprintf(stderr, "sync_pthread_create (initialize peer sync) error!\n");
                     exit(EXIT_FAILURE);
                 }
+                del_id++;
                 last_sync = SYNC_DELETE;
                 thread_queue++;
                 break;

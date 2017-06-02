@@ -9,8 +9,12 @@ extern bool keepRunning;
 #define SYNC_ADD 0
 #endif
 
+#ifndef SYNC_KEYWORD
+#define SYNC_KEYWORD 1
+#endif
+
 #ifndef SYNC_DELETE
-#define SYNC_DELETE 1
+#define SYNC_DELETE 2
 #endif
 
 typedef struct _masterPeerRecvThreadArgs {
@@ -57,6 +61,7 @@ void* slavePeerRecvThread(void* args);
 void* slaveClientRecvThread(void* args);
 void* masterPeerPinger(void* args);
 void* peerSyncAdd(void* args);
+void* peerSyncKeyword(void* args);
 void* peerSyncDelete(void* args);
 
 

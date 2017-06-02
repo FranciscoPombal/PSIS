@@ -459,6 +459,67 @@ void* peerSyncAdd(void* args)
     pthread_exit(NULL);
 }
 
+void* peerSyncKeyword(void* args)
+{
+    int ret_val_recv = 0;
+    int ret_val_send = 0;
+    SinglyLinkedList* peer_list_head = args;
+    SinglyLinkedList* aux_peer_list_node = NULL;
+    PeerSyncThread* msg;
+    msg = (PeerSyncThread*) args;
+    struct sockaddr_in gateway_socket_address;
+    int gateway_sync_fd = 0;
+    struct sockaddr_in peer_socket_address;
+    socklen_t peer_socket_address_len = sizeof(struct sockaddr_in);
+    uint32_t id;
+    int keyword_len = 0;
+    char* keyword = malloc(keyword_len*sizeof(char));
+
+    fprintf(stdout, "Receiving photo from peer for sync_add\n");
+
+    //Receive id
+    ret_val_recv = recv( msg->socket_fd, &id, sizeof(uint32_t), NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving size of image\n");
+    }
+
+    //Receive lenght of keyword
+    ret_val_recv = recv( msg->socket_fd, &keyword_len, sizeof(int), NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving size of image\n");
+    }
+
+    //Receive keyword
+    ret_val_recv = recv( msg->socket_fd, keyword, sizeof(keyword), NO_FLAGS);
+    if(ret_val_recv == -1){
+        fprintf(stderr, "Add photo: Error receiving size of image\n");
+    }
+
+    //Now that we have the keyword we send it to all the peers in the list
+    for(aux_peer_list_node = peer_list_head; SinglyLinkedList_getNextNode(aux_peer_list_node) != NULL; aux_peer_list_node =   SinglyLinkedList_getNextNode(aux_peer_list_node))
+    {
+        //Create temporary SOCK_STREAM
+        socket(AF_INET, SOCK_STREAM, DEFAULT_PROTOCOL);
+        bind(gateway_sync_fd, (struct sockaddr *)&gateway_socket_address, sizeof(struct sockaddr_in));
+        connect(gateway_sync_fd, (struct sockaddr *)&peer_socket_address, peer_socket_address_len);
+
+        // id
+        ret_val_send = send(gateway_sync_fd, &id, sizeof(uint32_t), NO_FLAGS);
+
+        // keyword_len
+        ret_val_send = send(gateway_sync_fd, &keyword_len, sizeof(int), NO_FLAGS);
+
+        // keyword
+        ret_val_send = send(gateway_sync_fd, keyword, sizeof(keyword), NO_FLAGS);
+
+        fprintf(stdout, "File sync_keyword done to a peer\n");
+    }
+
+    fprintf(stdout, "File sync_keyword done to ALL peers :)\n");
+
+    pthread_exit(NULL);
+}
+
 void* peerSyncDelete(void* args)
 {
     int ret_val_recv = 0;
