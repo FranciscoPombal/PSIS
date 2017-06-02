@@ -16,7 +16,7 @@ int main(void)
     char* keyword;
     char* photo_name = NULL;
     char** aux_photo_names = NULL;
-    uint32_t num_photos = 0;
+    long int num_photos = 0;
     int delete_response = 0;
     int get_response = 0;
     int add_keyword_response = 0;
@@ -88,14 +88,34 @@ int main(void)
                 }
                 case SEARCH_PHOTO:
                 {
+                    num_photos = 0;
                     keyword = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
                     fprintf(stdout, "Insert a keyword to search for (blank to list all):\n");
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", keyword);
 
                     num_photos = gallery_search_photo(socket_stream_fd, keyword, &photo_ids);
+                    if(num_photos == 0){
+                        fprintf(stdout, "Peer says no photos were found\n");
+                        free(keyword);
+                        keyword = NULL;
+                        if(photo_ids != NULL){
+                            free(photo_ids);
+                            photo_ids = NULL;
+                        }
+                        break;
+                    }else if(num_photos < 0){
+                        fprintf(stdout, "Peer there was an error trying to search for photos\n");
+                        free(keyword);
+                        keyword = NULL;
+                        if(photo_ids != NULL){
+                            free(photo_ids);
+                            photo_ids = NULL;
+                        }
+                        break;
+                    }
 
-                    fprintf(stdout, "Found the keyword \"%s\" in %d photos with ids:\n", keyword, num_photos);
+                    fprintf(stdout, "Found the keyword \"%s\" in %ld photos with ids:\n", keyword, num_photos);
                     for(i = 0; i < num_photos; i++){
                         fprintf(stdout, "%u\n", photo_ids[i]);
                     }
@@ -131,7 +151,7 @@ int main(void)
                     sscanf(buffer, "%u", &photo_id);
 
                     num_photos = gallery_get_photo_name(socket_stream_fd, photo_id, &photo_name);
-                    if((int)num_photos == -1){
+                    if(num_photos == -1){
                         fprintf(stdout, "Error getting photo from peer\n");
                     }else if(num_photos == 0){
                         fprintf(stderr, "Can't get name because photo does not exist\n");
