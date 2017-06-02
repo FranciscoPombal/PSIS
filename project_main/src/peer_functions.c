@@ -412,7 +412,7 @@ void findPhotoByKeyword(SinglyLinkedList* photo_list_head, char* keyword, uint32
                     for(i = 0; i < aux_num_keywords; i++){
                         if((strncmp(aux_keywords[i], keyword, strlen(aux_keywords[i])) == 0) || (strstr(aux_keywords[i], keyword) != NULL)){
                             *num_photos += 1;
-                            *photo_ids = realloc(*photo_ids, *num_photos);
+                            *photo_ids = realloc(*photo_ids, (*num_photos) * sizeof(uint32_t));
                             (*photo_ids)[(*num_photos)-1] = aux_photo_properties_item->photo_id;
                         }
                     }
