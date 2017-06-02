@@ -75,7 +75,7 @@ int main(void)
                     while (ret_val_sscanf != 1){
                         fprintf(stdout, "Insert the id of the photo to add a keyword to:\n");
                         fgets(buffer, CHAR_BUFFER_SIZE, stdin);
-                        sscanf(buffer, "%u", &photo_id);
+                        ret_val_sscanf = sscanf(buffer, "%u", &photo_id);
                     }
 
                     add_keyword_response = gallery_add_keyword(socket_stream_fd, photo_id, NULL);
