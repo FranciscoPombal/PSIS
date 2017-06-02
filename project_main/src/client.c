@@ -41,7 +41,6 @@ int main(void)
         }
 
         fprintf(stdout, "Client has contacted the gateway and is connected to a peer.\n");
-        keyword = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
 
         while((true == keepRunning) && (false == closeConnection)){
             //Print client options
@@ -89,6 +88,7 @@ int main(void)
                 }
                 case SEARCH_PHOTO:
                 {
+                    keyword = (char*)malloc(CHAR_BUFFER_SIZE * sizeof(char));
                     fprintf(stdout, "Insert a keyword to search for (blank to list all):\n");
                     fgets(buffer, CHAR_BUFFER_SIZE, stdin);
                     sscanf(buffer, "%s\n", keyword);
