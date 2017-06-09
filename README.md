@@ -1,6 +1,6 @@
-# PSIS
+# Systems Programming
 
-PSIS files repo.
+Programming of a file-sharing system that works over network.
 
 ## Folder structure
 
