@@ -403,7 +403,7 @@ void findPhotoByKeyword(SinglyLinkedList* photo_list_head, char* keyword, uint32
 
         *num_photos = 0;
 
-        for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node =       SinglyLinkedList_getNextNode(aux_photo_list_node)){
+        for(aux_photo_list_node = photo_list_head; aux_photo_list_node != NULL; aux_photo_list_node = SinglyLinkedList_getNextNode(aux_photo_list_node)){
             if(SinglyLinkedList_getItem(aux_photo_list_node) != NULL){
                 aux_photo_properties_item = (PhotoProperties*)SinglyLinkedList_getItem(aux_photo_list_node);
                 aux_num_keywords = aux_photo_properties_item->num_keywords;
